@@ -1,13 +1,12 @@
-# MISC - Архитектурная спецификация (v5)
+# MISC - Архитектурная спецификация (v5.1 - Упрощённая)
 
 ## 1. Обзор архитектуры
 
 ### 1.1 Принципы
-
 - **Clean Architecture**: Независимость бизнес-логики от деталей реализации
 - **Dependency Inversion**: Зависимости направлены внутрь (к домену)
-- **Ports & Adapters**: Изоляция внешних систем через адаптеры
-- **Shared Nothing**: Слои не делят состояние, только контракты
+- **YAGNI для прототипа**: Не реализуем то, что не нужно сейчас
+- **Подготовка к эволюции**: Структура данных готова к будущим изменениям
 
 ### 1.2 Слои и их ответственность
 
@@ -16,228 +15,220 @@
 | Presentation | UI, обработка пользовательского ввода | Application |
 | Application | Orchestration, use cases | Domain |
 | Domain | Бизнес-логика, правила | Ничего |
-| Infrastructure | Хранение, внешние сервисы | Domain (через интерфейсы) |
+| Infrastructure | Хранение | Domain (через интерфейсы) |
 
 ## 2. Domain Layer
 
 ### 2.1 Сущности (Entities)
 
 #### Record
-
 **Описание**: Запись - основная сущность системы, представляет сохранённую пользователем информацию.
 
 **Поля:**
-
 - `id`: RecordId - уникальный идентификатор записи
-- `content`: RecordContent - содержимое записи как ввёл пользователь
-- `tagIds`: TagId[] - упорядоченный массив идентификаторов тегов
+- `content`: RecordContent - содержимое записи как ввёл пользователь (хранит порядок тегов)
+- `tagIds`: Set<TagId> - множество идентификаторов тегов (для быстрого поиска)
 - `createdAt`: Date - дата создания
 - `updatedAt`: Date - дата последнего обновления
 
 **Поведение:**
-
-- `getTagIds()`: TagId[] - возвращает идентификаторы тегов в порядке их появления
-- `equals(other: Record)`: boolean - сравнение по ID
+- `hasTag(tagId: TagId)`: boolean - проверка наличия тега
 - `hasSameTagSet(other: Record)`: boolean - проверка на одинаковый набор тегов
+- `equals(other: Record)`: boolean - сравнение по ID
 
 **Инварианты:**
-
 - ID неизменен после создания
 - Content не может быть пустым
 - Content должен содержать хотя бы один валидный тег
-- Порядок tagIds соответствует порядку тегов в content
+- tagIds содержит все теги из content (синхронизация)
 
 #### Tag
-
-**Описание**: Тег как сущность - уникальный концепт, объединяющий различные написания одного тега.
+**Описание**: Тег как сущность - уникальный концепт в системе.
 
 **Поля:**
-
 - `id`: TagId - уникальный идентификатор тега
-- `normalizedValue`: string - каноническеое(умолчательное) визуальное представление тега
+- `normalizedValue`: string - нормализованная форма для поиска и уникальности
 
 **Поведение:**
-
 - `equals(other: Tag)`: boolean - сравнение по ID
-- `matches(normalizedValue: string)`: boolean - проверка совпадения по нормализованному значению
 
 **Инварианты:**
-
 - ID неизменен после создания
 - normalizedValue уникален в системе
-- normalizedValue не может быть изменён после создания (для изменения создаётся новый тег)
 
 ### 2.2 Value Objects
 
 #### RecordId
-
 **Описание**: Идентификатор записи.
 
 **Поля:**
-
-- `value`: UUID
+- `value`: string (UUID)
 
 **Поведение:**
-
 - `toString()`: string
 - `equals(other: RecordId)`: boolean
 
 #### TagId
-
 **Описание**: Идентификатор тега.
 
 **Поля:**
-
-- `value`: UUID
+- `value`: string (UUID)
 
 **Поведение:**
-
 - `toString()`: string
 - `equals(other: TagId)`: boolean
 
 #### RecordContent
-
-**Описание**: Содержимое записи - оригинальная строка тегов, введённая пользователем.
+**Описание**: Содержимое записи - строка тегов как ввёл пользователь.
 
 **Поля:**
-
 - `value`: string - например, "ToDo встреча Петров завтра 15:00"
 
 **Поведение:**
-
 - `parseTokens()`: string[] - разбивает на токены по пробелам
 - `isEmpty()`: boolean
 - `toString()`: string
 
 **Правила:**
-
 - Не может быть пустой
 - Сохраняет оригинальное написание и порядок тегов
-- Должна содержать хотя бы один валидный токен после парсинга
 
 #### SearchQuery
-
 **Описание**: Поисковый запрос пользователя.
 
 **Поля:**
-
 - `value`: string - исходная строка запроса
 - `normalizedTokens`: string[] - нормализованные токены для поиска
 
 **Поведение:**
-
-- `getNormalizedTokens()`: string[]
 - `isEmpty()`: boolean
 
 ### 2.3 Domain Services
 
 #### TagNormalizer
-
-**Описание**: Сервис нормализации тегов согласно конфигурации.
+**Описание**: Сервис нормализации тегов.
 
 **Методы:**
-
 - `normalize(value: string)`: string
 
-**Правила нормализации:**
-
-- По умолчанию: приведение к нижнему регистру
-- Опционально: удаление диакритики
-- Опционально: транслитерация
+**Правила:**
+- Приведение к нижнему регистру
+- Опционально: удаление диакритики (в конфигурации)
 
 #### TagParser
-
 **Описание**: Сервис парсинга content в теги.
 
 **Методы:**
-
-- `parse(content: RecordContent): ParsedTag[]`
-
-**ParsedTag:**
+- `parse(content: RecordContent, normalizer: TagNormalizer): ParsedTag[]`
 
 ```typescript
 interface ParsedTag {
-  originalValue: string  // как написано в content
-  normalizedValue: string  // для поиска тега
-  position: number  // позиция в content (0, 1, 2...)
+  originalValue: string     // "ToDo"
+  normalizedValue: string   // "todo"
 }
 ```
 
-#### RecordMatcher
+#### TagValidator
+**Описание**: Валидация токенов.
 
+**Методы:**
+- `isValid(token: string)`: boolean
+
+**Правила:**
+- Длина от 1 до 100 символов (настраиваемо)
+- Не содержит запрещённых символов: `{}[]:,"\`
+- Не содержит пробелов
+
+#### RecordMatcher
 **Описание**: Сервис проверки соответствия записи поисковому запросу.
 
 **Методы:**
-
 - `matches(record: Record, query: SearchQuery, tags: Map<TagId, Tag>)`: boolean
 
 **Логика:**
-
 - Все токены из запроса должны присутствовать в записи (AND логика)
 - Сравнение по нормализованным значениям
 
-#### RecordUniquenessChecker
-
+#### RecordDuplicateChecker
 **Описание**: Сервис проверки уникальности записи.
 
 **Методы:**
-
-- `isDuplicate(tagIds: TagId[], existingRecords: Record[])`: boolean
-- `findDuplicate(tagIds: TagId[], existingRecords: Record[])`: Record | null
+- `findDuplicate(tagIds: Set<TagId>, existingRecords: Record[]): Record | null`
 
 **Логика:**
-
-- Записи считаются дубликатами, если имеют одинаковый набор тегов (tagIds)
-- Порядок тегов не важен для определения дубликата
-
-#### TagRenameService (для будущей реализации)
-
-**Описание**: Сервис переименования тегов.
-
-**Методы:**
-
-- `canRename(oldTag: Tag, newNormalizedValue: string, existingTags: Tag[])`: boolean
-- `prepareRenameOperations(tag: Tag, affectedRecords: Record[])`: RenameOperation[]
-
-### 2.4 Domain Events
-
-| Событие | Когда возникает | Данные |
-|---------|-----------------|--------|
-| RecordCreated | После создания записи | recordId, content, tagIds, createdAt |
-| RecordUpdated | После обновления записи | recordId, oldContent, newContent, oldTagIds, newTagIds, updatedAt |
-| RecordDeleted | После удаления записи | recordId, deletedAt |
-| TagCreated | После создания нового тега | tagId, normalizedValue, createdAt |
-| TagRenamed (future) | После переименования тега | tagId, oldValue, newValue, affectedRecordIds |
-
-### 2.5 Спецификации
-
-#### TokenSpecification
-
-**Описание**: Проверка валидности токена (будущего тега).
-
-**Методы:**
-
-- `isSatisfiedBy(value: string)`: boolean
-
-**Правила:**
-
-- Длина от 1 до 100 символов
-- Не содержит запрещённых символов: `{}[]:,"\`
-- Не содержит пробелов
+- Записи дубликаты, если имеют одинаковый набор tagIds
+- Порядок не важен
 
 ## 3. Application Layer
 
 ### 3.1 Use Cases
 
-| Use Case | Вход | Выход | Логика |
-|----------|------|-------|---------|
-| CreateRecord | content: string | RecordDTO | Парсинг content → Нормализация → Поиск/создание тегов → Проверка уникальности → Создание Record → Сохранение → События |
-| SearchRecords | query: string | SearchResultDTO | Парсинг запроса → Поиск тегов → Поиск записей → Определение режима отображения |
-| UpdateRecord | id: string, content: string | RecordDTO | Поиск записи → Парсинг нового content → Поиск/создание тегов → Проверка уникальности → Обновление → События |
-| DeleteRecord | id: string | void | Поиск записи → Удаление → Очистка неиспользуемых тегов → События |
-| GetTagSuggestions | partial: string | string[] | Получение всех тегов → Фильтрация по префиксу → Возврат нормализованных значений |
-| ExportData | format: string | ExportDTO | Получение всех записей и тегов → Форматирование |
-| ImportData | data: string, format: string | ImportResultDTO | Парсинг → Валидация → Создание тегов → Импорт записей |
+#### CreateRecord
+**Вход:** `{ content: string }`
+**Выход:** `RecordDTO`
+**Логика:**
+1. Парсим content в токены
+2. Валидируем каждый токен
+3. Нормализуем токены
+4. Находим или создаём теги для каждого уникального normalized значения
+5. Проверяем на дубликат
+6. Создаём Record с Set<TagId>
+7. Сохраняем в репозитории
+8. Возвращаем DTO
+
+#### SearchRecords
+**Вход:** `{ query: string }`
+**Выход:** `SearchResultDTO`
+**Логика:**
+1. Парсим и нормализуем запрос
+2. Находим теги по normalized значениям
+3. Находим записи, содержащие ВСЕ теги из запроса
+4. Определяем режим отображения (список/облако)
+5. Формируем результат
+
+#### UpdateRecord
+**Вход:** `{ id: string, content: string }`
+**Выход:** `RecordDTO`
+**Логика:**
+1. Находим запись
+2. Парсим новый content
+3. Находим/создаём теги
+4. Проверяем на дубликат (исключая текущую запись)
+5. Обновляем запись
+6. Очищаем неиспользуемые теги
+7. Возвращаем DTO
+
+#### DeleteRecord
+**Вход:** `{ id: string }`
+**Выход:** `void`
+**Логика:**
+1. Находим и удаляем запись
+2. Проверяем и удаляем неиспользуемые теги
+
+#### GetTagSuggestions
+**Вход:** `{ partial: string }`
+**Выход:** `string[]`
+**Логика:**
+1. Нормализуем partial
+2. Находим все теги, начинающиеся с partial
+3. Возвращаем normalized значения для автодополнения
+
+#### ExportData
+**Вход:** `{ format: 'json' }`
+**Выход:** `ExportDTO`
+**Логика:**
+1. Получаем все записи
+2. Формируем JSON с content и метаданными
+3. НЕ экспортируем внутренние ID тегов
+
+#### ImportData
+**Вход:** `{ data: string, format: 'json' }`
+**Выход:** `ImportResultDTO`
+**Логика:**
+1. Парсим JSON
+2. Для каждой записи выполняем логику CreateRecord
+3. Пропускаем дубликаты
+4. Возвращаем статистику
 
 ### 3.2 Порты (интерфейсы для Infrastructure)
 
@@ -245,30 +236,19 @@ interface ParsedTag {
 interface RecordRepository {
   save(record: Record): Promise<void>
   findById(id: RecordId): Promise<Record | null>
-  findByTagIds(tagIds: TagId[]): Promise<Record[]>
+  findByTagIds(tagIds: Set<TagId>): Promise<Record[]>
   findAll(): Promise<Record[]>
   delete(id: RecordId): Promise<void>
-  batchUpdate(records: Record[]): Promise<void>
+  update(record: Record): Promise<void>
 }
 
 interface TagRepository {
   save(tag: Tag): Promise<void>
   findById(id: TagId): Promise<Tag | null>
   findByNormalizedValue(value: string): Promise<Tag | null>
-  findByIds(ids: TagId[]): Promise<Map<TagId, Tag>>
+  findByIds(ids: Set<TagId>): Promise<Map<TagId, Tag>>
   findAll(): Promise<Tag[]>
-  getUsageCount(tagId: TagId): Promise<number>
   deleteUnused(): Promise<number>
-}
-
-interface EventPublisher {
-  publish(event: DomainEvent): Promise<void>
-}
-
-interface UnitOfWork {
-  begin(): Promise<void>
-  commit(): Promise<void>
-  rollback(): Promise<void>
 }
 ```
 
@@ -277,39 +257,35 @@ interface UnitOfWork {
 ```typescript
 interface RecordDTO {
   id: string
-  content: string  // оригинальное написание
+  content: string  // оригинальное написание как ввёл пользователь
   createdAt: string
   updatedAt: string
 }
 
 interface SearchResultDTO {
   mode: 'list' | 'cloud'
-  records?: RecordDTO[]  // для режима list
-  tagCloud?: TagCloudItemDTO[]  // для режима cloud
+  records?: RecordDTO[]           // для режима list
+  tagCloud?: TagCloudItemDTO[]    // для режима cloud
   total: number
 }
 
 interface TagCloudItemDTO {
-  normalizedValue: string  // что показываем пользователю
-  count: number  // частота использования
-  size: number  // размер в облаке (1-5)
+  value: string    // нормализованное значение тега
+  count: number    // частота использования
+  size: number     // размер в облаке (1-5)
 }
 
 interface ExportDTO {
   version: string
-  records: ExportedRecord[]
+  records: Array<{
+    content: string
+    createdAt: string
+    updatedAt: string
+  }>
   metadata: {
     exportedAt: string
     recordCount: number
-    tagCount: number
   }
-}
-
-interface ExportedRecord {
-  id: string
-  content: string
-  createdAt: string
-  updatedAt: string
 }
 
 interface ImportResultDTO {
@@ -321,11 +297,13 @@ interface ImportResultDTO {
 
 ## 4. Infrastructure Layer
 
-### 4.1 Схема хранения (Прототип - localStorage)
+### 4.1 Схема хранения (localStorage)
 
-```json
+```javascript
 {
-  "version": "2.0",
+  "version": "2.1",
+  
+  // Теги - объект для O(1) доступа по ID
   "tags": {
     "uuid-tag-1": {
       "id": "uuid-tag-1",
@@ -336,6 +314,8 @@ interface ImportResultDTO {
       "normalizedValue": "встреча"
     }
   },
+  
+  // Записи - объект для O(1) доступа по ID
   "records": {
     "uuid-record-1": {
       "id": "uuid-record-1",
@@ -345,267 +325,196 @@ interface ImportResultDTO {
       "updatedAt": "2024-01-01T10:00:00Z"
     }
   },
+  
+  // Индексы для быстрого поиска
   "indexes": {
+    // normalized значение → ID тега
     "normalizedToTagId": {
       "todo": "uuid-tag-1",
       "встреча": "uuid-tag-2",
-      "петров": "uuid-tag-3",
-      "15:00": "uuid-tag-4"
+      "петров": "uuid-tag-3"
     },
+    
+    // ID тега → массив ID записей
     "tagToRecords": {
-      "uuid-tag-1": ["uuid-record-1"],
-      "uuid-tag-2": ["uuid-record-1"],
-      "uuid-tag-3": ["uuid-record-1"],
-      "uuid-tag-4": ["uuid-record-1"]
+      "uuid-tag-1": ["uuid-record-1", "uuid-record-2"],
+      "uuid-tag-2": ["uuid-record-1"]
     }
   }
 }
 ```
 
-### 4.2 Схема БД (MVP - PostgreSQL)
+**Почему объекты, а не массивы:**
+- O(1) доступ по ID вместо O(n) поиска
+- Для 10,000 записей это критично
+- Проще обновление и удаление
 
-```sql
--- Таблица тегов
-CREATE TABLE tags (
-  id UUID PRIMARY KEY,
-  normalized_value VARCHAR(100) UNIQUE NOT NULL,
-  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
+### 4.2 Адаптеры
 
-CREATE INDEX idx_tags_normalized ON tags(normalized_value);
+```typescript
+class LocalStorageRecordRepository implements RecordRepository {
+  // Реализация через localStorage
+  // Использует indexes для быстрого поиска
+}
 
--- Таблица записей
-CREATE TABLE records (
-  id UUID PRIMARY KEY,
-  content TEXT NOT NULL,
-  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
--- Связь записей и тегов с сохранением порядка
-CREATE TABLE record_tags (
-  record_id UUID REFERENCES records(id) ON DELETE CASCADE,
-  tag_id UUID REFERENCES tags(id) ON DELETE CASCADE,
-  position INTEGER NOT NULL,
-  PRIMARY KEY (record_id, tag_id)
-);
-
-CREATE INDEX idx_record_tags_tag ON record_tags(tag_id);
-CREATE INDEX idx_record_tags_record_position ON record_tags(record_id, position);
-
--- Представление для статистики тегов
-CREATE VIEW tag_stats AS
-SELECT 
-  t.id,
-  t.normalized_value,
-  COUNT(rt.record_id) as usage_count
-FROM tags t
-LEFT JOIN record_tags rt ON t.id = rt.tag_id
-GROUP BY t.id, t.normalized_value;
+class LocalStorageTagRepository implements TagRepository {
+  // Реализация через localStorage
+  // Поддерживает indexes в актуальном состоянии
+}
 ```
 
 ## 5. Presentation Layer
 
 ### 5.1 Компоненты Web
 
-| Компонент | Ответственность | Props |
-|-----------|-----------------|--------|
-| SearchInput | Универсальное поле ввода/поиска | value, onChange, onSubmit, isSearching |
-| RecordList | Отображение списка записей | records, onEdit, onDelete |
-| TagCloud | Облако тегов с размерами | tags, onTagClick |
-| AutoComplete | Подсказки при вводе | suggestions, onSelect |
-| SearchIndicator | Индикатор поиска | isSearching |
-| RecordEditor | Режим редактирования записи | record, onSave, onCancel |
+| Компонент | Ответственность |
+|-----------|-----------------|
+| SearchInput | Универсальное поле ввода с debounce |
+| RecordList | Список записей с действиями |
+| TagCloud | Облако тегов с кликабельными элементами |
+| AutoComplete | Dropdown с подсказками |
+| LoadingIndicator | Индикатор поиска/загрузки |
 
-### 5.2 CLI команды
-
-```bash
-misc add "content"       # Создать запись
-misc search "query"      # Найти записи  
-misc edit <id>          # Редактировать
-misc delete <id>        # Удалить
-misc export             # Экспорт данных
-misc import <file>      # Импорт данных
-misc stats              # Статистика тегов
-misc cloud "query"      # Показать облако тегов для запроса
-```
-
-## 6. Shared UI Logic
-
-### 6.1 Презентеры
+### 5.2 Состояния UI
 
 ```typescript
-interface RecordPresenter {
-  // Форматирование записей для отображения
-  format(record: RecordDTO): string
-  formatList(records: RecordDTO[]): string[]
-}
-
-interface TagCloudPresenter {
-  // Подготовка облака тегов
-  prepareCloud(tags: TagWithCount[]): TagCloudItemDTO[]
-  // Логика:
-  // - Сортировка по частоте (убывание)  
-  // - Линейный расчёт размера: minSize + (freq/maxFreq) * (maxSize - minSize)
-  // - Размеры от 1 до 5
-}
-
-interface SearchResultPresenter {
-  // Определение режима отображения
-  determineMode(
-    records: RecordDTO[], 
-    containerHeight: number,
-    recordHeight: number
-  ): 'list' | 'cloud'
-  // Логика:
-  // - Если records.length * recordHeight > containerHeight → 'cloud'
-  // - Иначе → 'list'
-}
-
-interface AutoCompletePresenter {
-  // Формирование подсказок
-  prepareSuggestions(
-    input: string,
-    tags: Tag[],
-    limit: number = 10
-  ): string[]
-  // Возвращает нормализованные значения тегов
-}
-
-interface LoadingPresenter {
-  // Управление индикаторами загрузки
-  showSearchIndicator(isSearching: boolean): void
-  showDebounceIndicator(isDebouncing: boolean): void
-}
+type UIMode = 
+  | { type: 'empty' }
+  | { type: 'searching'; query: string }
+  | { type: 'list'; records: RecordDTO[] }
+  | { type: 'cloud'; tags: TagCloudItemDTO[] }
+  | { type: 'creating'; content: string }
+  | { type: 'editing'; record: RecordDTO }
+  | { type: 'no-results'; query: string }
 ```
 
-### 6.2 Состояния интерфейса
+### 5.3 Презентеры
 
 ```typescript
-enum UIState {
-  Empty,           // Начальное состояние, пустое поле
-  Typing,          // Пользователь вводит текст
-  Debouncing,      // Ожидание окончания ввода
-  Searching,       // Идёт поиск
-  ShowingList,     // Отображение списка записей
-  ShowingCloud,    // Отображение облака тегов
-  NoResults,       // Ничего не найдено
-  Creating,        // Режим создания записи
-  Editing,         // Режим редактирования записи
-  Error            // Состояние ошибки
+class SearchResultPresenter {
+  determineMode(records: RecordDTO[], containerHeight: number): 'list' | 'cloud' {
+    const estimatedHeight = records.length * 60; // 60px на запись
+    return estimatedHeight > containerHeight ? 'cloud' : 'list';
+  }
 }
 
-interface UIStateData {
-  state: UIState
-  searchQuery?: string
-  results?: SearchResultDTO
-  editingRecord?: RecordDTO
-  error?: string
+class TagCloudPresenter {
+  prepareCloud(tags: TagWithCount[]): TagCloudItemDTO[] {
+    const maxCount = Math.max(...tags.map(t => t.count));
+    return tags
+      .sort((a, b) => b.count - a.count)
+      .map(tag => ({
+        value: tag.normalizedValue,
+        count: tag.count,
+        size: Math.ceil((tag.count / maxCount) * 5) // размер 1-5
+      }));
+  }
 }
 ```
 
-## 7. Конфигурация
+## 6. Конфигурация
 
-### 7.1 Параметры приложения
+```typescript
+interface AppConfig {
+  tags: {
+    maxLength: number;        // 100
+    maxPerRecord: number;     // 50
+  };
+  normalization: {
+    caseSensitive: boolean;   // false
+    removeAccents: boolean;   // false
+  };
+  search: {
+    debounceMs: number;       // 300
+    liveSearch: boolean;      // true
+  };
+  display: {
+    recordHeight: number;     // 60
+  };
+  storage: {
+    maxSizeMB: number;        // 5
+  };
+}
+```
 
-| Параметр | По умолчанию | Описание |
-|----------|--------------|----------|
-| tags.maxLength | 100 | Максимальная длина тега |
-| tags.caseSensitive | false | Учитывать регистр при поиске |
-| tags.maxPerRecord | 50 | Максимум тегов в записи |
-| normalization.removeAccents | false | Удалять диакритические знаки |
-| normalization.transliterate | false | Транслитерация кириллицы |
-| search.liveSearch | true | Поиск при вводе |
-| search.debounceMs | 300 | Задержка поиска |
-| display.recordHeight | 60 | Примерная высота записи в пикселях |
-| display.minCloudTags | 10 | Минимум тегов для отображения облака |
-| storage.maxSizeMB | 5 | Лимит для localStorage |
-| storage.cleanupThreshold | 0.9 | Порог для очистки (90% от лимита) |
+## 7. Алгоритм работы основного интерфейса
 
-## 8. Миграция Прототип → MVP
+### Поток ввода в единое поле:
 
-### 8.1 Этапы
+```
+Пользователь вводит текст
+    ↓
+Debounce 300ms
+    ↓
+Поиск записей
+    ↓
+Найдено?
+  ├─ Да → Помещается на экран?
+  │       ├─ Да → Показать список
+  │       └─ Нет → Показать облако тегов
+  └─ Нет → Предложить создать запись
+          └─ Enter → Создать
+```
 
-1. **Экспорт**: Use case ExportData создаёт JSON со всеми записями
-2. **Deploy Backend**: Развёртывание API сервера и PostgreSQL
-3. **Миграция структуры**: Конвертация localStorage формата в БД
-4. **Импорт**: Use case ImportData загружает данные в PostgreSQL
-5. **Переключение**: Frontend начинает работать через REST API
+### Клавиатурные команды:
+- **Enter**: Создать запись / Открыть для редактирования
+- **Escape**: Очистить поле
+- **Tab**: Автодополнение
+- **↑/↓**: Навигация по списку
+- **Delete**: Удалить выбранную запись
 
-### 8.2 Что меняется
+## 8. Требования к производительности
 
-| Компонент | Прототип | MVP |
-|-----------|----------|-----|
-| Tags | В localStorage как объекты | Таблица tags в PostgreSQL |
-| Records | localStorage с tagIds | Таблица records + record_tags |
-| Search | По индексу в памяти | SQL JOIN запросы |
-| Repository | LocalStorageAdapter | PostgreSQLAdapter |
-| Use Cases | Выполняются в браузере | Выполняются на сервере |
-| Frontend | Прямой вызов use cases | HTTP API вызовы |
-
-### 8.3 Сохранение обратной совместимости
-
-- UUID тегов и записей сохраняются при миграции
-- Структура DTO остаётся неизменной
-- API use cases не меняется
-
-## 9. Требования к производительности
-
-| Операция | Целевое время | При объёме |
-|----------|---------------|------------|
-| Поиск | < 100мс | 10,000 записей, 50,000 тегов |
+| Операция | Цель | При объёме |
+|----------|------|------------|
+| Поиск | < 100мс | 10,000 записей |
 | Сохранение | < 50мс | - |
-| Автодополнение | < 50мс | 10,000 уникальных тегов |
-| Загрузка приложения | < 2с | 1,000 записей |
-| Определение режима отображения | < 10мс | 100 записей |
-| Рендер облака тегов | < 100мс | 500 тегов |
-| Экспорт | < 5с | 10,000 записей |
+| Автодополнение | < 50мс | 10,000 тегов |
+| Определение режима | < 10мс | 100 записей |
 
-## 10. Подготовка к будущим функциям
+## 9. Подготовка к будущему (НЕ реализуем в прототипе)
 
-### 10.1 Переименование тегов
+### Что заложено в структуре:
+1. **Tags как entities** - позволит переименование
+2. **UUID для всего** - позволит синхронизацию
+3. **Нормализация в одном месте** - легко изменить правила
+4. **Чистые слои** - легко заменить localStorage на API
 
-**Что подготовлено:**
-- Tags как entities с UUID
-- Метод batchUpdate в RecordRepository
-- Событие TagRenamed
-- Структура данных позволяет изменить normalized_value
+### Что НЕ делаем сейчас:
+1. ❌ События и EventBus
+2. ❌ Переименование тегов
+3. ❌ Слияние тегов
+4. ❌ История изменений
+5. ❌ Синхронизация
+6. ❌ Сложная валидация
 
-**Что потребуется добавить:**
-- UI для переименования
-- Use case RenameTag
-- Обновление content в затронутых записях
+## 10. Критерии готовности прототипа
 
-### 10.2 Слияние тегов
+**Domain Layer:**
+- [ ] Record с content и Set<TagId>
+- [ ] Tag с id и normalizedValue
+- [ ] Сервисы парсинга и нормализации
+- [ ] Валидация токенов
 
-**Что подготовлено:**
-- Уникальность на уровне набора tagIds
-- Метод deleteUnused в TagRepository
+**Application Layer:**
+- [ ] CreateRecord use case
+- [ ] SearchRecords с автоопределением режима
+- [ ] UpdateRecord с проверкой дубликатов
+- [ ] DeleteRecord с очисткой тегов
+- [ ] GetTagSuggestions для автодополнения
 
-**Что потребуется добавить:**
-- Use case MergeTags
-- UI для выбора тегов для слияния
-- Логика переназначения tagIds
+**Infrastructure Layer:**
+- [ ] localStorage адаптеры
+- [ ] Индексы для быстрого поиска
+- [ ] Экспорт/импорт JSON
 
-### 10.3 Теги-синонимы
+**Presentation Layer:**
+- [ ] Единое поле ввода
+- [ ] Автопереключение список/облако
+- [ ] Клавиатурная навигация
+- [ ] Индикаторы загрузки
 
-**Что подготовлено:**
-- Архитектура позволяет несколько normalized значений указывать на один tagId
-
-**Что потребуется добавить:**
-- Таблица tag_synonyms
-- Расширение поиска для учёта синонимов
-
-## 11. Критерии готовности архитектуры
-
-- [ ] Tag инкапсулирует идентичность и нормализованное значение
-- [ ] Record хранит content как единую строку с оригинальным написанием
-- [ ] Record хранит упорядоченный массив tagIds
-- [ ] Поиск работает по нормализованным значениям через Tag entities
-- [ ] Автодополнение показывает нормализованные значения
-- [ ] Режим отображения (список/облако) определяется автоматически
-- [ ] Индикаторы загрузки отображаются при поиске
-- [ ] Use cases оперируют доменными объектами, не знают о деталях хранения
-- [ ] Замена localStorage на PostgreSQL требует изменения только в Infrastructure слое
-- [ ] Web и CLI используют одни и те же use cases через разные презентационные слои
-- [ ] Подготовлена база для переименования тегов без breaking changes
+**Тестирование:**
+- [ ] 95% покрытие Domain
+- [ ] 90% покрытие Use Cases
+- [ ] Интеграционные тесты Storage
