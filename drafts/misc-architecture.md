@@ -1,4 +1,4 @@
-# MISC - Архитектурная спецификация (v5.1 - Упрощённая)
+# MISC - Архитектурная спецификация (v5.2 - Обновленный импорт/экспорт)
 
 ## 1. Обзор архитектуры
 
@@ -119,14 +119,9 @@
 **Описание**: Сервис парсинга content в теги.
 
 **Методы:**
-- `parse(content: RecordContent, normalizer: TagNormalizer): ParsedTag[]`
+- `parse(content: RecordContent, normalizer: TagNormalizer): string[]`
 
-```typescript
-interface ParsedTag {
-  originalValue: string     // "ToDo"
-  normalizedValue: string   // "todo"
-}
-```
+**Возвращает**: Массив нормализованных значений тегов для поиска/создания Tag entities
 
 #### TagValidator
 **Описание**: Валидация токенов.
@@ -219,16 +214,22 @@ interface ParsedTag {
 **Логика:**
 1. Получаем все записи
 2. Формируем JSON с content и метаданными
-3. НЕ экспортируем внутренние ID тегов
+3. НЕ экспортируем UUID записей и тегов (только content и даты)
 
 #### ImportData
 **Вход:** `{ data: string, format: 'json' }`
 **Выход:** `ImportResultDTO`
 **Логика:**
-1. Парсим JSON
-2. Для каждой записи выполняем логику CreateRecord
-3. Пропускаем дубликаты
-4. Возвращаем статистику
+1. **ПОЛНЫЙ ИМПОРТ**: Удаляем все существующие записи и теги
+2. Парсим JSON данные
+3. Для каждой записи из импорта:
+   - Парсим content
+   - Создаём новые теги (с новыми UUID)
+   - Создаём новую запись (с новым UUID)
+   - Сохраняем в репозитории
+4. Возвращаем статистику импорта
+
+**⚠️ Важно**: Импорт полностью заменяет все данные в системе!
 
 ### 3.2 Порты (интерфейсы для Infrastructure)
 
@@ -239,6 +240,7 @@ interface RecordRepository {
   findByTagIds(tagIds: Set<TagId>): Promise<Record[]>
   findAll(): Promise<Record[]>
   delete(id: RecordId): Promise<void>
+  deleteAll(): Promise<void>  // Для полного импорта
   update(record: Record): Promise<void>
 }
 
@@ -248,6 +250,7 @@ interface TagRepository {
   findByNormalizedValue(value: string): Promise<Tag | null>
   findByIds(ids: Set<TagId>): Promise<Map<TagId, Tag>>
   findAll(): Promise<Tag[]>
+  deleteAll(): Promise<void>  // Для полного импорта
   deleteUnused(): Promise<number>
 }
 ```
@@ -278,7 +281,7 @@ interface TagCloudItemDTO {
 interface ExportDTO {
   version: string
   records: Array<{
-    content: string
+    content: string      // Только content - UUID не экспортируются
     createdAt: string
     updatedAt: string
   }>
@@ -289,9 +292,9 @@ interface ExportDTO {
 }
 
 interface ImportResultDTO {
-  imported: number
-  skipped: number
-  errors: string[]
+  imported: number     // Количество импортированных записей
+  errors: string[]     // Ошибки парсинга, если были
+  replacedAll: boolean // true - всегда полная замена данных
 }
 ```
 
@@ -351,17 +354,9 @@ interface ImportResultDTO {
 
 ### 4.2 Адаптеры
 
-```typescript
-class LocalStorageRecordRepository implements RecordRepository {
-  // Реализация через localStorage
-  // Использует indexes для быстрого поиска
-}
-
-class LocalStorageTagRepository implements TagRepository {
-  // Реализация через localStorage
-  // Поддерживает indexes в актуальном состоянии
-}
-```
+Реализация репозиториев через localStorage с поддержкой:
+- Индексов для быстрого поиска
+- Метода deleteAll() для полного импорта
 
 ## 5. Presentation Layer
 
@@ -374,6 +369,7 @@ class LocalStorageTagRepository implements TagRepository {
 | TagCloud | Облако тегов с кликабельными элементами |
 | AutoComplete | Dropdown с подсказками |
 | LoadingIndicator | Индикатор поиска/загрузки |
+| ImportExport | Компонент для работы с данными |
 
 ### 5.2 Состояния UI
 
@@ -386,31 +382,17 @@ type UIMode =
   | { type: 'creating'; content: string }
   | { type: 'editing'; record: RecordDTO }
   | { type: 'no-results'; query: string }
+  | { type: 'importing'; progress?: number }
+  | { type: 'export-ready'; data: ExportDTO }
 ```
 
 ### 5.3 Презентеры
 
-```typescript
-class SearchResultPresenter {
-  determineMode(records: RecordDTO[], containerHeight: number): 'list' | 'cloud' {
-    const estimatedHeight = records.length * 60; // 60px на запись
-    return estimatedHeight > containerHeight ? 'cloud' : 'list';
-  }
-}
+**SearchResultPresenter**: Определяет режим отображения (список/облако) на основе количества записей и размера контейнера.
 
-class TagCloudPresenter {
-  prepareCloud(tags: TagWithCount[]): TagCloudItemDTO[] {
-    const maxCount = Math.max(...tags.map(t => t.count));
-    return tags
-      .sort((a, b) => b.count - a.count)
-      .map(tag => ({
-        value: tag.normalizedValue,
-        count: tag.count,
-        size: Math.ceil((tag.count / maxCount) * 5) // размер 1-5
-      }));
-  }
-}
-```
+**TagCloudPresenter**: Подготавливает данные для облака тегов с расчетом размеров и сортировкой по частоте.
+
+**ImportExportPresenter**: Подготавливает имена файлов для экспорта и валидирует данные импорта.
 
 ## 6. Конфигурация
 
@@ -434,6 +416,10 @@ interface AppConfig {
   storage: {
     maxSizeMB: number;        // 5
   };
+  importExport: {
+    warningThreshold: number; // 1000 записей
+    backupBeforeImport: boolean; // true
+  };
 }
 ```
 
@@ -456,6 +442,18 @@ Debounce 300ms
           └─ Enter → Создать
 ```
 
+### Поток импорта/экспорта:
+
+```
+Экспорт:
+  Пользователь → Кнопка "Экспорт" → JSON файл (без UUID)
+
+Импорт:
+  Пользователь → Выбирает файл → Предупреждение о замене всех данных
+    ↓
+  Подтверждение → Полное удаление → Импорт записей → Создание новых UUID
+```
+
 ### Клавиатурные команды:
 - **Enter**: Создать запись / Открыть для редактирования
 - **Escape**: Очистить поле
@@ -471,14 +469,32 @@ Debounce 300ms
 | Сохранение | < 50мс | - |
 | Автодополнение | < 50мс | 10,000 тегов |
 | Определение режима | < 10мс | 100 записей |
+| Полный импорт | < 2сек | 1,000 записей |
+| Экспорт | < 1сек | 10,000 записей |
 
-## 9. Подготовка к будущему (НЕ реализуем в прототипе)
+## 9. Безопасность импорта/экспорта
+
+### Экспорт:
+- **Не экспортируются**: UUID записей и тегов
+- **Экспортируются**: Content, даты создания/обновления
+- **Формат**: Стандартный JSON с версионированием
+- **Размер**: Предупреждение при экспорте > 1000 записей
+
+### Импорт:
+- **Полная замена**: Все существующие данные удаляются
+- **Предупреждение**: Обязательное подтверждение пользователя
+- **Резервная копия**: Автоматическое создание перед импортом
+- **Валидация**: Проверка структуры JSON перед импортом
+- **Новые UUID**: Все записи и теги получают новые идентификаторы
+
+## 10. Подготовка к будущему (НЕ реализуем в прототипе)
 
 ### Что заложено в структуре:
 1. **Tags как entities** - позволит переименование
 2. **UUID для всего** - позволит синхронизацию
 3. **Нормализация в одном месте** - легко изменить правила
 4. **Чистые слои** - легко заменить localStorage на API
+5. **Версионирование экспорта** - позволит миграции формата
 
 ### Что НЕ делаем сейчас:
 1. ❌ События и EventBus
@@ -486,9 +502,10 @@ Debounce 300ms
 3. ❌ Слияние тегов
 4. ❌ История изменений
 5. ❌ Синхронизация
-6. ❌ Сложная валидация
+6. ❌ Инкрементальный импорт
+7. ❌ Сложная валидация
 
-## 10. Критерии готовности прототипа
+## 11. Критерии готовности прототипа
 
 **Domain Layer:**
 - [ ] Record с content и Set<TagId>
@@ -502,10 +519,13 @@ Debounce 300ms
 - [ ] UpdateRecord с проверкой дубликатов
 - [ ] DeleteRecord с очисткой тегов
 - [ ] GetTagSuggestions для автодополнения
+- [ ] ExportData без UUID
+- [ ] ImportData с полной заменой
 
 **Infrastructure Layer:**
 - [ ] localStorage адаптеры
 - [ ] Индексы для быстрого поиска
+- [ ] deleteAll() методы для импорта
 - [ ] Экспорт/импорт JSON
 
 **Presentation Layer:**
@@ -513,8 +533,10 @@ Debounce 300ms
 - [ ] Автопереключение список/облако
 - [ ] Клавиатурная навигация
 - [ ] Индикаторы загрузки
+- [ ] UI импорта/экспорта с предупреждениями
 
 **Тестирование:**
 - [ ] 95% покрытие Domain
 - [ ] 90% покрытие Use Cases
 - [ ] Интеграционные тесты Storage
+- [ ] Тесты импорта/экспорта с проверкой полной замены
