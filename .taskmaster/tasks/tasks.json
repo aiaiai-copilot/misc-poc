@@ -1,545 +1,639 @@
 {
-  "version": "1.0",
-  "tasks": [
-    {
-      "id": 1,
-      "title": "Phase 0: Project Infrastructure Setup",
-      "description": "Initialize monorepo with yarn workspaces, TypeScript, testing and CI/CD",
-      "details": "Set up complete development infrastructure including yarn workspaces configuration, TypeScript setup across all packages, Jest testing framework, ESLint and Prettier for code quality, Husky pre-commit hooks, and GitHub Actions CI/CD pipeline",
-      "testStrategy": "Verify yarn test works in all packages, CI triggers on push, linting passes, folder structure matches specification",
-      "status": "pending",
-      "priority": "high",
-      "dependencies": [],
-      "createdAt": "2024-12-28T10:00:00Z",
-      "updatedAt": "2024-12-28T10:00:00Z"
-    },
-    {
-      "id": 2,
-      "title": "Phase 1: Domain Layer - Value Objects",
-      "description": "Implement all value objects with TDD approach",
-      "details": "Create RecordId, TagId, RecordContent, SearchQuery value objects with full validation, factories, and comprehensive tests. Must achieve >95% test coverage",
-      "testStrategy": "TDD with tests written first, all value objects immutable, validation rules enforced, factories work correctly",
-      "status": "pending",
-      "priority": "high",
-      "dependencies": [1],
-      "createdAt": "2024-12-28T10:00:00Z",
-      "updatedAt": "2024-12-28T10:00:00Z"
-    },
-    {
-      "id": 3,
-      "title": "Phase 1: Domain Layer - Entities",
-      "description": "Implement Record and Tag entities with invariants",
-      "details": "Create Tag entity with normalized value, Record entity with content and tags, implement factories with restore capability, validate all invariants",
-      "testStrategy": "TDD approach, entities immutable, invariants enforced, equals methods work correctly",
-      "status": "pending",
-      "priority": "high",
-      "dependencies": [2],
-      "createdAt": "2024-12-28T10:00:00Z",
-      "updatedAt": "2024-12-28T10:00:00Z"
-    },
-    {
-      "id": 4,
-      "title": "Phase 1: Domain Layer - Services",
-      "description": "Implement domain services for tag processing",
-      "details": "Create TagNormalizer with diacritics handling, TagValidator with rules, TagParser for content parsing, RecordMatcher for search, RecordDuplicateChecker",
-      "testStrategy": "TDD with comprehensive test cases, handle Unicode correctly, normalization configurable",
-      "status": "pending",
-      "priority": "high",
-      "dependencies": [3],
-      "createdAt": "2024-12-28T10:00:00Z",
-      "updatedAt": "2024-12-28T10:00:00Z"
-    },
-    {
-      "id": 5,
-      "title": "Phase 1: Domain Layer - Error Handling",
-      "description": "Create domain errors hierarchy and Result type",
-      "details": "Implement DomainError base class, specific error types (InvalidRecordContent, InvalidTag, DuplicateRecord, TagLimitExceeded), Result type utilities",
-      "testStrategy": "All error cases covered, Result type handles success/failure, error messages informative",
-      "status": "pending",
-      "priority": "high",
-      "dependencies": [4],
-      "createdAt": "2024-12-28T10:00:00Z",
-      "updatedAt": "2024-12-28T10:00:00Z"
-    },
-    {
-      "id": 6,
-      "title": "Phase 2: Application Layer - Ports",
-      "description": "Define repository interfaces and UnitOfWork",
-      "details": "Create RecordRepository and TagRepository interfaces, define UnitOfWork pattern for transactions, establish port boundaries",
-      "testStrategy": "Interfaces follow dependency inversion, no implementation details leak, support all needed operations",
-      "status": "pending",
-      "priority": "high",
-      "dependencies": [5],
-      "createdAt": "2024-12-28T10:00:00Z",
-      "updatedAt": "2024-12-28T10:00:00Z"
-    },
-    {
-      "id": 7,
-      "title": "Phase 2: CreateRecord Use Case",
-      "description": "Implement record creation with validation and duplicate check",
-      "details": "Parse content into tags, validate each token, normalize tags, find or create tag entities, check for duplicates, save record with transaction",
-      "testStrategy": "TDD with mock repositories, handle all validation cases, prevent duplicates, transaction rollback on error",
-      "status": "pending",
-      "priority": "high",
-      "dependencies": [6],
-      "createdAt": "2024-12-28T10:00:00Z",
-      "updatedAt": "2024-12-28T10:00:00Z"
-    },
-    {
-      "id": 8,
-      "title": "Phase 2: SearchRecords Use Case",
-      "description": "Implement search with automatic mode detection",
-      "details": "Parse and normalize query, find matching records with AND logic, detect display mode (list/cloud), build appropriate result DTO",
-      "testStrategy": "Test with various query combinations, mode detection works correctly, performance acceptable",
-      "status": "pending",
-      "priority": "high",
-      "dependencies": [7],
-      "createdAt": "2024-12-28T10:00:00Z",
-      "updatedAt": "2024-12-28T10:00:00Z"
-    },
-    {
-      "id": 9,
-      "title": "Phase 2: UpdateRecord Use Case",
-      "description": "Implement record update with tag cleanup",
-      "details": "Find existing record, parse new content, update tags, check for duplicates excluding current record, cleanup unused tags after update",
-      "testStrategy": "TDD approach, handle tag changes correctly, prevent creating duplicates, cleanup works",
-      "status": "pending",
-      "priority": "high",
-      "dependencies": [8],
-      "createdAt": "2024-12-28T10:00:00Z",
-      "updatedAt": "2024-12-28T10:00:00Z"
-    },
-    {
-      "id": 10,
-      "title": "Phase 2: DeleteRecord Use Case",
-      "description": "Implement record deletion with tag cleanup",
-      "details": "Delete record by ID, identify and remove unused tags, maintain referential integrity",
-      "testStrategy": "Record deleted successfully, unused tags removed, tags used by other records preserved",
-      "status": "pending",
-      "priority": "high",
-      "dependencies": [9],
-      "createdAt": "2024-12-28T10:00:00Z",
-      "updatedAt": "2024-12-28T10:00:00Z"
-    },
-    {
-      "id": 11,
-      "title": "Phase 2: GetTagSuggestions Use Case",
-      "description": "Implement autocomplete suggestions for tags",
-      "details": "Find tags by prefix after normalization, limit results, sort by usage frequency",
-      "testStrategy": "Suggestions match partial input, respect limit, sorted correctly",
-      "status": "pending",
-      "priority": "medium",
-      "dependencies": [10],
-      "createdAt": "2024-12-28T10:00:00Z",
-      "updatedAt": "2024-12-28T10:00:00Z"
-    },
-    {
-      "id": 12,
-      "title": "Phase 2: ImportData Use Case",
-      "description": "Implement full data import with replacement",
-      "details": "Validate JSON format, delete all existing data, parse and import records, generate new IDs for all entities, create backup before import",
-      "testStrategy": "Test validation, full replacement works, handles errors gracefully, backup created",
-      "status": "pending",
-      "priority": "high",
-      "dependencies": [11],
-      "createdAt": "2024-12-28T10:00:00Z",
-      "updatedAt": "2024-12-28T10:00:00Z"
-    },
-    {
-      "id": 13,
-      "title": "Phase 2: ExportData Use Case",
-      "description": "Implement data export without internal IDs",
-      "details": "Export all records with content and dates only, exclude UUID identifiers, add metadata with version and normalization rules",
-      "testStrategy": "Export format valid JSON, no UUIDs included, metadata complete",
-      "status": "pending",
-      "priority": "high",
-      "dependencies": [12],
-      "createdAt": "2024-12-28T10:00:00Z",
-      "updatedAt": "2024-12-28T10:00:00Z"
-    },
-    {
-      "id": 14,
-      "title": "Phase 2: Application Services",
-      "description": "Create SearchModeDetector and TagCloudBuilder services",
-      "details": "Implement SearchModeDetector for UI mode selection, TagCloudBuilder for tag frequency analysis, ImportValidator, ExportFormatter",
-      "testStrategy": "Mode detection accurate, tag cloud calculates sizes correctly, validators work",
-      "status": "pending",
-      "priority": "medium",
-      "dependencies": [13],
-      "createdAt": "2024-12-28T10:00:00Z",
-      "updatedAt": "2024-12-28T10:00:00Z"
-    },
-    {
-      "id": 15,
-      "title": "Phase 2: Application Container",
-      "description": "Set up dependency injection container",
-      "details": "Create ApplicationContainer with all use cases and services, implement ApplicationContainerFactory, configure DI",
-      "testStrategy": "Container initializes correctly, dependencies resolved, no circular dependencies",
-      "status": "pending",
-      "priority": "medium",
-      "dependencies": [14],
-      "createdAt": "2024-12-28T10:00:00Z",
-      "updatedAt": "2024-12-28T10:00:00Z"
-    },
-    {
-      "id": 16,
-      "title": "Phase 3: Storage Manager",
-      "description": "Implement localStorage management with schema",
-      "details": "Create StorageSchema definition, implement StorageManager with serialization, handle quota limits",
-      "testStrategy": "Serialization/deserialization works, handles storage quota, version migrations",
-      "status": "pending",
-      "priority": "high",
-      "dependencies": [15],
-      "createdAt": "2024-12-28T10:00:00Z",
-      "updatedAt": "2024-12-28T10:00:00Z"
-    },
-    {
-      "id": 17,
-      "title": "Phase 3: Index Manager",
-      "description": "Create indexing system for performance",
-      "details": "Implement IndexManager for tag-to-records and normalized-to-tag mappings, maintain indexes on changes",
-      "testStrategy": "Indexes updated correctly, O(1) lookups work, rebuild from scratch works",
-      "status": "pending",
-      "priority": "high",
-      "dependencies": [16],
-      "createdAt": "2024-12-28T10:00:00Z",
-      "updatedAt": "2024-12-28T10:00:00Z"
-    },
-    {
-      "id": 18,
-      "title": "Phase 3: LocalStorageRecordRepository",
-      "description": "Implement record repository with localStorage",
-      "details": "Create CRUD operations for records, implement search by tags with AND logic, support deleteAll for import",
-      "testStrategy": "All CRUD operations work, search performs well, indexes maintained",
-      "status": "pending",
-      "priority": "high",
-      "dependencies": [17],
-      "createdAt": "2024-12-28T10:00:00Z",
-      "updatedAt": "2024-12-28T10:00:00Z"
-    },
-    {
-      "id": 19,
-      "title": "Phase 3: LocalStorageTagRepository",
-      "description": "Implement tag repository with localStorage",
-      "details": "Create CRUD for tags, implement prefix search for autocomplete, usage tracking, cleanup unused tags",
-      "testStrategy": "Tag operations work, autocomplete fast, usage count accurate",
-      "status": "pending",
-      "priority": "high",
-      "dependencies": [18],
-      "createdAt": "2024-12-28T10:00:00Z",
-      "updatedAt": "2024-12-28T10:00:00Z"
-    },
-    {
-      "id": 20,
-      "title": "Phase 3: LocalStorageUnitOfWork",
-      "description": "Implement Unit of Work pattern",
-      "details": "Create transaction semantics for localStorage, implement commit/rollback, ensure consistency",
-      "testStrategy": "Transactions atomic, rollback works on error, no partial updates",
-      "status": "pending",
-      "priority": "high",
-      "dependencies": [19],
-      "createdAt": "2024-12-28T10:00:00Z",
-      "updatedAt": "2024-12-28T10:00:00Z"
-    },
-    {
-      "id": 21,
-      "title": "Phase 3: Migration Manager",
-      "description": "Handle schema versioning and migrations",
-      "details": "Implement version detection, create migration scripts, handle backward compatibility",
-      "testStrategy": "Old versions migrate correctly, data preserved, version tracking works",
-      "status": "pending",
-      "priority": "medium",
-      "dependencies": [20],
-      "createdAt": "2024-12-28T10:00:00Z",
-      "updatedAt": "2024-12-28T10:00:00Z"
-    },
-    {
-      "id": 22,
-      "title": "Phase 4: React Application Setup",
-      "description": "Initialize React app with Vite",
-      "details": "Configure Vite bundler, set up React with TypeScript, create base component structure, configure CSS modules",
-      "testStrategy": "App builds and runs, HMR works, TypeScript configured",
-      "status": "pending",
-      "priority": "high",
-      "dependencies": [21],
-      "createdAt": "2024-12-28T10:00:00Z",
-      "updatedAt": "2024-12-28T10:00:00Z"
-    },
-    {
-      "id": 23,
-      "title": "Phase 4: Application Context",
-      "description": "Set up React contexts and providers",
-      "details": "Create ApplicationContext for DI container, ConfigContext for settings, UIStateContext for UI state",
-      "testStrategy": "Contexts provide values correctly, no unnecessary re-renders",
-      "status": "pending",
-      "priority": "high",
-      "dependencies": [22],
-      "createdAt": "2024-12-28T10:00:00Z",
-      "updatedAt": "2024-12-28T10:00:00Z"
-    },
-    {
-      "id": 24,
-      "title": "Phase 4: SearchInput Component",
-      "description": "Create main input field with debounce",
-      "details": "Implement universal input for search and create, add debounce logic, handle Enter key for creation",
-      "testStrategy": "Debounce works, keyboard handling correct, state management works",
-      "status": "pending",
-      "priority": "high",
-      "dependencies": [23],
-      "createdAt": "2024-12-28T10:00:00Z",
-      "updatedAt": "2024-12-28T10:00:00Z"
-    },
-    {
-      "id": 25,
-      "title": "Phase 4: RecordList Component",
-      "description": "Implement record list with actions",
-      "details": "Create RecordList and RecordItem components, add edit/delete actions, implement selection",
-      "testStrategy": "Records display correctly, actions work, keyboard navigation works",
-      "status": "pending",
-      "priority": "high",
-      "dependencies": [24],
-      "createdAt": "2024-12-28T10:00:00Z",
-      "updatedAt": "2024-12-28T10:00:00Z"
-    },
-    {
-      "id": 26,
-      "title": "Phase 4: TagCloud Component",
-      "description": "Create interactive tag cloud",
-      "details": "Implement tag cloud with size calculation, click handling for search, smooth animations",
-      "testStrategy": "Sizes calculated correctly, clicks update search, responsive layout",
-      "status": "pending",
-      "priority": "high",
-      "dependencies": [25],
-      "createdAt": "2024-12-28T10:00:00Z",
-      "updatedAt": "2024-12-28T10:00:00Z"
-    },
-    {
-      "id": 27,
-      "title": "Phase 4: AutoComplete Component",
-      "description": "Implement tag suggestions dropdown",
-      "details": "Create dropdown with suggestions, keyboard navigation, click to select, integrate with SearchInput",
-      "testStrategy": "Suggestions appear on type, keyboard nav works, selection updates input",
-      "status": "pending",
-      "priority": "medium",
-      "dependencies": [26],
-      "createdAt": "2024-12-28T10:00:00Z",
-      "updatedAt": "2024-12-28T10:00:00Z"
-    },
-    {
-      "id": 28,
-      "title": "Phase 4: Import/Export UI",
-      "description": "Create file upload and download interface",
-      "details": "Implement ImportExport components, file upload handling, progress indicators, error states",
-      "testStrategy": "File upload works, download triggers, errors handled gracefully",
-      "status": "pending",
-      "priority": "medium",
-      "dependencies": [27],
-      "createdAt": "2024-12-28T10:00:00Z",
-      "updatedAt": "2024-12-28T10:00:00Z"
-    },
-    {
-      "id": 29,
-      "title": "Phase 4: Keyboard Shortcuts",
-      "description": "Implement keyboard navigation",
-      "details": "Add keyboard shortcuts hook, implement navigation (arrows, Enter, Escape, Tab), focus management",
-      "testStrategy": "All shortcuts work, focus trapped correctly, accessibility maintained",
-      "status": "pending",
-      "priority": "medium",
-      "dependencies": [28],
-      "createdAt": "2024-12-28T10:00:00Z",
-      "updatedAt": "2024-12-28T10:00:00Z"
-    },
-    {
-      "id": 30,
-      "title": "Phase 4: Responsive Design",
-      "description": "Make UI adaptive for all screen sizes",
-      "details": "Implement responsive layouts, mobile-first approach, test on various devices",
-      "testStrategy": "Works on 320px width, tablet and desktop layouts optimal",
-      "status": "pending",
-      "priority": "medium",
-      "dependencies": [29],
-      "createdAt": "2024-12-28T10:00:00Z",
-      "updatedAt": "2024-12-28T10:00:00Z"
-    },
-    {
-      "id": 31,
-      "title": "Phase 4: Performance Optimization",
-      "description": "Optimize bundle size and runtime performance",
-      "details": "Implement code splitting, lazy loading, tree shaking, optimize re-renders",
-      "testStrategy": "Bundle < 500KB gzipped, FCP < 1.5s, TTI < 3s, 60 FPS",
-      "status": "pending",
-      "priority": "high",
-      "dependencies": [30],
-      "createdAt": "2024-12-28T10:00:00Z",
-      "updatedAt": "2024-12-28T10:00:00Z"
-    },
-    {
-      "id": 32,
-      "title": "Phase 4: Accessibility",
-      "description": "Ensure full accessibility compliance",
-      "details": "Add ARIA labels, ensure keyboard navigation, screen reader support, color contrast",
-      "testStrategy": "WCAG 2.1 AA compliance, screen reader testing, keyboard-only navigation",
-      "status": "pending",
-      "priority": "medium",
-      "dependencies": [31],
-      "createdAt": "2024-12-28T10:00:00Z",
-      "updatedAt": "2024-12-28T10:00:00Z"
-    },
-    {
-      "id": 33,
-      "title": "Phase 5: CLI Setup with Ink",
-      "description": "Initialize CLI application with Ink framework",
-      "details": "Set up Ink for terminal UI, create base component structure, integrate with application layer",
-      "testStrategy": "CLI runs, renders correctly, connects to application layer",
-      "status": "pending",
-      "priority": "low",
-      "dependencies": [15],
-      "createdAt": "2024-12-28T10:00:00Z",
-      "updatedAt": "2024-12-28T10:00:00Z"
-    },
-    {
-      "id": 34,
-      "title": "Phase 5: CLI Commands",
-      "description": "Implement add, search, update, delete commands",
-      "details": "Create command handlers, argument parsing, output formatting, error handling",
-      "testStrategy": "All commands work, arguments parsed correctly, errors handled",
-      "status": "pending",
-      "priority": "low",
-      "dependencies": [33],
-      "createdAt": "2024-12-28T10:00:00Z",
-      "updatedAt": "2024-12-28T10:00:00Z"
-    },
-    {
-      "id": 35,
-      "title": "Phase 5: Shell Integration",
-      "description": "Add autocomplete and aliases",
-      "details": "Create shell completion scripts, add aliases (tm, misc), man pages, installation script",
-      "testStrategy": "Autocomplete works in bash/zsh, aliases configured, man pages readable",
-      "status": "pending",
-      "priority": "low",
-      "dependencies": [34],
-      "createdAt": "2024-12-28T10:00:00Z",
-      "updatedAt": "2024-12-28T10:00:00Z"
-    },
-    {
-      "id": 36,
-      "title": "Testing: Domain Layer Tests",
-      "description": "Achieve >95% test coverage for domain",
-      "details": "Write comprehensive tests for all value objects, entities, services, ensure immutability, test invariants",
-      "testStrategy": "Coverage > 95%, all edge cases covered, tests run < 1s",
-      "status": "pending",
-      "priority": "high",
-      "dependencies": [5],
-      "createdAt": "2024-12-28T10:00:00Z",
-      "updatedAt": "2024-12-28T10:00:00Z"
-    },
-    {
-      "id": 37,
-      "title": "Testing: Application Layer Tests",
-      "description": "Achieve >90% test coverage for use cases",
-      "details": "Test all use cases with mocks, test error handling, validate business rules",
-      "testStrategy": "Coverage > 90%, mock repositories used, all paths tested",
-      "status": "pending",
-      "priority": "high",
-      "dependencies": [15],
-      "createdAt": "2024-12-28T10:00:00Z",
-      "updatedAt": "2024-12-28T10:00:00Z"
-    },
-    {
-      "id": 38,
-      "title": "Testing: Integration Tests",
-      "description": "Test interaction between layers",
-      "details": "Test repository implementations, storage persistence, data integrity, migration scenarios",
-      "testStrategy": "All integrations work, data persists correctly, migrations tested",
-      "status": "pending",
-      "priority": "high",
-      "dependencies": [21],
-      "createdAt": "2024-12-28T10:00:00Z",
-      "updatedAt": "2024-12-28T10:00:00Z"
-    },
-    {
-      "id": 39,
-      "title": "Testing: E2E Tests",
-      "description": "Test complete user journeys",
-      "details": "Test first time user flow, daily usage scenarios, import/export cycle, performance under load",
-      "testStrategy": "All user journeys work, performance acceptable, no data loss",
-      "status": "pending",
-      "priority": "medium",
-      "dependencies": [32],
-      "createdAt": "2024-12-28T10:00:00Z",
-      "updatedAt": "2024-12-28T10:00:00Z"
-    },
-    {
-      "id": 40,
-      "title": "Documentation: API Documentation",
-      "description": "Document all public APIs",
-      "details": "Create API documentation for domain, application, and infrastructure layers, include examples",
-      "testStrategy": "All public APIs documented, examples work, generated docs readable",
-      "status": "pending",
-      "priority": "low",
-      "dependencies": [38],
-      "createdAt": "2024-12-28T10:00:00Z",
-      "updatedAt": "2024-12-28T10:00:00Z"
-    },
-    {
-      "id": 41,
-      "title": "Documentation: User Guide",
-      "description": "Create end-user documentation",
-      "details": "Write getting started guide, feature documentation, troubleshooting, FAQ",
-      "testStrategy": "Documentation complete, examples clear, covers all features",
-      "status": "pending",
-      "priority": "low",
-      "dependencies": [39],
-      "createdAt": "2024-12-28T10:00:00Z",
-      "updatedAt": "2024-12-28T10:00:00Z"
-    },
-    {
-      "id": 42,
-      "title": "CI/CD: Production Build Pipeline",
-      "description": "Set up automated builds and deployments",
-      "details": "Configure production builds, minification, source maps, deployment to hosting",
-      "testStrategy": "Builds succeed, artifacts generated, deployment works",
-      "status": "pending",
-      "priority": "medium",
-      "dependencies": [39],
-      "createdAt": "2024-12-28T10:00:00Z",
-      "updatedAt": "2024-12-28T10:00:00Z"
-    },
-    {
-      "id": 43,
-      "title": "Release: Version 1.0 Preparation",
-      "description": "Prepare for first release",
-      "details": "Final testing, performance audit, security review, changelog, release notes",
-      "testStrategy": "All tests pass, performance targets met, no critical bugs",
-      "status": "pending",
-      "priority": "high",
-      "dependencies": [42],
-      "createdAt": "2024-12-28T10:00:00Z",
-      "updatedAt": "2024-12-28T10:00:00Z"
-    },
-    {
-      "id": 44,
-      "title": "Release: Deploy MVP",
-      "description": "Deploy to production environment",
-      "details": "Deploy web application, publish NPM packages, announce release, gather feedback",
-      "testStrategy": "Application accessible, packages published, monitoring active",
-      "status": "pending",
-      "priority": "high",
-      "dependencies": [43],
-      "createdAt": "2024-12-28T10:00:00Z",
-      "updatedAt": "2024-12-28T10:00:00Z"
-    },
-    {
-      "id": 45,
-      "title": "Post-Release: Monitor and Iterate",
-      "description": "Monitor usage and fix issues",
-      "details": "Monitor error rates, gather user feedback, prioritize fixes, plan next iteration",
-      "testStrategy": "Monitoring working, feedback collected, hotfixes deployed",
-      "status": "pending",
-      "priority": "medium",
-      "dependencies": [44],
-      "createdAt": "2024-12-28T10:00:00Z",
-      "updatedAt": "2024-12-28T10:00:00Z"
+  "master": {
+    "tasks": [
+      {
+        "id": 1,
+        "title": "Phase 0: Project Infrastructure Setup",
+        "description": "Initialize monorepo with yarn workspaces, TypeScript, testing and CI/CD",
+        "details": "Set up complete development infrastructure including yarn workspaces configuration, TypeScript setup across all packages, Jest testing framework, ESLint and Prettier for code quality, Husky pre-commit hooks, and GitHub Actions CI/CD pipeline",
+        "testStrategy": "Verify yarn test works in all packages, CI triggers on push, linting passes, folder structure matches specification",
+        "status": "pending",
+        "priority": "high",
+        "dependencies": [],
+        "createdAt": "2024-12-28T10:00:00Z",
+        "updatedAt": "2024-12-28T10:00:00Z"
+      },
+      {
+        "id": 2,
+        "title": "Phase 1: Domain Layer - Value Objects",
+        "description": "Implement all value objects with TDD approach",
+        "details": "Create RecordId, TagId, RecordContent, SearchQuery value objects with full validation, factories, and comprehensive tests. Must achieve >95% test coverage",
+        "testStrategy": "TDD with tests written first, all value objects immutable, validation rules enforced, factories work correctly",
+        "status": "pending",
+        "priority": "high",
+        "dependencies": [
+          1
+        ],
+        "createdAt": "2024-12-28T10:00:00Z",
+        "updatedAt": "2024-12-28T10:00:00Z"
+      },
+      {
+        "id": 3,
+        "title": "Phase 1: Domain Layer - Entities",
+        "description": "Implement Record and Tag entities with invariants",
+        "details": "Create Tag entity with normalized value, Record entity with content and tags, implement factories with restore capability, validate all invariants",
+        "testStrategy": "TDD approach, entities immutable, invariants enforced, equals methods work correctly",
+        "status": "pending",
+        "priority": "high",
+        "dependencies": [
+          2
+        ],
+        "createdAt": "2024-12-28T10:00:00Z",
+        "updatedAt": "2024-12-28T10:00:00Z"
+      },
+      {
+        "id": 4,
+        "title": "Phase 1: Domain Layer - Services",
+        "description": "Implement domain services for tag processing",
+        "details": "Create TagNormalizer with diacritics handling, TagValidator with rules, TagParser for content parsing, RecordMatcher for search, RecordDuplicateChecker",
+        "testStrategy": "TDD with comprehensive test cases, handle Unicode correctly, normalization configurable",
+        "status": "pending",
+        "priority": "high",
+        "dependencies": [
+          3
+        ],
+        "createdAt": "2024-12-28T10:00:00Z",
+        "updatedAt": "2024-12-28T10:00:00Z"
+      },
+      {
+        "id": 5,
+        "title": "Phase 1: Domain Layer - Error Handling",
+        "description": "Create domain errors hierarchy and Result type",
+        "details": "Implement DomainError base class, specific error types (InvalidRecordContent, InvalidTag, DuplicateRecord, TagLimitExceeded), Result type utilities",
+        "testStrategy": "All error cases covered, Result type handles success/failure, error messages informative",
+        "status": "pending",
+        "priority": "high",
+        "dependencies": [
+          4
+        ],
+        "createdAt": "2024-12-28T10:00:00Z",
+        "updatedAt": "2024-12-28T10:00:00Z"
+      },
+      {
+        "id": 6,
+        "title": "Phase 2: Application Layer - Ports",
+        "description": "Define repository interfaces and UnitOfWork",
+        "details": "Create RecordRepository and TagRepository interfaces, define UnitOfWork pattern for transactions, establish port boundaries",
+        "testStrategy": "Interfaces follow dependency inversion, no implementation details leak, support all needed operations",
+        "status": "pending",
+        "priority": "high",
+        "dependencies": [
+          5
+        ],
+        "createdAt": "2024-12-28T10:00:00Z",
+        "updatedAt": "2024-12-28T10:00:00Z"
+      },
+      {
+        "id": 7,
+        "title": "Phase 2: CreateRecord Use Case",
+        "description": "Implement record creation with validation and duplicate check",
+        "details": "Parse content into tags, validate each token, normalize tags, find or create tag entities, check for duplicates, save record with transaction",
+        "testStrategy": "TDD with mock repositories, handle all validation cases, prevent duplicates, transaction rollback on error",
+        "status": "pending",
+        "priority": "high",
+        "dependencies": [
+          6
+        ],
+        "createdAt": "2024-12-28T10:00:00Z",
+        "updatedAt": "2024-12-28T10:00:00Z"
+      },
+      {
+        "id": 8,
+        "title": "Phase 2: SearchRecords Use Case",
+        "description": "Implement search with automatic mode detection",
+        "details": "Parse and normalize query, find matching records with AND logic, detect display mode (list/cloud), build appropriate result DTO",
+        "testStrategy": "Test with various query combinations, mode detection works correctly, performance acceptable",
+        "status": "pending",
+        "priority": "high",
+        "dependencies": [
+          7
+        ],
+        "createdAt": "2024-12-28T10:00:00Z",
+        "updatedAt": "2024-12-28T10:00:00Z"
+      },
+      {
+        "id": 9,
+        "title": "Phase 2: UpdateRecord Use Case",
+        "description": "Implement record update with tag cleanup",
+        "details": "Find existing record, parse new content, update tags, check for duplicates excluding current record, cleanup unused tags after update",
+        "testStrategy": "TDD approach, handle tag changes correctly, prevent creating duplicates, cleanup works",
+        "status": "pending",
+        "priority": "high",
+        "dependencies": [
+          8
+        ],
+        "createdAt": "2024-12-28T10:00:00Z",
+        "updatedAt": "2024-12-28T10:00:00Z"
+      },
+      {
+        "id": 10,
+        "title": "Phase 2: DeleteRecord Use Case",
+        "description": "Implement record deletion with tag cleanup",
+        "details": "Delete record by ID, identify and remove unused tags, maintain referential integrity",
+        "testStrategy": "Record deleted successfully, unused tags removed, tags used by other records preserved",
+        "status": "pending",
+        "priority": "high",
+        "dependencies": [
+          9
+        ],
+        "createdAt": "2024-12-28T10:00:00Z",
+        "updatedAt": "2024-12-28T10:00:00Z"
+      },
+      {
+        "id": 11,
+        "title": "Phase 2: GetTagSuggestions Use Case",
+        "description": "Implement autocomplete suggestions for tags",
+        "details": "Find tags by prefix after normalization, limit results, sort by usage frequency",
+        "testStrategy": "Suggestions match partial input, respect limit, sorted correctly",
+        "status": "pending",
+        "priority": "medium",
+        "dependencies": [
+          10
+        ],
+        "createdAt": "2024-12-28T10:00:00Z",
+        "updatedAt": "2024-12-28T10:00:00Z"
+      },
+      {
+        "id": 12,
+        "title": "Phase 2: ImportData Use Case",
+        "description": "Implement full data import with replacement",
+        "details": "Validate JSON format, delete all existing data, parse and import records, generate new IDs for all entities, create backup before import",
+        "testStrategy": "Test validation, full replacement works, handles errors gracefully, backup created",
+        "status": "pending",
+        "priority": "high",
+        "dependencies": [
+          11
+        ],
+        "createdAt": "2024-12-28T10:00:00Z",
+        "updatedAt": "2024-12-28T10:00:00Z"
+      },
+      {
+        "id": 13,
+        "title": "Phase 2: ExportData Use Case",
+        "description": "Implement data export without internal IDs",
+        "details": "Export all records with content and dates only, exclude UUID identifiers, add metadata with version and normalization rules",
+        "testStrategy": "Export format valid JSON, no UUIDs included, metadata complete",
+        "status": "pending",
+        "priority": "high",
+        "dependencies": [
+          12
+        ],
+        "createdAt": "2024-12-28T10:00:00Z",
+        "updatedAt": "2024-12-28T10:00:00Z"
+      },
+      {
+        "id": 14,
+        "title": "Phase 2: Application Services",
+        "description": "Create SearchModeDetector and TagCloudBuilder services",
+        "details": "Implement SearchModeDetector for UI mode selection, TagCloudBuilder for tag frequency analysis, ImportValidator, ExportFormatter",
+        "testStrategy": "Mode detection accurate, tag cloud calculates sizes correctly, validators work",
+        "status": "pending",
+        "priority": "medium",
+        "dependencies": [
+          13
+        ],
+        "createdAt": "2024-12-28T10:00:00Z",
+        "updatedAt": "2024-12-28T10:00:00Z"
+      },
+      {
+        "id": 15,
+        "title": "Phase 2: Application Container",
+        "description": "Set up dependency injection container",
+        "details": "Create ApplicationContainer with all use cases and services, implement ApplicationContainerFactory, configure DI",
+        "testStrategy": "Container initializes correctly, dependencies resolved, no circular dependencies",
+        "status": "pending",
+        "priority": "medium",
+        "dependencies": [
+          14
+        ],
+        "createdAt": "2024-12-28T10:00:00Z",
+        "updatedAt": "2024-12-28T10:00:00Z"
+      },
+      {
+        "id": 16,
+        "title": "Phase 3: Storage Manager",
+        "description": "Implement localStorage management with schema",
+        "details": "Create StorageSchema definition, implement StorageManager with serialization, handle quota limits",
+        "testStrategy": "Serialization/deserialization works, handles storage quota, version migrations",
+        "status": "pending",
+        "priority": "high",
+        "dependencies": [
+          15
+        ],
+        "createdAt": "2024-12-28T10:00:00Z",
+        "updatedAt": "2024-12-28T10:00:00Z"
+      },
+      {
+        "id": 17,
+        "title": "Phase 3: Index Manager",
+        "description": "Create indexing system for performance",
+        "details": "Implement IndexManager for tag-to-records and normalized-to-tag mappings, maintain indexes on changes",
+        "testStrategy": "Indexes updated correctly, O(1) lookups work, rebuild from scratch works",
+        "status": "pending",
+        "priority": "high",
+        "dependencies": [
+          16
+        ],
+        "createdAt": "2024-12-28T10:00:00Z",
+        "updatedAt": "2024-12-28T10:00:00Z"
+      },
+      {
+        "id": 18,
+        "title": "Phase 3: LocalStorageRecordRepository",
+        "description": "Implement record repository with localStorage",
+        "details": "Create CRUD operations for records, implement search by tags with AND logic, support deleteAll for import",
+        "testStrategy": "All CRUD operations work, search performs well, indexes maintained",
+        "status": "pending",
+        "priority": "high",
+        "dependencies": [
+          17
+        ],
+        "createdAt": "2024-12-28T10:00:00Z",
+        "updatedAt": "2024-12-28T10:00:00Z"
+      },
+      {
+        "id": 19,
+        "title": "Phase 3: LocalStorageTagRepository",
+        "description": "Implement tag repository with localStorage",
+        "details": "Create CRUD for tags, implement prefix search for autocomplete, usage tracking, cleanup unused tags",
+        "testStrategy": "Tag operations work, autocomplete fast, usage count accurate",
+        "status": "pending",
+        "priority": "high",
+        "dependencies": [
+          18
+        ],
+        "createdAt": "2024-12-28T10:00:00Z",
+        "updatedAt": "2024-12-28T10:00:00Z"
+      },
+      {
+        "id": 20,
+        "title": "Phase 3: LocalStorageUnitOfWork",
+        "description": "Implement Unit of Work pattern",
+        "details": "Create transaction semantics for localStorage, implement commit/rollback, ensure consistency",
+        "testStrategy": "Transactions atomic, rollback works on error, no partial updates",
+        "status": "pending",
+        "priority": "high",
+        "dependencies": [
+          19
+        ],
+        "createdAt": "2024-12-28T10:00:00Z",
+        "updatedAt": "2024-12-28T10:00:00Z"
+      },
+      {
+        "id": 21,
+        "title": "Phase 3: Migration Manager",
+        "description": "Handle schema versioning and migrations",
+        "details": "Implement version detection, create migration scripts, handle backward compatibility",
+        "testStrategy": "Old versions migrate correctly, data preserved, version tracking works",
+        "status": "pending",
+        "priority": "medium",
+        "dependencies": [
+          20
+        ],
+        "createdAt": "2024-12-28T10:00:00Z",
+        "updatedAt": "2024-12-28T10:00:00Z"
+      },
+      {
+        "id": 22,
+        "title": "Phase 4: React Application Setup",
+        "description": "Initialize React app with Vite",
+        "details": "Configure Vite bundler, set up React with TypeScript, create base component structure, configure CSS modules",
+        "testStrategy": "App builds and runs, HMR works, TypeScript configured",
+        "status": "pending",
+        "priority": "high",
+        "dependencies": [
+          21
+        ],
+        "createdAt": "2024-12-28T10:00:00Z",
+        "updatedAt": "2024-12-28T10:00:00Z"
+      },
+      {
+        "id": 23,
+        "title": "Phase 4: Application Context",
+        "description": "Set up React contexts and providers",
+        "details": "Create ApplicationContext for DI container, ConfigContext for settings, UIStateContext for UI state",
+        "testStrategy": "Contexts provide values correctly, no unnecessary re-renders",
+        "status": "pending",
+        "priority": "high",
+        "dependencies": [
+          22
+        ],
+        "createdAt": "2024-12-28T10:00:00Z",
+        "updatedAt": "2024-12-28T10:00:00Z"
+      },
+      {
+        "id": 24,
+        "title": "Phase 4: SearchInput Component",
+        "description": "Create main input field with debounce",
+        "details": "Implement universal input for search and create, add debounce logic, handle Enter key for creation",
+        "testStrategy": "Debounce works, keyboard handling correct, state management works",
+        "status": "pending",
+        "priority": "high",
+        "dependencies": [
+          23
+        ],
+        "createdAt": "2024-12-28T10:00:00Z",
+        "updatedAt": "2024-12-28T10:00:00Z"
+      },
+      {
+        "id": 25,
+        "title": "Phase 4: RecordList Component",
+        "description": "Implement record list with actions",
+        "details": "Create RecordList and RecordItem components, add edit/delete actions, implement selection",
+        "testStrategy": "Records display correctly, actions work, keyboard navigation works",
+        "status": "pending",
+        "priority": "high",
+        "dependencies": [
+          24
+        ],
+        "createdAt": "2024-12-28T10:00:00Z",
+        "updatedAt": "2024-12-28T10:00:00Z"
+      },
+      {
+        "id": 26,
+        "title": "Phase 4: TagCloud Component",
+        "description": "Create interactive tag cloud",
+        "details": "Implement tag cloud with size calculation, click handling for search, smooth animations",
+        "testStrategy": "Sizes calculated correctly, clicks update search, responsive layout",
+        "status": "pending",
+        "priority": "high",
+        "dependencies": [
+          25
+        ],
+        "createdAt": "2024-12-28T10:00:00Z",
+        "updatedAt": "2024-12-28T10:00:00Z"
+      },
+      {
+        "id": 27,
+        "title": "Phase 4: AutoComplete Component",
+        "description": "Implement tag suggestions dropdown",
+        "details": "Create dropdown with suggestions, keyboard navigation, click to select, integrate with SearchInput",
+        "testStrategy": "Suggestions appear on type, keyboard nav works, selection updates input",
+        "status": "pending",
+        "priority": "medium",
+        "dependencies": [
+          26
+        ],
+        "createdAt": "2024-12-28T10:00:00Z",
+        "updatedAt": "2024-12-28T10:00:00Z"
+      },
+      {
+        "id": 28,
+        "title": "Phase 4: Import/Export UI",
+        "description": "Create file upload and download interface",
+        "details": "Implement ImportExport components, file upload handling, progress indicators, error states",
+        "testStrategy": "File upload works, download triggers, errors handled gracefully",
+        "status": "pending",
+        "priority": "medium",
+        "dependencies": [
+          27
+        ],
+        "createdAt": "2024-12-28T10:00:00Z",
+        "updatedAt": "2024-12-28T10:00:00Z"
+      },
+      {
+        "id": 29,
+        "title": "Phase 4: Keyboard Shortcuts",
+        "description": "Implement keyboard navigation",
+        "details": "Add keyboard shortcuts hook, implement navigation (arrows, Enter, Escape, Tab), focus management",
+        "testStrategy": "All shortcuts work, focus trapped correctly, accessibility maintained",
+        "status": "pending",
+        "priority": "medium",
+        "dependencies": [
+          28
+        ],
+        "createdAt": "2024-12-28T10:00:00Z",
+        "updatedAt": "2024-12-28T10:00:00Z"
+      },
+      {
+        "id": 30,
+        "title": "Phase 4: Responsive Design",
+        "description": "Make UI adaptive for all screen sizes",
+        "details": "Implement responsive layouts, mobile-first approach, test on various devices",
+        "testStrategy": "Works on 320px width, tablet and desktop layouts optimal",
+        "status": "pending",
+        "priority": "medium",
+        "dependencies": [
+          29
+        ],
+        "createdAt": "2024-12-28T10:00:00Z",
+        "updatedAt": "2024-12-28T10:00:00Z"
+      },
+      {
+        "id": 31,
+        "title": "Phase 4: Performance Optimization",
+        "description": "Optimize bundle size and runtime performance",
+        "details": "Implement code splitting, lazy loading, tree shaking, optimize re-renders",
+        "testStrategy": "Bundle < 500KB gzipped, FCP < 1.5s, TTI < 3s, 60 FPS",
+        "status": "pending",
+        "priority": "high",
+        "dependencies": [
+          30
+        ],
+        "createdAt": "2024-12-28T10:00:00Z",
+        "updatedAt": "2024-12-28T10:00:00Z"
+      },
+      {
+        "id": 32,
+        "title": "Phase 4: Accessibility",
+        "description": "Ensure full accessibility compliance",
+        "details": "Add ARIA labels, ensure keyboard navigation, screen reader support, color contrast",
+        "testStrategy": "WCAG 2.1 AA compliance, screen reader testing, keyboard-only navigation",
+        "status": "pending",
+        "priority": "medium",
+        "dependencies": [
+          31
+        ],
+        "createdAt": "2024-12-28T10:00:00Z",
+        "updatedAt": "2024-12-28T10:00:00Z"
+      },
+      {
+        "id": 33,
+        "title": "Phase 5: CLI Setup with Ink",
+        "description": "Initialize CLI application with Ink framework",
+        "details": "Set up Ink for terminal UI, create base component structure, integrate with application layer",
+        "testStrategy": "CLI runs, renders correctly, connects to application layer",
+        "status": "pending",
+        "priority": "low",
+        "dependencies": [
+          15
+        ],
+        "createdAt": "2024-12-28T10:00:00Z",
+        "updatedAt": "2024-12-28T10:00:00Z"
+      },
+      {
+        "id": 34,
+        "title": "Phase 5: CLI Commands",
+        "description": "Implement add, search, update, delete commands",
+        "details": "Create command handlers, argument parsing, output formatting, error handling",
+        "testStrategy": "All commands work, arguments parsed correctly, errors handled",
+        "status": "pending",
+        "priority": "low",
+        "dependencies": [
+          33
+        ],
+        "createdAt": "2024-12-28T10:00:00Z",
+        "updatedAt": "2024-12-28T10:00:00Z"
+      },
+      {
+        "id": 35,
+        "title": "Phase 5: Shell Integration",
+        "description": "Add autocomplete and aliases",
+        "details": "Create shell completion scripts, add aliases (tm, misc), man pages, installation script",
+        "testStrategy": "Autocomplete works in bash/zsh, aliases configured, man pages readable",
+        "status": "pending",
+        "priority": "low",
+        "dependencies": [
+          34
+        ],
+        "createdAt": "2024-12-28T10:00:00Z",
+        "updatedAt": "2024-12-28T10:00:00Z"
+      },
+      {
+        "id": 36,
+        "title": "Testing: Domain Layer Tests",
+        "description": "Achieve >95% test coverage for domain",
+        "details": "Write comprehensive tests for all value objects, entities, services, ensure immutability, test invariants",
+        "testStrategy": "Coverage > 95%, all edge cases covered, tests run < 1s",
+        "status": "pending",
+        "priority": "high",
+        "dependencies": [
+          5
+        ],
+        "createdAt": "2024-12-28T10:00:00Z",
+        "updatedAt": "2024-12-28T10:00:00Z"
+      },
+      {
+        "id": 37,
+        "title": "Testing: Application Layer Tests",
+        "description": "Achieve >90% test coverage for use cases",
+        "details": "Test all use cases with mocks, test error handling, validate business rules",
+        "testStrategy": "Coverage > 90%, mock repositories used, all paths tested",
+        "status": "pending",
+        "priority": "high",
+        "dependencies": [
+          15
+        ],
+        "createdAt": "2024-12-28T10:00:00Z",
+        "updatedAt": "2024-12-28T10:00:00Z"
+      },
+      {
+        "id": 38,
+        "title": "Testing: Integration Tests",
+        "description": "Test interaction between layers",
+        "details": "Test repository implementations, storage persistence, data integrity, migration scenarios",
+        "testStrategy": "All integrations work, data persists correctly, migrations tested",
+        "status": "pending",
+        "priority": "high",
+        "dependencies": [
+          21
+        ],
+        "createdAt": "2024-12-28T10:00:00Z",
+        "updatedAt": "2024-12-28T10:00:00Z"
+      },
+      {
+        "id": 39,
+        "title": "Testing: E2E Tests",
+        "description": "Test complete user journeys",
+        "details": "Test first time user flow, daily usage scenarios, import/export cycle, performance under load",
+        "testStrategy": "All user journeys work, performance acceptable, no data loss",
+        "status": "pending",
+        "priority": "medium",
+        "dependencies": [
+          32
+        ],
+        "createdAt": "2024-12-28T10:00:00Z",
+        "updatedAt": "2024-12-28T10:00:00Z"
+      },
+      {
+        "id": 40,
+        "title": "Documentation: API Documentation",
+        "description": "Document all public APIs",
+        "details": "Create API documentation for domain, application, and infrastructure layers, include examples",
+        "testStrategy": "All public APIs documented, examples work, generated docs readable",
+        "status": "pending",
+        "priority": "low",
+        "dependencies": [
+          38
+        ],
+        "createdAt": "2024-12-28T10:00:00Z",
+        "updatedAt": "2024-12-28T10:00:00Z"
+      },
+      {
+        "id": 41,
+        "title": "Documentation: User Guide",
+        "description": "Create end-user documentation",
+        "details": "Write getting started guide, feature documentation, troubleshooting, FAQ",
+        "testStrategy": "Documentation complete, examples clear, covers all features",
+        "status": "pending",
+        "priority": "low",
+        "dependencies": [
+          39
+        ],
+        "createdAt": "2024-12-28T10:00:00Z",
+        "updatedAt": "2024-12-28T10:00:00Z"
+      },
+      {
+        "id": 42,
+        "title": "CI/CD: Production Build Pipeline",
+        "description": "Set up automated builds and deployments",
+        "details": "Configure production builds, minification, source maps, deployment to hosting",
+        "testStrategy": "Builds succeed, artifacts generated, deployment works",
+        "status": "pending",
+        "priority": "medium",
+        "dependencies": [
+          39
+        ],
+        "createdAt": "2024-12-28T10:00:00Z",
+        "updatedAt": "2024-12-28T10:00:00Z"
+      },
+      {
+        "id": 43,
+        "title": "Release: Version 1.0 Preparation",
+        "description": "Prepare for first release",
+        "details": "Final testing, performance audit, security review, changelog, release notes",
+        "testStrategy": "All tests pass, performance targets met, no critical bugs",
+        "status": "pending",
+        "priority": "high",
+        "dependencies": [
+          42
+        ],
+        "createdAt": "2024-12-28T10:00:00Z",
+        "updatedAt": "2024-12-28T10:00:00Z"
+      },
+      {
+        "id": 44,
+        "title": "Release: Deploy MVP",
+        "description": "Deploy to production environment",
+        "details": "Deploy web application, publish NPM packages, announce release, gather feedback",
+        "testStrategy": "Application accessible, packages published, monitoring active",
+        "status": "pending",
+        "priority": "high",
+        "dependencies": [
+          43
+        ],
+        "createdAt": "2024-12-28T10:00:00Z",
+        "updatedAt": "2024-12-28T10:00:00Z"
+      },
+      {
+        "id": 45,
+        "title": "Post-Release: Monitor and Iterate",
+        "description": "Monitor usage and fix issues",
+        "details": "Monitor error rates, gather user feedback, prioritize fixes, plan next iteration",
+        "testStrategy": "Monitoring working, feedback collected, hotfixes deployed",
+        "status": "pending",
+        "priority": "medium",
+        "dependencies": [
+          44
+        ],
+        "createdAt": "2024-12-28T10:00:00Z",
+        "updatedAt": "2024-12-28T10:00:00Z"
+      }
+    ],
+    "metadata": {
+      "created": "2025-08-28T18:37:59.054Z",
+      "updated": "2025-08-28T18:37:59.057Z",
+      "description": "Tasks for master context"
     }
-  ]
+  }
 }
