@@ -121,7 +121,7 @@ MISC - минималистичная система управления инф
     "recordCount": 42,
     "normalizationRules": {
       "caseSensitive": false,
-      "removeAccents": true
+      "removeAccents": false
     }
   }
 }

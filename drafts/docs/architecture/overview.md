@@ -11,12 +11,12 @@
 
 ### 1.2 Слои и их ответственность
 
-| Слой | Ответственность | Зависит от |
-|------|-----------------|------------|
-| Presentation | UI, обработка пользовательского ввода | Application |
-| Application | Orchestration, use cases | Domain |
-| Domain | Бизнес-логика, правила | Ничего |
-| Infrastructure | Хранение | Domain (через интерфейсы) |
+| Слой | Ответственность | Зависит от | Контракты |
+|------|-----------------|------------|-----------|
+| Presentation | UI, обработка пользовательского ввода | Application | - |
+| Application | Orchestration, use cases | Domain | [application-contracts.md](./application-contracts.md) |
+| Domain | Бизнес-логика, правила | Ничего | [domain-contracts.md](./domain-contracts.md) |
+| Infrastructure | Хранение | Domain (через интерфейсы) | - |
 
 ## 2. Domain Layer
 
@@ -27,7 +27,6 @@
 **Описание**: Запись - основная сущность системы, представляет сохранённую пользователем информацию.
 
 **Поля:**
-
 - `id`: RecordId - уникальный идентификатор записи
 - `content`: RecordContent - содержимое записи как ввёл пользователь (хранит порядок тегов)
 - `tagIds`: Set<TagId> - множество идентификаторов тегов (для быстрого поиска)
@@ -35,170 +34,93 @@
 - `updatedAt`: Date - дата последнего обновления
 
 **Поведение:**
-
 - `hasTag(tagId: TagId)`: boolean - проверка наличия тега
 - `hasSameTagSet(other: Record)`: boolean - проверка на одинаковый набор тегов
 - `equals(other: Record)`: boolean - сравнение по ID
 
 **Инварианты:**
-
 - ID неизменен после создания
 - Content не может быть пустым
 - Content должен содержать хотя бы один валидный тег
 - tagIds содержит все теги из content (синхронизация)
 
 #### Tag
+
 **Описание**: Тег как сущность - уникальный концепт в системе.
 
 **Поля:**
-
 - `id`: TagId - уникальный идентификатор тега
 - `normalizedValue`: string - нормализованная форма для поиска и уникальности
 
 **Поведение:**
-
 - `equals(other: Tag)`: boolean - сравнение по ID
 
 **Инварианты:**
-
 - ID неизменен после создания
 - normalizedValue уникален в системе
 
 ### 2.2 Value Objects
 
 #### RecordId
-
-**Описание**: Идентификатор записи.
-
-**Поля:**
-
-- `value`: string (UUID)
-
-**Поведение:**
-
-- `toString()`: string
-- `equals(other: RecordId)`: boolean
+**Описание**: Идентификатор записи (UUID).
 
 #### TagId
-
-**Описание**: Идентификатор тега.
-
-**Поля:**
-
-- `value`: string (UUID)
-
-**Поведение:**
-
-- `toString()`: string
-- `equals(other: TagId)`: boolean
+**Описание**: Идентификатор тега (UUID).
 
 #### RecordContent
-
 **Описание**: Содержимое записи - строка тегов как ввёл пользователь.
 
-**Поля:**
-
-- `value`: string - например, "ToDo встреча Петров завтра 15:00"
-
-**Поведение:**
-
-- `parseTokens()`: string[] - разбивает на токены по пробелам
-- `isEmpty()`: boolean
-- `toString()`: string
-
 **Правила:**
-
 - Не может быть пустой
 - Сохраняет оригинальное написание и порядок тегов
 
 #### SearchQuery
-
-**Описание**: Поисковый запрос пользователя.
-
-**Поля:**
-
-- `value`: string - исходная строка запроса
-- `normalizedTokens`: string[] - нормализованные токены для поиска
-
-**Поведение:**
-
-- `isEmpty()`: boolean
+**Описание**: Поисковый запрос пользователя с нормализованными токенами.
 
 ### 2.3 Domain Services
 
 #### TagNormalizer
-
 **Описание**: Сервис нормализации тегов.
 
-**Методы:**
-
-- `normalize(value: string)`: string
-
 **Правила:**
-
 - Приведение к нижнему регистру
 - Опционально: удаление диакритики (в конфигурации)
 
 #### TagParser
-
-**Описание**: Сервис парсинга content в теги.
-
-**Методы:**
-
-- `parse(content: RecordContent, normalizer: TagNormalizer): string[]`
-
-**Возвращает**: Массив нормализованных значений тегов для поиска/создания Tag entities
+**Описание**: Сервис парсинга content в теги. Возвращает массив нормализованных значений тегов.
 
 #### TagValidator
-
 **Описание**: Валидация токенов.
 
-**Методы:**
-
-- `isValid(token: string)`: boolean
-
 **Правила:**
-
 - Длина от 1 до 100 символов (настраиваемо)
 - Не содержит запрещённых символов: `{}[]:,"\`
 - Не содержит пробелов
 
 #### RecordMatcher
-
 **Описание**: Сервис проверки соответствия записи поисковому запросу.
 
-**Методы:**
-
-- `matches(record: Record, query: SearchQuery, tags: Map<TagId, Tag>)`: boolean
-
 **Логика:**
-
 - Все токены из запроса должны присутствовать в записи (AND логика)
 - Сравнение по нормализованным значениям
 
 #### RecordDuplicateChecker
-
 **Описание**: Сервис проверки уникальности записи.
 
-**Методы:**
-
-- `findDuplicate(tagIds: Set<TagId>, existingRecords: Record[]): Record | null`
-
 **Логика:**
-
 - Записи дубликаты, если имеют одинаковый набор tagIds
 - Порядок не важен
+
+> Подробные TypeScript интерфейсы см. в [domain-contracts.md](./domain-contracts.md)
 
 ## 3. Application Layer
 
 ### 3.1 Use Cases
 
 #### CreateRecord
-
-**Вход:** `{ content: string }`
-**Выход:** `RecordDTO`
+**Вход:** `{ content: string }`  
+**Выход:** `RecordDTO`  
 **Логика:**
-
 1. Парсим content в токены
 2. Валидируем каждый токен
 3. Нормализуем токены
@@ -209,11 +131,9 @@
 8. Возвращаем DTO
 
 #### SearchRecords
-
-**Вход:** `{ query: string }`
-**Выход:** `SearchResultDTO`
+**Вход:** `{ query: string }`  
+**Выход:** `SearchResultDTO`  
 **Логика:**
-
 1. Парсим и нормализуем запрос
 2. Находим теги по normalized значениям
 3. Находим записи, содержащие ВСЕ теги из запроса
@@ -221,10 +141,9 @@
 5. Формируем результат
 
 #### UpdateRecord
-**Вход:** `{ id: string, content: string }`
-**Выход:** `RecordDTO`
+**Вход:** `{ id: string, content: string }`  
+**Выход:** `RecordDTO`  
 **Логика:**
-
 1. Находим запись
 2. Парсим новый content
 3. Находим/создаём теги
@@ -234,40 +153,32 @@
 7. Возвращаем DTO
 
 #### DeleteRecord
-
-**Вход:** `{ id: string }`
-**Выход:** `void`
+**Вход:** `{ id: string }`  
+**Выход:** `void`  
 **Логика:**
-
 1. Находим и удаляем запись
 2. Проверяем и удаляем неиспользуемые теги
 
 #### GetTagSuggestions
-
-**Вход:** `{ partial: string }`
-**Выход:** `string[]`
+**Вход:** `{ partial: string }`  
+**Выход:** `string[]`  
 **Логика:**
-
 1. Нормализуем partial
 2. Находим все теги, начинающиеся с partial
 3. Возвращаем normalized значения для автодополнения
 
 #### ExportData
-
-**Вход:** `{ format: 'json' }`
-**Выход:** `ExportDTO`
+**Вход:** `{ format: 'json' }`  
+**Выход:** `ExportDTO`  
 **Логика:**
-
 1. Получаем все записи
 2. Формируем JSON с content и метаданными
 3. НЕ экспортируем UUID записей и тегов (только content и даты)
 
 #### ImportData
-
-**Вход:** `{ data: string, format: 'json' }`
-**Выход:** `ImportResultDTO`
+**Вход:** `{ data: string, format: 'json' }`  
+**Выход:** `ImportResultDTO`  
 **Логика:**
-
 1. **ПОЛНЫЙ ИМПОРТ**: Удаляем все существующие записи и теги
 2. Парсим JSON данные
 3. Для каждой записи из импорта:
@@ -281,70 +192,41 @@
 
 ### 3.2 Порты (интерфейсы для Infrastructure)
 
-```typescript
-interface RecordRepository {
-  save(record: Record): Promise<void>
-  findById(id: RecordId): Promise<Record | null>
-  findByTagIds(tagIds: Set<TagId>): Promise<Record[]>
-  findAll(): Promise<Record[]>
-  delete(id: RecordId): Promise<void>
-  deleteAll(): Promise<void>  // Для полного импорта
-  update(record: Record): Promise<void>
-}
+**RecordRepository**: Управление записями
+- CRUD операции
+- Поиск по тегам с AND логикой
+- Полная очистка для импорта
 
-interface TagRepository {
-  save(tag: Tag): Promise<void>
-  findById(id: TagId): Promise<Tag | null>
-  findByNormalizedValue(value: string): Promise<Tag | null>
-  findByIds(ids: Set<TagId>): Promise<Map<TagId, Tag>>
-  findAll(): Promise<Tag[]>
-  deleteAll(): Promise<void>  // Для полного импорта
-  deleteUnused(): Promise<number>
-}
-```
+**TagRepository**: Управление тегами
+- CRUD операции
+- Поиск по нормализованному значению
+- Автодополнение по префиксу
+- Очистка неиспользуемых тегов
+
+**UnitOfWork**: Паттерн для транзакционности операций
+
+> Подробные TypeScript интерфейсы см. в [application-contracts.md](./application-contracts.md)
 
 ### 3.3 DTO (Data Transfer Objects)
 
-```typescript
-interface RecordDTO {
-  id: string
-  content: string  // оригинальное написание как ввёл пользователь
-  createdAt: string
-  updatedAt: string
-}
+**RecordDTO**: Данные записи для UI
+- id, content, createdAt, updatedAt
 
-interface SearchResultDTO {
-  mode: 'list' | 'cloud'
-  records?: RecordDTO[]           // для режима list
-  tagCloud?: TagCloudItemDTO[]    // для режима cloud
-  total: number
-}
+**SearchResultDTO**: Результаты поиска
+- mode: 'list' | 'cloud'
+- records или tagCloud в зависимости от режима
+- total, query, searchTime
 
-interface TagCloudItemDTO {
-  value: string    // нормализованное значение тега
-  count: number    // частота использования
-  size: number     // размер в облаке (1-5)
-}
+**TagCloudItemDTO**: Элемент облака тегов
+- value, count, size (1-5)
 
-interface ExportDTO {
-  version: string
-  records: Array<{
-    content: string      // Только content - UUID не экспортируются
-    createdAt: string
-    updatedAt: string
-  }>
-  metadata: {
-    exportedAt: string
-    recordCount: number
-  }
-}
+**ExportDTO**: Данные для экспорта
+- version, records (без UUID), metadata
 
-interface ImportResultDTO {
-  imported: number     // Количество импортированных записей
-  errors: string[]     // Ошибки парсинга, если были
-  replacedAll: boolean // true - всегда полная замена данных
-}
-```
+**ImportResultDTO**: Результат импорта
+- imported, errors, replacedAll, backupCreated
+
+> Подробные структуры DTO см. в [application-contracts.md](./application-contracts.md)
 
 ## 4. Infrastructure Layer
 
@@ -359,10 +241,6 @@ interface ImportResultDTO {
     "uuid-tag-1": {
       "id": "uuid-tag-1",
       "normalizedValue": "todo"
-    },
-    "uuid-tag-2": {
-      "id": "uuid-tag-2",
-      "normalizedValue": "встреча"
     }
   },
   
@@ -381,22 +259,18 @@ interface ImportResultDTO {
   "indexes": {
     // normalized значение → ID тега
     "normalizedToTagId": {
-      "todo": "uuid-tag-1",
-      "встреча": "uuid-tag-2",
-      "петров": "uuid-tag-3"
+      "todo": "uuid-tag-1"
     },
     
     // ID тега → массив ID записей
     "tagToRecords": {
-      "uuid-tag-1": ["uuid-record-1", "uuid-record-2"],
-      "uuid-tag-2": ["uuid-record-1"]
+      "uuid-tag-1": ["uuid-record-1", "uuid-record-2"]
     }
   }
 }
 ```
 
 **Почему объекты, а не массивы:**
-
 - O(1) доступ по ID вместо O(n) поиска
 - Для 10,000 записей это критично
 - Проще обновление и удаление
@@ -404,9 +278,9 @@ interface ImportResultDTO {
 ### 4.2 Адаптеры
 
 Реализация репозиториев через localStorage с поддержкой:
-
 - Индексов для быстрого поиска
 - Метода deleteAll() для полного импорта
+- Транзакционности через UnitOfWork
 
 ## 5. Presentation Layer
 
@@ -446,32 +320,33 @@ type UIMode =
 
 ## 6. Конфигурация
 
-```typescript
-interface AppConfig {
-  tags: {
-    maxLength: number;        // 100
-    maxPerRecord: number;     // 50
-  };
-  normalization: {
-    caseSensitive: boolean;   // false
-    removeAccents: boolean;   // false
-  };
-  search: {
-    debounceMs: number;       // 300
-    liveSearch: boolean;      // true
-  };
-  display: {
-    recordHeight: number;     // 60
-  };
-  storage: {
-    maxSizeMB: number;        // 5
-  };
-  importExport: {
-    warningThreshold: number; // 1000 записей
-    backupBeforeImport: boolean; // true
-  };
-}
-```
+Основные настройки системы:
+
+**Теги:**
+- maxLength: 100 символов
+- maxPerRecord: 50 тегов
+
+**Нормализация:**
+- caseSensitive: false
+- removeAccents: false
+
+**Поиск:**
+- debounceMs: 300
+- liveSearch: true
+
+**Отображение:**
+- recordHeight: 60px
+- Автоматическое переключение список/облако
+
+**Хранилище:**
+- maxSizeMB: 5
+- backupBeforeImport: true
+
+**Импорт/Экспорт:**
+- warningThreshold: 1000 записей
+- Версионирование формата
+
+> Подробная структура конфигурации см. в [application-contracts.md](./application-contracts.md)
 
 ## 7. Алгоритм работы основного интерфейса
 
@@ -526,14 +401,12 @@ Debounce 300ms
 ## 9. Безопасность импорта/экспорта
 
 ### Экспорт
-
 - **Не экспортируются**: UUID записей и тегов
 - **Экспортируются**: Content, даты создания/обновления
 - **Формат**: Стандартный JSON с версионированием
 - **Размер**: Предупреждение при экспорте > 1000 записей
 
 ### Импорт
-
 - **Полная замена**: Все существующие данные удаляются
 - **Предупреждение**: Обязательное подтверждение пользователя
 - **Резервная копия**: Автоматическое создание перед импортом
@@ -563,14 +436,12 @@ Debounce 300ms
 ## 11. Критерии готовности прототипа
 
 **Domain Layer:**
-
 - [ ] Record с content и Set<TagId>
 - [ ] Tag с id и normalizedValue
 - [ ] Сервисы парсинга и нормализации
 - [ ] Валидация токенов
 
 **Application Layer:**
-
 - [ ] CreateRecord use case
 - [ ] SearchRecords с автоопределением режима
 - [ ] UpdateRecord с проверкой дубликатов
@@ -580,14 +451,12 @@ Debounce 300ms
 - [ ] ImportData с полной заменой
 
 **Infrastructure Layer:**
-
 - [ ] localStorage адаптеры
 - [ ] Индексы для быстрого поиска
 - [ ] deleteAll() методы для импорта
 - [ ] Экспорт/импорт JSON
 
 **Presentation Layer:**
-
 - [ ] Единое поле ввода
 - [ ] Автопереключение список/облако
 - [ ] Клавиатурная навигация
@@ -595,8 +464,16 @@ Debounce 300ms
 - [ ] UI импорта/экспорта с предупреждениями
 
 **Тестирование:**
-
 - [ ] 95% покрытие Domain
 - [ ] 90% покрытие Use Cases
 - [ ] Интеграционные тесты Storage
 - [ ] Тесты импорта/экспорта с проверкой полной замены
+
+## 12. Связанные документы
+
+- [Domain Contracts](./domain-contracts.md) - TypeScript интерфейсы доменного слоя
+- [Application Contracts](./application-contracts.md) - TypeScript интерфейсы прикладного слоя
+- [Test Specifications](../development/test-specifications.md) - Спецификации для TDD
+- [Project Structure](../development/project-structure.md) - Структура монорепозитория
+- [Development Roadmap](../development/development-roadmap.md) - План разработки
+- [Product Requirements](../requirements/prd.md) - Требования к продукту
