@@ -1,0 +1,196 @@
+# MISC System Development - Product Requirements Document
+
+## Overview
+Development of MISC (MindSection) - minimalist information management system based on tag-based approach. Implementation following Clean Architecture principles with Test-Driven Development.
+
+## Core Principles
+- TDD First: Tests before implementation
+- Inside-Out: From domain to external layers  
+- Clean Architecture: Independence of business logic from implementation details
+- Dependency Inversion: Dependencies directed inward to domain
+
+## Technical Stack
+- Language: TypeScript for all layers
+- Monorepo: Yarn workspaces
+- Frontend: React with Vite
+- CLI: Ink (React for terminal)
+- Testing: Jest/Vitest, Testing Library
+- Storage: localStorage for prototype, PostgreSQL for MVP
+
+## Development Phases
+
+### Phase 0: Project Infrastructure Setup
+Set up monorepo structure with yarn workspaces
+Configure TypeScript for all packages
+Configure Jest testing framework
+Configure ESLint and Prettier
+Set up pre-commit hooks with Husky
+Configure GitHub Actions for CI/CD
+Create base package.json files
+
+### Phase 1: Domain Layer Implementation
+Implement Value Objects with TDD
+- Create RecordId value object with validation
+- Create TagId value object with validation  
+- Create RecordContent value object with validation
+- Create SearchQuery value object with normalization
+- Create factories for all Value Objects
+
+Implement Domain Entities with TDD
+- Create Tag entity with normalized value
+- Create Tag factory with restore capability
+- Create Record entity with content and tags
+- Create Record factory with validation
+- Validate all entity invariants
+
+Implement Domain Services with TDD
+- Create TagNormalizer service for tag normalization
+- Create TagValidator service for validation rules
+- Create TagParser service for content parsing
+- Create RecordMatcher service for search matching
+- Create RecordDuplicateChecker service
+
+Implement Domain Errors
+- Create base DomainError class
+- Create specific error types
+- Create Result type utilities
+- Document error handling patterns
+
+### Phase 2: Application Layer Implementation
+Create Repository Interfaces
+- Define RecordRepository interface
+- Define TagRepository interface  
+- Define UnitOfWork pattern
+- Create repository port definitions
+
+Implement Core Use Cases
+- Create CreateRecord use case with validation
+- Create SearchRecords use case with mode detection
+- Create UpdateRecord use case with duplicate check
+- Create DeleteRecord use case with cleanup
+- Create GetTagSuggestions use case for autocomplete
+
+Implement Import/Export Use Cases
+- Create ImportData use case with full replacement
+- Create ExportData use case without UUIDs
+- Create ImportValidator service
+- Create ExportFormatter service
+
+Create Application Services
+- Implement SearchModeDetector for UI mode selection
+- Implement TagCloudBuilder for tag cloud generation
+- Create ApplicationContainer with DI
+- Define ApplicationConfig structure
+
+### Phase 3: Infrastructure Layer with localStorage
+Implement Storage Management
+- Create StorageSchema definition
+- Create StorageManager with serialization
+- Create IndexManager for performance
+- Implement migration system
+
+Create Repository Implementations
+- Implement LocalStorageRecordRepository
+- Implement LocalStorageTagRepository
+- Create CRUD operations with indexes
+- Implement search with AND logic
+
+Implement Unit of Work Pattern
+- Create LocalStorageUnitOfWork
+- Implement transaction semantics
+- Handle rollback scenarios
+- Ensure data consistency
+
+### Phase 4: Presentation Layer Web Implementation
+Set up React Application
+- Configure Vite bundler
+- Create application contexts
+- Set up component structure
+- Configure styling system
+
+Create Core UI Components
+- Implement SearchInput with debounce
+- Create RecordList with actions
+- Create TagCloud with interactions
+- Implement AutoComplete dropdown
+- Create LoadingIndicator component
+
+Implement Import/Export UI
+- Create ImportExport components
+- Implement file upload handling
+- Add progress indicators
+- Handle error states
+
+Add Keyboard Navigation
+- Implement keyboard shortcuts
+- Create navigation hooks
+- Handle focus management
+- Support accessibility features
+
+### Phase 5: CLI Version Implementation
+Set up Ink Framework
+- Configure Ink for terminal UI
+- Create CLI component structure
+- Integrate with Application layer
+
+Implement CLI Commands
+- Create add command for records
+- Create search command with results
+- Create update and delete commands
+- Implement import/export commands
+
+Add Shell Integration
+- Create shell aliases
+- Add autocomplete support
+- Generate man pages
+- Create installation scripts
+
+## Success Metrics
+- Domain layer test coverage > 95%
+- Application layer test coverage > 90%
+- Overall test coverage > 80%
+- Search performance < 100ms for 10,000 records
+- Save operations < 50ms
+- Bundle size < 500KB gzipped
+- Application startup < 2 seconds
+
+## Key Features
+- Single input field for all operations
+- Automatic mode switching (list/cloud)
+- Live search with debouncing
+- Tag autocomplete suggestions
+- Full data export/import with versioning
+- Keyboard-only navigation support
+- Tag normalization with diacritics handling
+- Duplicate record prevention
+
+## Deliverables
+- Fully tested domain layer package
+- Application layer with use cases
+- localStorage infrastructure implementation
+- React web application
+- CLI application with Ink
+- Comprehensive documentation
+- CI/CD pipeline configuration
+- Performance benchmarks
+
+## Risks and Mitigation
+- Complexity of Clean Architecture for prototype: Start with simple implementation, refactor gradually
+- localStorage performance limits: Implement indexing and pagination
+- Large bundle size: Use code splitting and lazy loading
+- Learning curve for users: Provide onboarding and examples
+
+## Timeline Estimates
+- Phase 0: 1-2 days
+- Phase 1 (Domain): 3-5 days
+- Phase 2 (Application): 4-5 days
+- Phase 3 (Infrastructure): 3-4 days
+- Phase 4 (Web UI): 5-6 days
+- Phase 5 (CLI): 3-4 days
+- Total: 19-26 days
+
+## Dependencies Between Phases
+- Phase 1 must complete before Phase 2
+- Phase 2 must complete before Phase 3 and 4
+- Phase 3 can run parallel with Phase 4 after Phase 2
+- Phase 5 depends on Phase 2 completion only
