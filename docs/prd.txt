@@ -1,0 +1,292 @@
+# MISC (MindSection) - Consolidated Product Requirements Document for TaskMaster AI
+
+## Executive Summary
+MISC is a minimalist information management system based on a single principle: everything is tags. 
+Each record is a set of words (tags) separated by spaces. The system eliminates the barrier between 
+thought and recording, offering instant capture and search of information without traditional data 
+organization structures.
+
+## Project Overview
+
+### Vision
+Revolutionary simple information management system where everything is tags, removing all complexity 
+between thought and record.
+
+### Core Principle
+- Every record = set of tags separated by spaces
+- Every tag = both content and search key
+- No folders, no types, no forms - just words and connections
+
+### Target Metrics
+- Time to first record: < 10 seconds
+- Learning time: < 1 minute
+- Universal usage: 80% users for 3+ information types
+- Retention: 60% active users after one month
+- Test coverage: >95% domain, >90% use cases, >80% overall
+
+## Architecture Requirements
+
+### Clean Architecture Principles
+- Domain layer has zero dependencies
+- Application layer orchestrates use cases
+- Infrastructure implements application interfaces
+- Presentation uses only application layer
+- Dependencies point inward (toward domain)
+
+### Layer Structure
+1. **Domain Layer** - Business logic and rules (no dependencies)
+2. **Application Layer** - Use cases and orchestration (depends on Domain)
+3. **Infrastructure Layer** - Storage and external services (implements Application interfaces)
+4. **Presentation Layer** - UI components (uses Application layer)
+
+### Technology Stack
+- **Language**: TypeScript for all layers
+- **Monorepo**: Yarn workspaces
+- **Frontend**: React with Vite
+- **CLI**: Ink (React for terminal)
+- **Storage**: localStorage (prototype), PostgreSQL (production)
+- **Testing**: Jest/Vitest, Testing Library
+- **Node.js**: v18+ LTS
+
+## Functional Requirements
+
+### Core Features
+
+#### Record Management
+- Create record: Input tags separated by spaces
+- Search records: Find by any tag combination (AND logic)
+- Edit record: Full content replacement
+- Delete record: Permanent removal
+- Unique records: Same tag set = duplicate (order preserved for display)
+
+#### Tag System
+- Tag = any character sequence without spaces
+- Forbidden characters: {}[]:,"\
+- Normalization: lowercase + optional diacritic removal
+- Auto-completion based on existing tags
+- Usage statistics and frequency tracking
+
+#### Search Interface
+- Incremental search with real-time results
+- Tag cloud when results don't fit screen
+- Record list when results fit screen
+- Sort by creation date (newest first)
+
+#### Import/Export
+- Export all data as JSON (without internal UUIDs)
+- Import with complete data replacement
+- Version control for format compatibility
+- Warning on import about data replacement
+
+### User Interface
+
+#### Main Interface
+- Single input field for search and creation
+- Adaptive display (search by default, create on no results)
+- Minimalist design focused on content
+- Loading indicators during operations
+
+#### Keyboard Controls
+- Enter: Save new record / Open for editing
+- Escape: Clear input field
+- Tab: Auto-complete tag
+- ↑/↓: Navigate results
+- Delete: Remove selected record
+
+## Non-Functional Requirements
+
+### Performance
+- Search response: < 100ms for 10,000 records
+- Save time: < 50ms
+- Application size: < 500KB (gzipped)
+- Startup time: < 2 seconds
+
+### Reliability
+- Automatic data saving without loss
+- Validation at all levels
+- Graceful error handling
+- Recovery from exported data
+
+### Usability
+- Responsive design for all screen sizes
+- Keyboard-only navigation support
+- Visual state indicators
+- UI response time: < 16ms for animations
+
+### Testing
+- Unit tests for all components
+- Integration tests between layers
+- E2E tests for main scenarios
+- Test data generation capability
+
+## Development Phases
+
+### Phase 0: Infrastructure Setup
+- Setup monorepo with yarn workspaces
+- Configure TypeScript, Jest, ESLint
+- Setup CI/CD pipeline
+- Create Clean Architecture structure
+
+### Phase 1: Domain Layer (TDD)
+- Value Objects (RecordId, TagId, RecordContent)
+- Entities (Record, Tag)
+- Domain Services (TagNormalizer, TagParser, TagValidator)
+- RecordMatcher and DuplicateChecker services
+- Target: >95% test coverage
+
+### Phase 2: Application Layer
+- Use Cases (CreateRecord, SearchRecords, UpdateRecord, DeleteRecord)
+- DTOs for data transfer
+- Repository interfaces (ports)
+- Import/Export use cases
+- Target: >90% test coverage
+
+### Phase 3: Infrastructure Layer
+- localStorage adapters
+- Repository implementations
+- Index management for performance
+- Unit of Work pattern
+- Migration support
+
+### Phase 4: Presentation Layer - Web
+- React components (SearchInput, RecordList, TagCloud)
+- Keyboard navigation
+- Import/Export UI
+- Responsive design
+- Target: Lighthouse score >90
+
+### Phase 5: Extended Features
+- Tag auto-completion
+- User settings
+- Performance optimization
+- E2E test coverage
+
+### Phase 6: CLI Version (Optional)
+- Ink-based terminal UI
+- Command-line operations
+- Shell integration
+
+### Phase 7: Backend MVP
+- PostgreSQL migration
+- REST API/GraphQL
+- Authentication
+- Multi-user support
+
+## User Scenarios
+
+### First Use
+1. User opens application
+2. Sees empty input field
+3. Types tags separated by spaces
+4. Presses Enter - record saved
+5. Field clears for next record
+
+### Information Search
+1. User types one or more tags
+2. Sees real-time results
+3. If many results - sees tag cloud
+4. Clicks tag to refine search
+5. Finds needed record
+
+### Record Editing
+1. User finds record via search
+2. Clicks record or selects with arrows + Enter
+3. Record loads in input field
+4. Edits content
+5. Presses Enter - changes saved
+
+## Success Criteria
+
+### Functional
+- All core use cases work as specified
+- Data saves and restores correctly
+- Search finds all relevant records
+- Import/export works without data loss
+
+### Architectural
+- Domain layer has no external dependencies
+- Use cases testable without UI/DB
+- Repositories easily replaceable
+- New features addable without changing existing code
+
+### Quality
+- Test coverage meets targets
+- Performance meets requirements
+- Code follows SOLID principles
+- Zero critical bugs in production
+
+## Risks and Mitigation
+
+### Technical Risks
+- Clean Architecture complexity → Phased implementation
+- localStorage limits → Monitoring and warnings
+- Performance with large datasets → Indexing and optimization
+
+### Product Risks
+- "Too simple" perception → Education and examples
+- Tag concept confusion → Intuitive UI and onboarding
+- Duplicate records from typos → Aggressive auto-completion
+
+## Prototype Limitations
+- Data volume: Up to 5-10MB (localStorage)
+- No multi-user support
+- No synchronization
+- Manual backup only via export
+- Exact tag matching only (no fuzzy search)
+
+## Implementation Notes
+
+### Key Algorithms
+- Tag normalization with optional diacritic removal
+- AND logic for multi-tag search
+- Automatic display mode switching (list/cloud)
+- Index-based fast search
+
+### Data Structure
+- Records stored as objects with UUID keys
+- Tags stored separately with normalized values
+- Indexes for tag-to-record mapping
+- Version control for schema migrations
+
+### Security Considerations
+- No UUIDs in exports (privacy)
+- Full data replacement on import (with warning)
+- Validation of imported data structure
+- Automatic backup before import
+
+## Future Considerations (NOT for prototype)
+- Event sourcing
+- Tag renaming/merging
+- Change history
+- Synchronization
+- Incremental import
+- Complex validation rules
+
+## Definition of Done
+- Features work as specified
+- Test coverage targets met
+- Performance benchmarks achieved
+- Documentation complete
+- CI/CD passes all checks
+- No critical bugs
+
+## Development Tools Required
+- Node.js v18+ LTS
+- Yarn v3+ (Berry)
+- TypeScript
+- VS Code with extensions
+- Git with conventional commits
+
+## First Steps
+1. Initialize repository and yarn workspaces
+2. Setup TypeScript and testing
+3. Create domain layer structure
+4. Write first failing test
+5. Begin TDD cycle
+
+## Notes
+- Preserve tag order for readability
+- Content is unique tag set (order irrelevant for uniqueness)
+- Start with simplest implementation, refactor as needed
+- Focus on MVP functionality first
+- Small iterations with working code
