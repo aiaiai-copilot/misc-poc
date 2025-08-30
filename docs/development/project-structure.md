@@ -384,6 +384,11 @@ misc/
     "packages/infrastructure/*",
     "packages/presentation/*"
   ],
+  "engines": {
+    "node": ">=22.18.0 <23.0.0",
+    "yarn": ">=3.6.0 <4.0.0"
+  },
+  "packageManager": "yarn@3.6.4",    
   "scripts": {
     "build": "node scripts/build.js",
     "test": "node scripts/test.js",
