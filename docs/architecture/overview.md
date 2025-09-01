@@ -529,7 +529,7 @@ Debounce 300ms
 
 - [Domain Contracts](./domain-contracts.md) - TypeScript интерфейсы доменного слоя
 - [Application Contracts](./application-contracts.md) - TypeScript интерфейсы прикладного слоя
-- [Test Specifications](../development/test-specifications.md) - Спецификации для TDD
+- [Test Specifications](./test-specifications.md) - Спецификации для TDD
 - [Project Structure](../development/project-structure.md) - Структура монорепозитория
 - [Development Roadmap](../development/development-roadmap.md) - План разработки
 - [Product Requirements](../requirements/prd.md) - Требования к продукту

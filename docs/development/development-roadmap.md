@@ -333,7 +333,7 @@ Afternoon:
 
 ### Обязательные:
 - **IDE**: VS Code с расширениями для TypeScript
-- **Node.js**: v18+ LTS
+- **Node.js**: 22.18.0
 - **Yarn**: v3+ (Berry)
 - **Git**: Conventional Commits
 
