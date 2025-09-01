@@ -1,0 +1,602 @@
+{
+  "master": {
+    "tasks": [
+      {
+        "id": 1,
+        "title": "Initialize Monorepo Project Structure",
+        "description": "Set up the basic monorepo structure with yarn workspaces, TypeScript, and package configurations",
+        "details": "Create root package.json with workspaces configuration for packages/domain, packages/application, packages/infrastructure/localStorage, packages/presentation/web, packages/presentation/cli, packages/shared. Set up TypeScript base configuration, ESLint, Prettier, and Husky pre-commit hooks. Use yarn 3.6.4 and Node.js 22.18.0 as specified in .nvmrc.",
+        "testStrategy": "Verify yarn workspace commands work, TypeScript compilation succeeds, and linting passes across all packages",
+        "priority": "high",
+        "dependencies": [],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 2,
+        "title": "Setup Shared Package with Core Utilities",
+        "description": "Create shared package with common types, utilities, and constants used across all layers",
+        "details": "Implement Result<T, E> type for error handling, UUID utilities using 'uuid' library v9.x, date utilities, string normalization helpers, validation constants, and default configuration values. Include comprehensive TypeScript definitions and setup Jest testing framework.",
+        "testStrategy": "Unit tests for all utility functions with >95% coverage, integration tests for Result type usage patterns",
+        "priority": "high",
+        "dependencies": [
+          1
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 3,
+        "title": "Implement RecordId Value Object",
+        "description": "Create RecordId value object with UUID-based identity and validation",
+        "details": "Implement RecordId as immutable value object using uuid v4. Support creation from existing UUID string or generation of new UUID. Include equals() method, toString() method, and validation of UUID format. Use TDD approach with comprehensive test cases.",
+        "testStrategy": "Test UUID generation, validation of valid/invalid UUIDs, immutability, equality comparison, and serialization/deserialization",
+        "priority": "high",
+        "dependencies": [
+          2
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 4,
+        "title": "Implement TagId Value Object",
+        "description": "Create TagId value object with UUID-based identity for tag identification",
+        "details": "Implement TagId following same pattern as RecordId. Include factory methods for creation, validation, and comparison. Ensure immutability and proper TypeScript typing for compile-time safety.",
+        "testStrategy": "Test UUID generation, validation, equality operations, and type safety at compile time",
+        "priority": "high",
+        "dependencies": [
+          2
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 5,
+        "title": "Implement RecordContent Value Object",
+        "description": "Create RecordContent value object that preserves original user input and tag order",
+        "details": "Implement RecordContent to store original user input as string, preserving tag order and formatting. Include validation for non-empty content, length limits, and proper encoding. Support extraction of individual tokens for parsing.",
+        "testStrategy": "Test content preservation, validation rules, empty content rejection, and Unicode character handling",
+        "priority": "high",
+        "dependencies": [
+          2
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 6,
+        "title": "Implement SearchQuery Value Object",
+        "description": "Create SearchQuery value object for normalized search operations",
+        "details": "Implement SearchQuery to handle user search input with normalization. Parse input into tokens, apply case normalization and optional diacritic removal. Support AND logic for multiple terms and empty query handling.",
+        "testStrategy": "Test query parsing, normalization rules, token extraction, and edge cases with special characters",
+        "priority": "high",
+        "dependencies": [
+          2
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 7,
+        "title": "Implement TagNormalizer Domain Service",
+        "description": "Create service for consistent tag normalization across the system",
+        "details": "Implement TagNormalizer with configurable rules: lowercase conversion, optional diacritic removal (using libraries like 'remove-accents' v0.5.x), and Unicode normalization. Support configuration injection and consistent behavior across all tag operations.",
+        "testStrategy": "Test normalization with various languages, diacritics, case combinations, and Unicode edge cases",
+        "priority": "high",
+        "dependencies": [
+          5,
+          6
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 8,
+        "title": "Implement TagValidator Domain Service",
+        "description": "Create validation service for tag content and format",
+        "details": "Implement TagValidator with rules: length 1-100 characters, no forbidden characters ({}[]:,\"\\), no whitespace, Unicode support. Return detailed validation results with specific error messages for different validation failures.",
+        "testStrategy": "Test all validation rules, edge cases with Unicode, boundary conditions, and error message accuracy",
+        "priority": "high",
+        "dependencies": [
+          7
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 9,
+        "title": "Implement TagParser Domain Service",
+        "description": "Create service to parse content string into normalized tag values",
+        "details": "Implement TagParser to split RecordContent by whitespace, validate each token using TagValidator, normalize using TagNormalizer, and return array of valid normalized tag values. Handle empty tokens and duplicate removal.",
+        "testStrategy": "Test parsing with various input formats, whitespace handling, duplicate removal, and validation integration",
+        "priority": "high",
+        "dependencies": [
+          8
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 10,
+        "title": "Implement Tag Entity",
+        "description": "Create Tag entity with identity and normalized value",
+        "details": "Implement Tag entity with TagId and normalizedValue. Include factory method for creation, equals() method for comparison, and invariants validation. Ensure immutability after creation and unique normalized values.",
+        "testStrategy": "Test entity creation, identity comparison, invariant validation, and factory method behavior",
+        "priority": "high",
+        "dependencies": [
+          4,
+          7
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 11,
+        "title": "Implement TagFactory Domain Service",
+        "description": "Create factory for consistent Tag entity creation",
+        "details": "Implement TagFactory with methods to create Tag from raw string value. Apply normalization, validation, and generate UUID. Include error handling for invalid inputs and duplicate checking preparation.",
+        "testStrategy": "Test factory creation with valid/invalid inputs, normalization application, and error handling",
+        "priority": "high",
+        "dependencies": [
+          10
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 12,
+        "title": "Implement Record Entity",
+        "description": "Create Record entity with content, tag references, and metadata",
+        "details": "Implement Record entity with RecordId, RecordContent, Set<TagId>, createdAt, updatedAt. Include methods: hasTag(), hasSameTagSet(), equals(). Ensure tagIds synchronization with content and proper invariant validation.",
+        "testStrategy": "Test entity creation, tag operations, equality comparison, invariant maintenance, and date handling",
+        "priority": "high",
+        "dependencies": [
+          3,
+          5,
+          10
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 13,
+        "title": "Implement RecordFactory Domain Service",
+        "description": "Create factory for Record entity creation with tag association",
+        "details": "Implement RecordFactory to create Record from content string. Parse content using TagParser, create/find tags using TagFactory, build Set<TagId>, and ensure all invariants. Include timestamp generation and validation.",
+        "testStrategy": "Test factory creation process, tag association, invariant validation, and error handling for invalid content",
+        "priority": "high",
+        "dependencies": [
+          12,
+          11
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 14,
+        "title": "Implement RecordMatcher Domain Service",
+        "description": "Create service to match records against search queries",
+        "details": "Implement RecordMatcher with AND logic for search terms. Compare normalized query tokens against record's tagIds through tag lookup. Support efficient matching algorithm and boolean result with match confidence scoring preparation.",
+        "testStrategy": "Test matching logic with single/multiple terms, edge cases with empty queries, and performance with large tag sets",
+        "priority": "high",
+        "dependencies": [
+          12,
+          6
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 15,
+        "title": "Implement RecordDuplicateChecker Domain Service",
+        "description": "Create service to detect duplicate records based on tag sets",
+        "details": "Implement RecordDuplicateChecker to compare records by their tag sets (order independent). Use Set operations for efficient comparison, handle edge cases with empty records, and support exclusion of specific record from duplicate check.",
+        "testStrategy": "Test duplicate detection with various tag combinations, set equality edge cases, and exclusion logic",
+        "priority": "high",
+        "dependencies": [
+          12
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 16,
+        "title": "Implement Domain Error Hierarchy",
+        "description": "Create comprehensive error types for domain layer validation and operations",
+        "details": "Implement DomainError base class and specific errors: InvalidRecordContentError, InvalidTagError, DuplicateRecordError, TagLimitExceededError. Include error codes, descriptive messages, and context information for debugging.",
+        "testStrategy": "Test error creation, inheritance hierarchy, message formatting, and error context preservation",
+        "priority": "medium",
+        "dependencies": [
+          13,
+          14,
+          15
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 17,
+        "title": "Create Application Layer Ports (Repository Interfaces)",
+        "description": "Define repository interfaces for data persistence abstraction",
+        "details": "Implement RecordRepository and TagRepository interfaces with full CRUD operations, search capabilities, and bulk operations. Include UnitOfWork interface for transaction management. Use Result<T, E> pattern for error handling and async operations.",
+        "testStrategy": "Test interface contracts through mock implementations and verify all required operations are covered",
+        "priority": "high",
+        "dependencies": [
+          16
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 18,
+        "title": "Implement Application DTOs",
+        "description": "Create data transfer objects for application layer communication",
+        "details": "Implement RecordDTO, SearchResultDTO, TagCloudItemDTO, ExportDTO, ImportResultDTO, ValidationResultDTO. Include proper TypeScript typing, optional fields, and serialization support. Map domain entities to DTOs with data transformation.",
+        "testStrategy": "Test DTO creation, serialization/deserialization, mapping from domain entities, and type safety",
+        "priority": "high",
+        "dependencies": [
+          17
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 19,
+        "title": "Implement CreateRecord Use Case",
+        "description": "Create use case for record creation with validation and duplicate checking",
+        "details": "Implement CreateRecord use case with input validation, tag parsing/creation, duplicate checking, and persistence. Use dependency injection for repositories, handle all domain errors, and return detailed result with created record DTO.",
+        "testStrategy": "Test successful creation, validation failures, duplicate detection, and error propagation",
+        "priority": "high",
+        "dependencies": [
+          18
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 20,
+        "title": "Implement SearchRecords Use Case",
+        "description": "Create use case for searching records with query parsing and result formatting",
+        "details": "Implement SearchRecords use case with query normalization, tag lookup, record matching, and result pagination. Include search performance optimization and result sorting by creation date. Support empty query handling.",
+        "testStrategy": "Test search functionality, query normalization, result accuracy, performance with large datasets, and edge cases",
+        "priority": "high",
+        "dependencies": [
+          19
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 21,
+        "title": "Implement SearchModeDetector Service",
+        "description": "Create service to determine display mode (list/cloud) based on search results",
+        "details": "Implement SearchModeDetector to analyze search results and determine optimal display mode. Consider result count, screen size constraints, and user preferences. Provide configurable thresholds and responsive behavior.",
+        "testStrategy": "Test mode detection with various result counts, threshold configurations, and boundary conditions",
+        "priority": "medium",
+        "dependencies": [
+          20
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 22,
+        "title": "Implement TagCloudBuilder Service",
+        "description": "Create service to build tag cloud data from search results",
+        "details": "Implement TagCloudBuilder to aggregate tags from search results, calculate usage frequency, determine visual size (1-5), and sort by relevance. Include configuration for maximum cloud size and frequency thresholds.",
+        "testStrategy": "Test tag aggregation, frequency calculation, size determination, and sorting algorithms",
+        "priority": "medium",
+        "dependencies": [
+          21
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 23,
+        "title": "Implement UpdateRecord Use Case",
+        "description": "Create use case for record editing with duplicate checking and tag cleanup",
+        "details": "Implement UpdateRecord use case with content parsing, duplicate checking (excluding current record), tag association updates, and orphaned tag cleanup. Handle optimistic locking and concurrent modification scenarios.",
+        "testStrategy": "Test record updates, duplicate prevention, tag cleanup, concurrent modification handling, and error scenarios",
+        "priority": "high",
+        "dependencies": [
+          22
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 24,
+        "title": "Implement DeleteRecord Use Case",
+        "description": "Create use case for record deletion with orphaned tag cleanup",
+        "details": "Implement DeleteRecord use case with record removal and automatic cleanup of unused tags. Include soft delete option preparation and referential integrity maintenance. Handle cascade operations safely.",
+        "testStrategy": "Test record deletion, tag cleanup, referential integrity, and error handling for non-existent records",
+        "priority": "high",
+        "dependencies": [
+          23
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 25,
+        "title": "Implement GetTagSuggestions Use Case",
+        "description": "Create use case for tag auto-completion functionality",
+        "details": "Implement GetTagSuggestions use case with prefix matching, frequency-based sorting, and performance optimization. Include fuzzy matching preparation and configurable suggestion limits. Support real-time suggestions with debouncing.",
+        "testStrategy": "Test prefix matching, suggestion ranking, performance with large tag sets, and edge cases",
+        "priority": "medium",
+        "dependencies": [
+          24
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 26,
+        "title": "Implement ExportData Use Case",
+        "description": "Create use case for data export without internal identifiers",
+        "details": "Implement ExportData use case to export all records in JSON format without UUIDs. Include version metadata, record count, export timestamp, and normalization settings. Ensure clean data export for portability.",
+        "testStrategy": "Test export format, data completeness, UUID exclusion, metadata accuracy, and large dataset handling",
+        "priority": "high",
+        "dependencies": [
+          25
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 27,
+        "title": "Implement ImportValidator Service",
+        "description": "Create service to validate import data structure and content",
+        "details": "Implement ImportValidator to validate JSON structure, version compatibility, record format, and content validity. Include detailed error reporting and recovery suggestions. Support schema migration preparation.",
+        "testStrategy": "Test validation with valid/invalid formats, version compatibility, error reporting, and edge cases",
+        "priority": "high",
+        "dependencies": [
+          26
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 28,
+        "title": "Implement ImportData Use Case",
+        "description": "Create use case for full data import with complete data replacement",
+        "details": "Implement ImportData use case with complete data replacement (not incremental). Include automatic backup creation, data validation, batch processing for performance, and rollback capability on failure.",
+        "testStrategy": "Test full data replacement, backup creation, validation integration, error handling, and rollback scenarios",
+        "priority": "high",
+        "dependencies": [
+          27
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 29,
+        "title": "Create Application Configuration System",
+        "description": "Implement configuration management for application layer settings",
+        "details": "Implement ApplicationConfig with type-safe configuration for tag limits, normalization rules, search settings, display preferences, and storage limits. Include validation, default values, and environment-based overrides.",
+        "testStrategy": "Test configuration loading, validation, default handling, and type safety",
+        "priority": "medium",
+        "dependencies": [
+          28
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 30,
+        "title": "Implement Application Container",
+        "description": "Create dependency injection container for application layer",
+        "details": "Implement ApplicationContainer with dependency injection for use cases, services, and repositories. Use lightweight DI approach with TypeScript support, lifecycle management, and circular dependency detection.",
+        "testStrategy": "Test dependency resolution, lifecycle management, error handling, and container performance",
+        "priority": "medium",
+        "dependencies": [
+          29
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 31,
+        "title": "Implement LocalStorage Schema Definition",
+        "description": "Create schema definition and management for localStorage data structure",
+        "details": "Implement StorageSchema with version 2.1 structure: tags and records as objects (not arrays) for O(1) access, indexes for fast search (normalizedToTagId, tagToRecords), and schema migration support.",
+        "testStrategy": "Test schema validation, migration logic, index consistency, and performance with large datasets",
+        "priority": "high",
+        "dependencies": [
+          30
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 32,
+        "title": "Implement Storage Manager",
+        "description": "Create manager for localStorage operations with error handling and quotas",
+        "details": "Implement StorageManager with localStorage operations, quota monitoring, error handling for storage full scenarios, atomic operations simulation, and data integrity verification. Include backup/restore functionality.",
+        "testStrategy": "Test storage operations, quota handling, error scenarios, data integrity, and backup functionality",
+        "priority": "high",
+        "dependencies": [
+          31
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 33,
+        "title": "Implement Index Manager",
+        "description": "Create manager for search indexes to optimize query performance",
+        "details": "Implement IndexManager to maintain normalizedToTagId and tagToRecords indexes. Include index rebuilding, consistency checking, and performance optimization for search operations. Handle index corruption recovery.",
+        "testStrategy": "Test index maintenance, consistency, rebuilding, performance optimization, and corruption recovery",
+        "priority": "high",
+        "dependencies": [
+          32
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 34,
+        "title": "Implement LocalStorage Repository Adapters",
+        "description": "Create localStorage implementations of repository interfaces",
+        "details": "Implement LocalStorageRecordRepository and LocalStorageTagRepository with full CRUD operations, search optimization using indexes, batch operations, and error handling. Include data mapping between domain entities and storage format.",
+        "testStrategy": "Test all CRUD operations, search performance, batch processing, error handling, and data mapping accuracy",
+        "priority": "high",
+        "dependencies": [
+          33
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 35,
+        "title": "Implement LocalStorage UnitOfWork",
+        "description": "Create transaction-like operations for localStorage using UnitOfWork pattern",
+        "details": "Implement LocalStorageUnitOfWork to simulate transactions with localStorage. Include change tracking, rollback capability, and atomic operation simulation using backup/restore mechanism.",
+        "testStrategy": "Test transaction simulation, rollback functionality, change tracking, and atomic operation behavior",
+        "priority": "high",
+        "dependencies": [
+          34
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 36,
+        "title": "Create Migration Manager",
+        "description": "Implement system for localStorage schema migrations and version management",
+        "details": "Implement MigrationManager for localStorage schema evolution. Include version detection, migration scripts, data backup before migration, and rollback capability. Support incremental and full migrations.",
+        "testStrategy": "Test migration execution, version detection, backup creation, rollback scenarios, and data integrity",
+        "priority": "medium",
+        "dependencies": [
+          35
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 37,
+        "title": "Setup React Web Application Infrastructure",
+        "description": "Initialize React web application with Vite, routing, and development tools",
+        "details": "Set up React 18.x with Vite 5.x, TypeScript, CSS Modules, React Router v6, React Testing Library, and development tools. Include hot reload, source maps, and build optimization. Configure for modern browsers with ES2020 target.",
+        "testStrategy": "Test application startup, hot reload, build process, routing functionality, and development tools integration",
+        "priority": "high",
+        "dependencies": [
+          36
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 38,
+        "title": "Implement Application Context and Providers",
+        "description": "Create React contexts for dependency injection and state management",
+        "details": "Implement ApplicationContext for dependency injection, ConfigContext for application settings, and UIStateContext for interface state. Use React Context API with TypeScript support and performance optimization.",
+        "testStrategy": "Test context providers, dependency injection, state updates, and performance with context changes",
+        "priority": "high",
+        "dependencies": [
+          37
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 39,
+        "title": "Implement SearchInput Component",
+        "description": "Create universal search/input component with debouncing and keyboard handling",
+        "details": "Implement SearchInput with 300ms debounce, keyboard shortcuts (Enter, Escape, Tab, Arrow keys), auto-completion integration, loading indicators, and accessibility support. Include ref forwarding and controlled/uncontrolled modes.",
+        "testStrategy": "Test debouncing, keyboard interactions, auto-completion, accessibility, and integration with use cases",
+        "priority": "high",
+        "dependencies": [
+          38
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 40,
+        "title": "Implement RecordList and RecordItem Components",
+        "description": "Create components for displaying search results as a list",
+        "details": "Implement RecordList with virtualization for performance, RecordItem with actions (edit, delete), keyboard navigation, responsive design, and CSS Modules styling. Include selection state and bulk operations preparation.",
+        "testStrategy": "Test list rendering, virtualization, keyboard navigation, actions, and responsive behavior",
+        "priority": "high",
+        "dependencies": [
+          39
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 41,
+        "title": "Implement TagCloud Component",
+        "description": "Create tag cloud component for visualizing tag frequency and navigation",
+        "details": "Implement TagCloud with frequency-based sizing, click interaction for search refinement, responsive layout, animation support, and accessibility. Include tag highlighting and hover effects.",
+        "testStrategy": "Test tag rendering, sizing algorithm, click interactions, responsive layout, and accessibility",
+        "priority": "high",
+        "dependencies": [
+          40
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 42,
+        "title": "Implement AutoComplete Component",
+        "description": "Create auto-completion dropdown for tag suggestions",
+        "details": "Implement AutoComplete with fuzzy matching, keyboard navigation (Tab, Arrow keys), click selection, performance optimization for large suggestion lists, and integration with SearchInput. Include custom styling and positioning.",
+        "testStrategy": "Test suggestion filtering, keyboard navigation, selection behavior, performance, and positioning",
+        "priority": "medium",
+        "dependencies": [
+          41
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 43,
+        "title": "Implement Import/Export UI Components",
+        "description": "Create user interface for data import and export operations",
+        "details": "Implement ImportExport components with file selection, progress indicators, warning dialogs for data replacement, drag-and-drop support, and error handling. Include export button with automatic filename generation.",
+        "testStrategy": "Test file operations, progress display, warning dialogs, drag-and-drop functionality, and error handling",
+        "priority": "high",
+        "dependencies": [
+          42
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 44,
+        "title": "Integrate All Components and Implement Main User Flow",
+        "description": "Connect all components and implement the complete user interaction flow",
+        "details": "Integrate SearchInput, RecordList, TagCloud, and ImportExport components into main application flow. Implement search mode detection, create/edit/delete operations, keyboard shortcuts, and state management between components.",
+        "testStrategy": "Test complete user journeys, component integration, state synchronization, and keyboard workflow",
+        "priority": "high",
+        "dependencies": [
+          43
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 45,
+        "title": "Implement E2E Tests and Performance Optimization",
+        "description": "Create end-to-end tests and optimize application performance",
+        "details": "Implement E2E tests using Playwright or Cypress for main user scenarios, performance optimization for large datasets, bundle size optimization, accessibility testing, and browser compatibility verification. Target <500KB gzipped bundle size.",
+        "testStrategy": "Test complete user workflows, performance benchmarks, accessibility compliance, and cross-browser compatibility",
+        "priority": "medium",
+        "dependencies": [
+          44
+        ],
+        "status": "pending",
+        "subtasks": []
+      }
+    ],
+    "metadata": {
+      "created": "2025-09-01T19:04:18.307Z",
+      "updated": "2025-09-01T19:04:18.307Z",
+      "description": "Tasks for master context"
+    }
+  }
+}
