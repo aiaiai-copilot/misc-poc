@@ -1,0 +1,38 @@
+{
+  "name": "misc-poc",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "packages/domain",
+    "packages/application",
+    "packages/infrastructure/localStorage",
+    "packages/presentation/web",
+    "packages/presentation/cli",
+    "packages/shared"
+  ],
+  "engines": {
+    "node": ">=22.18.0",
+    "yarn": ">=3.6.4"
+  },
+  "packageManager": "yarn@3.6.4",
+  "scripts": {
+    "build": "yarn workspaces foreach -ptv run build",
+    "test": "yarn workspaces foreach -ptv run test",
+    "lint": "yarn workspaces foreach -ptv run lint",
+    "typecheck": "yarn workspaces foreach -ptv run typecheck",
+    "dev": "yarn workspace @misc-poc/presentation-web dev",
+    "clean": "yarn workspaces foreach -ptv run clean"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "@typescript-eslint/parser": "^8.0.0",
+    "eslint": "^9.0.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-prettier": "^5.0.0",
+    "husky": "^9.0.0",
+    "lint-staged": "^15.0.0",
+    "prettier": "^3.0.0",
+    "typescript": "^5.5.0"
+  }
+}
