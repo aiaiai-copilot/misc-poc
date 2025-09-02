@@ -1681,7 +1681,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@misc-poc/shared", "workspace:packages/shared"],\
             ["@types/jest", "npm:29.5.14"],\
             ["jest", "virtual:8b39305248b6d8f64ae376050ed4a6a01f34b01e04ae99f87537b83ce923a93718ac0e497adcf240607d254d4e538fe7c48c043003d6a9e85bc89f81c77eb2a5#npm:29.7.0"],\
-            ["ts-jest", "virtual:8b39305248b6d8f64ae376050ed4a6a01f34b01e04ae99f87537b83ce923a93718ac0e497adcf240607d254d4e538fe7c48c043003d6a9e85bc89f81c77eb2a5#npm:29.4.1"]\
+            ["ts-jest", "virtual:dc141ed64cc1b273e0dca8624fb0c2c979fe0cad225fe2e7f838cc177111268d8925463b03252e267ace0a2667ce79ac6e19ac997995d1957b3611736def2556#npm:29.4.1"]\
           ],\
           "linkType": "SOFT"\
         }]\
@@ -1694,7 +1694,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@misc-poc/shared", "workspace:packages/shared"],\
             ["@types/jest", "npm:29.5.14"],\
             ["jest", "virtual:8b39305248b6d8f64ae376050ed4a6a01f34b01e04ae99f87537b83ce923a93718ac0e497adcf240607d254d4e538fe7c48c043003d6a9e85bc89f81c77eb2a5#npm:29.7.0"],\
-            ["ts-jest", "virtual:8b39305248b6d8f64ae376050ed4a6a01f34b01e04ae99f87537b83ce923a93718ac0e497adcf240607d254d4e538fe7c48c043003d6a9e85bc89f81c77eb2a5#npm:29.4.1"]\
+            ["ts-jest", "virtual:dc141ed64cc1b273e0dca8624fb0c2c979fe0cad225fe2e7f838cc177111268d8925463b03252e267ace0a2667ce79ac6e19ac997995d1957b3611736def2556#npm:29.4.1"]\
           ],\
           "linkType": "SOFT"\
         }]\
@@ -1708,7 +1708,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@misc-poc/shared", "workspace:packages/shared"],\
             ["@types/jest", "npm:29.5.14"],\
             ["jest", "virtual:8b39305248b6d8f64ae376050ed4a6a01f34b01e04ae99f87537b83ce923a93718ac0e497adcf240607d254d4e538fe7c48c043003d6a9e85bc89f81c77eb2a5#npm:29.7.0"],\
-            ["ts-jest", "virtual:8b39305248b6d8f64ae376050ed4a6a01f34b01e04ae99f87537b83ce923a93718ac0e497adcf240607d254d4e538fe7c48c043003d6a9e85bc89f81c77eb2a5#npm:29.4.1"]\
+            ["ts-jest", "virtual:dc141ed64cc1b273e0dca8624fb0c2c979fe0cad225fe2e7f838cc177111268d8925463b03252e267ace0a2667ce79ac6e19ac997995d1957b3611736def2556#npm:29.4.1"]\
           ],\
           "linkType": "SOFT"\
         }]\
@@ -1724,7 +1724,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/jest", "npm:29.5.14"],\
             ["commander", "npm:11.1.0"],\
             ["jest", "virtual:8b39305248b6d8f64ae376050ed4a6a01f34b01e04ae99f87537b83ce923a93718ac0e497adcf240607d254d4e538fe7c48c043003d6a9e85bc89f81c77eb2a5#npm:29.7.0"],\
-            ["ts-jest", "virtual:8b39305248b6d8f64ae376050ed4a6a01f34b01e04ae99f87537b83ce923a93718ac0e497adcf240607d254d4e538fe7c48c043003d6a9e85bc89f81c77eb2a5#npm:29.4.1"]\
+            ["ts-jest", "virtual:dc141ed64cc1b273e0dca8624fb0c2c979fe0cad225fe2e7f838cc177111268d8925463b03252e267ace0a2667ce79ac6e19ac997995d1957b3611736def2556#npm:29.4.1"]\
           ],\
           "linkType": "SOFT"\
         }]\
@@ -1744,7 +1744,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["jest", "virtual:8b39305248b6d8f64ae376050ed4a6a01f34b01e04ae99f87537b83ce923a93718ac0e497adcf240607d254d4e538fe7c48c043003d6a9e85bc89f81c77eb2a5#npm:29.7.0"],\
             ["react", "npm:18.3.1"],\
             ["react-dom", "virtual:6d059685856a83ee6bd91c2a0368ab5a6c3caeb39b921c2c2750018fda2c73608dfc96c7d00c5e79f465cf0f8ac714fb3328429722b6488ae63db5a3352e3e89#npm:18.3.1"],\
-            ["ts-jest", "virtual:8b39305248b6d8f64ae376050ed4a6a01f34b01e04ae99f87537b83ce923a93718ac0e497adcf240607d254d4e538fe7c48c043003d6a9e85bc89f81c77eb2a5#npm:29.4.1"],\
+            ["ts-jest", "virtual:dc141ed64cc1b273e0dca8624fb0c2c979fe0cad225fe2e7f838cc177111268d8925463b03252e267ace0a2667ce79ac6e19ac997995d1957b3611736def2556#npm:29.4.1"],\
             ["vite", "virtual:6d059685856a83ee6bd91c2a0368ab5a6c3caeb39b921c2c2750018fda2c73608dfc96c7d00c5e79f465cf0f8ac714fb3328429722b6488ae63db5a3352e3e89#npm:5.4.19"]\
           ],\
           "linkType": "SOFT"\
@@ -1758,6 +1758,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/jest", "npm:29.5.14"],\
             ["@types/uuid", "npm:9.0.8"],\
             ["jest", "virtual:8b39305248b6d8f64ae376050ed4a6a01f34b01e04ae99f87537b83ce923a93718ac0e497adcf240607d254d4e538fe7c48c043003d6a9e85bc89f81c77eb2a5#npm:29.7.0"],\
+            ["jest-util", "npm:29.7.0"],\
             ["ts-jest", "virtual:8b39305248b6d8f64ae376050ed4a6a01f34b01e04ae99f87537b83ce923a93718ac0e497adcf240607d254d4e538fe7c48c043003d6a9e85bc89f81c77eb2a5#npm:29.4.1"],\
             ["uuid", "npm:9.0.1"]\
           ],\
@@ -6489,6 +6490,56 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./.yarn/__virtual__/ts-jest-virtual-50aad7dfa7/0/cache/ts-jest-npm-29.4.1-ab76d85d32-641f17ecb4.zip/node_modules/ts-jest/",\
           "packageDependencies": [\
             ["ts-jest", "virtual:8b39305248b6d8f64ae376050ed4a6a01f34b01e04ae99f87537b83ce923a93718ac0e497adcf240607d254d4e538fe7c48c043003d6a9e85bc89f81c77eb2a5#npm:29.4.1"],\
+            ["@babel/core", null],\
+            ["@jest/transform", null],\
+            ["@jest/types", null],\
+            ["@types/babel-jest", null],\
+            ["@types/babel__core", null],\
+            ["@types/esbuild", null],\
+            ["@types/jest", "npm:29.5.14"],\
+            ["@types/jest-util", null],\
+            ["@types/jest__transform", null],\
+            ["@types/jest__types", null],\
+            ["@types/typescript", null],\
+            ["babel-jest", null],\
+            ["bs-logger", "npm:0.2.6"],\
+            ["esbuild", null],\
+            ["fast-json-stable-stringify", "npm:2.1.0"],\
+            ["handlebars", "npm:4.7.8"],\
+            ["jest", "virtual:8b39305248b6d8f64ae376050ed4a6a01f34b01e04ae99f87537b83ce923a93718ac0e497adcf240607d254d4e538fe7c48c043003d6a9e85bc89f81c77eb2a5#npm:29.7.0"],\
+            ["jest-util", "npm:29.7.0"],\
+            ["json5", "npm:2.2.3"],\
+            ["lodash.memoize", "npm:4.1.2"],\
+            ["make-error", "npm:1.3.6"],\
+            ["semver", "npm:7.7.2"],\
+            ["type-fest", "npm:4.41.0"],\
+            ["typescript", null],\
+            ["yargs-parser", "npm:21.1.1"]\
+          ],\
+          "packagePeers": [\
+            "@babel/core",\
+            "@jest/transform",\
+            "@jest/types",\
+            "@types/babel-jest",\
+            "@types/babel__core",\
+            "@types/esbuild",\
+            "@types/jest-util",\
+            "@types/jest",\
+            "@types/jest__transform",\
+            "@types/jest__types",\
+            "@types/typescript",\
+            "babel-jest",\
+            "esbuild",\
+            "jest-util",\
+            "jest",\
+            "typescript"\
+          ],\
+          "linkType": "HARD"\
+        }],\
+        ["virtual:dc141ed64cc1b273e0dca8624fb0c2c979fe0cad225fe2e7f838cc177111268d8925463b03252e267ace0a2667ce79ac6e19ac997995d1957b3611736def2556#npm:29.4.1", {\
+          "packageLocation": "./.yarn/__virtual__/ts-jest-virtual-491496cab3/0/cache/ts-jest-npm-29.4.1-ab76d85d32-641f17ecb4.zip/node_modules/ts-jest/",\
+          "packageDependencies": [\
+            ["ts-jest", "virtual:dc141ed64cc1b273e0dca8624fb0c2c979fe0cad225fe2e7f838cc177111268d8925463b03252e267ace0a2667ce79ac6e19ac997995d1957b3611736def2556#npm:29.4.1"],\
             ["@babel/core", null],\
             ["@jest/transform", null],\
             ["@jest/types", null],\
