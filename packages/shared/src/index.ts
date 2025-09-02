@@ -4,6 +4,9 @@ export { Result, Ok, Err } from './result';
 // UUID utilities
 export { generateUuid, validateUuid, isValidUuid, parseUuid } from './uuid-utils';
 
+// Value objects
+export { RecordId } from './record-id';
+
 // Date utilities
 export { 
   formatDate, 
