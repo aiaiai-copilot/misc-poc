@@ -1,0 +1,45 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+    "composite": true,
+
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+
+    "skipLibCheck": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+
+    "baseUrl": ".",
+    "paths": {
+      "@misc-poc/shared": ["./packages/shared/src"],
+      "@misc-poc/domain": ["./packages/domain/src"],
+      "@misc-poc/application": ["./packages/application/src"],
+      "@misc-poc/infrastructure-localstorage": [
+        "./packages/infrastructure/localStorage/src"
+      ],
+      "@misc-poc/presentation-web": ["./packages/presentation/web/src"],
+      "@misc-poc/presentation-cli": ["./packages/presentation/cli/src"]
+    }
+  },
+  "include": [],
+  "references": [
+    { "path": "./packages/shared" },
+    { "path": "./packages/domain" },
+    { "path": "./packages/application" },
+    { "path": "./packages/infrastructure/localStorage" },
+    { "path": "./packages/presentation/web" },
+    { "path": "./packages/presentation/cli" }
+  ]
+}
