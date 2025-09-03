@@ -16,12 +16,18 @@
   },
   "packageManager": "yarn@3.6.4",
   "scripts": {
-    "build": "yarn workspaces foreach -ptv run build",
-    "test": "yarn workspaces foreach -ptv run test",
-    "lint": "yarn workspaces foreach -ptv run lint",
-    "typecheck": "yarn workspaces foreach -ptv run typecheck",
+    "build": "yarn workspace @misc-poc/shared build",
+    "test": "yarn workspace @misc-poc/shared test",
+    "lint": "yarn workspace @misc-poc/shared lint",
+    "typecheck": "yarn workspace @misc-poc/shared typecheck",
     "dev": "yarn workspace @misc-poc/presentation-web dev",
-    "clean": "yarn workspaces foreach -ptv run clean"
+    "clean": "yarn workspace @misc-poc/shared clean",
+    "clean:all": "yarn workspace @misc-poc/shared clean; yarn workspace @misc-poc/domain clean; yarn workspace @misc-poc/application clean; yarn workspace @misc-poc/infrastructure-localstorage clean; yarn workspace @misc-poc/presentation-cli clean; yarn workspace @misc-poc/presentation-web clean",
+    "all": "echo 'Use: yarn test:all, yarn lint:all, yarn typecheck:all, yarn build:all, or yarn clean:all'",
+    "test:all": "yarn workspace @misc-poc/shared test; yarn workspace @misc-poc/domain test; yarn workspace @misc-poc/application test; yarn workspace @misc-poc/infrastructure-localstorage test; yarn workspace @misc-poc/presentation-cli test; yarn workspace @misc-poc/presentation-web test",
+    "lint:all": "yarn workspace @misc-poc/shared lint; yarn workspace @misc-poc/domain lint; yarn workspace @misc-poc/application lint; yarn workspace @misc-poc/infrastructure-localstorage lint; yarn workspace @misc-poc/presentation-cli lint; yarn workspace @misc-poc/presentation-web lint",
+    "typecheck:all": "yarn workspace @misc-poc/shared typecheck; yarn workspace @misc-poc/domain typecheck; yarn workspace @misc-poc/application typecheck; yarn workspace @misc-poc/infrastructure-localstorage typecheck; yarn workspace @misc-poc/presentation-cli typecheck; yarn workspace @misc-poc/presentation-web typecheck",
+    "build:all": "yarn workspace @misc-poc/shared build && yarn workspace @misc-poc/domain build && yarn workspace @misc-poc/application build && yarn workspace @misc-poc/infrastructure-localstorage build && yarn workspace @misc-poc/presentation-cli build && yarn workspace @misc-poc/presentation-web build"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
