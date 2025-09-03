@@ -9,3 +9,10 @@ export { Record } from './record';
 export { RecordFactory } from './record-factory';
 export { RecordDuplicateChecker } from './record-duplicate-checker';
 export { RecordMatcher } from './record-matcher';
+export {
+  DomainError,
+  InvalidRecordContentError,
+  InvalidTagError,
+  DuplicateRecordError,
+  TagLimitExceededError,
+} from './domain-errors';
