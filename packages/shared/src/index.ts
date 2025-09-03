@@ -2,23 +2,30 @@
 export { Result, Ok, Err } from './result';
 
 // UUID utilities
-export { generateUuid, validateUuid, isValidUuid, parseUuid } from './uuid-utils';
+export {
+  generateUuid,
+  validateUuid,
+  isValidUuid,
+  parseUuid,
+} from './uuid-utils';
 
 // Value objects
 export { RecordId } from './record-id';
 export { TagId } from './tag-id';
+export { RecordContent } from './record-content';
+export { SearchQuery } from './search-query';
 
 // Date utilities
-export { 
-  formatDate, 
-  parseDate, 
-  isValidDate, 
-  getCurrentTimestamp, 
-  addDays, 
-  subtractDays, 
+export {
+  formatDate,
+  parseDate,
+  isValidDate,
+  getCurrentTimestamp,
+  addDays,
+  subtractDays,
   daysBetween,
   type DateInput,
-  type DateFormat
+  type DateFormat,
 } from './date-utils';
 
 // String utilities
@@ -27,7 +34,7 @@ export {
   slugify,
   truncate,
   sanitizeInput,
-  isEmptyOrWhitespace
+  isEmptyOrWhitespace,
 } from './string-utils';
 
 // Validation constants and rules
