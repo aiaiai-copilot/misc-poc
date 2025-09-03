@@ -5,7 +5,9 @@
     "rootDir": "./src",
     "noEmit": false,
     "composite": true,
-    "allowImportingTsExtensions": false
+    "allowImportingTsExtensions": false,
+    "moduleResolution": "node",
+    "esModuleInterop": true
   },
   "include": ["src/**/*"],
   "exclude": ["dist", "**/*.test.ts", "**/*.spec.ts"],

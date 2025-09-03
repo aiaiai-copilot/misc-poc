@@ -1,4 +1,4 @@
-// @ts-expect-error - remove-accents doesn't have types
+// @ts-expect-error - CommonJS require in ES module context
 const removeAccents: (str: string) => string = require('remove-accents');
 
 export interface TagNormalizerConfig {
