@@ -20,34 +20,45 @@ yarn dev
 
 ## Команды для разработки
 
-### Простые команды (для основного пакета shared)
+### Основные команды
 
 ```bash
-# Тестирование
+# Тестирование всех пакетов (shared + domain + все остальные)
 yarn test
 
-# Линтинг
+# Линтинг основного пакета
 yarn lint
 
-# Проверка типов
+# Проверка типов основного пакета
 yarn typecheck
 
-# Сборка (всегда полная пересборка)
+# Сборка основного пакета (всегда полная пересборка)
 yarn build
 
 # Инкрементальная сборка (быстрее, но может пропустить изменения)
 yarn build:incremental
 
-# Очистка
+# Очистка основного пакета
 yarn clean
+```
+
+### Тестирование
+
+```bash
+# Все тесты (259 тестов: shared + domain + другие пакеты)
+yarn test
+
+# Тесты отдельных пакетов
+yarn test:shared  # 229 тестов shared пакета
+yarn test:domain  # 30 тестов domain пакета (TagNormalizer и др.)
+
+# Устаревший способ (то же самое что yarn test)
+yarn test:all
 ```
 
 ### Команды для всех пакетов
 
 ```bash
-# Тестирование всех пакетов
-yarn test:all
-
 # Линтинг всех пакетов
 yarn lint:all
 
@@ -66,18 +77,23 @@ yarn clean:all
 ```bash
 # Запустить тесты конкретного пакета
 yarn workspace @misc-poc/shared test
+yarn workspace @misc-poc/domain test
 
 # Запустить тесты с покрытием
 yarn workspace @misc-poc/shared test --coverage
+yarn workspace @misc-poc/domain test --coverage
 
 # Линтинг конкретного пакета
 yarn workspace @misc-poc/shared lint
+yarn workspace @misc-poc/domain lint
 
 # Проверка типов конкретного пакета
 yarn workspace @misc-poc/shared typecheck
+yarn workspace @misc-poc/domain typecheck
 
 # Сборка конкретного пакета
 yarn workspace @misc-poc/shared build
+yarn workspace @misc-poc/domain build
 ```
 
 ## Контроль качества при коммитах
