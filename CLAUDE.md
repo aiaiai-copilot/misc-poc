@@ -43,15 +43,15 @@ tm set-status --id=<id> --status=in-progress
 ### 3. Task Completion (AUTOMATICALLY do ALL of these)
 
 ```bash
-# Commit final changes
+# Mark task complete FIRST (before final commit)
+tm set-status --id=<id> --status=done
+
+# Commit final changes INCLUDING task status
 git add .
 git commit -m "feat: implement task #<id> - <brief description>"
 
 # Push branch
 git push -u origin task/<id>-<description>
-
-# Mark task complete
-tm set-status --id=<id> --status=done
 
 # Create PR
 gh pr create --title "Task #<id>: <title>" --body "Implements task #<id>"
@@ -84,3 +84,18 @@ I MUST:
 8. Report completion to user with PR link
 
 **NEVER ask user to do these steps manually - I handle ALL TaskMaster automation!**
+
+## CRITICAL REMINDERS
+
+### Task Status Management
+
+- ❗ **ALWAYS** update task status (`tm set-status --id=<id> --status=done`) BEFORE the final commit
+- ❗ **NEVER** update task status after pushing or creating PR
+- ❗ **ALWAYS** include task status changes in the same commit as the implementation
+- ❗ The task status file (`.taskmaster/tasks/tasks.json`) must be committed on the task branch
+
+### Why This Matters
+
+- Task status changes on main branch create inconsistency
+- PRs should include both implementation AND task completion status
+- This ensures task tracking is synchronized with code changes
