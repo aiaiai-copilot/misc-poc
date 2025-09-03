@@ -10,12 +10,16 @@ When the user asks me to work on ANY task in this project, I MUST automatically 
 # Check what task to work on (if not specified)
 tm next
 
-# Ensure we're on main with latest changes
+# Check for unmerged PRs before proceeding
+gh pr list --state=open
+
+# If there are open PRs from previous tasks:
+# STOP and notify user: "There are unmerged PRs. Please approve and merge them before I continue with the next task."
+# List the open PRs and wait for user confirmation
+
+# Only proceed if no blocking PRs exist, then sync with main
 git checkout main
 git pull origin main
-
-# Verify previous task changes are merged (if there was a previous task)
-# git log --grep="task #<previous-id>" -n 1  # Verify previous task is merged
 
 # Create branch automatically using format: task/<id>-<description>
 git checkout -b task/<id>-<short-description>
