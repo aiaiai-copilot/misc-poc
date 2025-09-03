@@ -12,12 +12,12 @@
     }
   },
   "scripts": {
-    "build": "tsc --build --clean && tsc --build",
-    "build:incremental": "tsc --build",
+    "build": "yarn exec tsc --build --clean && yarn exec tsc --build",
+    "build:incremental": "yarn exec tsc --build",
     "test": "jest",
     "lint": "eslint src --ext .ts",
-    "typecheck": "tsc --noEmit",
-    "clean": "rm -rf dist"
+    "typecheck": "yarn exec tsc --noEmit",
+    "clean": "rm -rf dist tsconfig.tsbuildinfo"
   },
   "dependencies": {
     "uuid": "^9.0.0"

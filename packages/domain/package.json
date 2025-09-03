@@ -6,11 +6,11 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "build": "test -d src && tsc --build || echo 'No src directory found, skipping build'",
+    "build": "test -d src && yarn exec tsc --build || echo 'No src directory found, skipping build'",
     "test": "jest",
     "lint": "test -d src && eslint src --ext .ts || echo 'No src directory found, skipping lint'",
-    "typecheck": "tsc --noEmit",
-    "clean": "rm -rf dist"
+    "typecheck": "yarn exec tsc --noEmit",
+    "clean": "rm -rf dist tsconfig.tsbuildinfo"
   },
   "dependencies": {
     "@misc-poc/shared": "workspace:*",

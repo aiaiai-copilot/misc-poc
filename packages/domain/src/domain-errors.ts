@@ -16,8 +16,9 @@ export class DomainError extends Error {
     Object.setPrototypeOf(this, DomainError.prototype);
 
     // Capture stack trace, excluding constructor call from it
-    if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, this.constructor);
+    if ('captureStackTrace' in Error) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (Error as any).captureStackTrace(this, this.constructor);
     }
   }
 

@@ -1015,6 +1015,7 @@ __metadata:
     jest: ^29.0.0
     jest-util: ^29.0.0
     ts-jest: ^29.0.0
+    typescript: ^5.5.0
   languageName: unknown
   linkType: soft
 

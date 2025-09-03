@@ -4,7 +4,8 @@
     "outDir": "./dist",
     "rootDir": "./src",
     "noEmit": false,
-    "composite": true
+    "composite": true,
+    "allowImportingTsExtensions": false
   },
   "include": ["src/**/*"],
   "exclude": ["dist", "**/*.test.ts", "**/*.spec.ts"],
