@@ -7,7 +7,9 @@
     "composite": true,
     "allowImportingTsExtensions": false,
     "moduleResolution": "node",
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "skipLibCheck": true
   },
   "include": ["src/**/*"],
   "exclude": ["dist", "**/*.test.ts", "**/*.spec.ts"],

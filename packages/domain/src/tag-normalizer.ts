@@ -1,5 +1,8 @@
-// @ts-expect-error - CommonJS require in ES module context
-const removeAccents: (str: string) => string = require('remove-accents');
+// Using eval to avoid TypeScript module resolution issues
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const removeAccents = (eval('require') as any)('remove-accents') as (
+  str: string
+) => string;
 
 export interface TagNormalizerConfig {
   lowercase?: boolean;
