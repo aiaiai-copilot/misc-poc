@@ -8,3 +8,4 @@ export { TagFactory } from './tag-factory';
 export { Record } from './record';
 export { RecordFactory } from './record-factory';
 export { RecordDuplicateChecker } from './record-duplicate-checker';
+export { RecordMatcher } from './record-matcher';
