@@ -67,6 +67,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["husky", "npm:9.1.7"],\
             ["lint-staged", "npm:15.5.2"],\
             ["prettier", "npm:3.6.2"],\
+            ["remove-accents", "npm:0.5.0"],\
             ["typescript", "patch:typescript@npm%3A5.9.2#~builtin<compat/typescript>::version=5.9.2&hash=29ae49"]\
           ],\
           "linkType": "SOFT"\
@@ -1681,7 +1682,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@misc-poc/shared", "workspace:packages/shared"],\
             ["@types/jest", "npm:29.5.14"],\
             ["jest", "virtual:8b39305248b6d8f64ae376050ed4a6a01f34b01e04ae99f87537b83ce923a93718ac0e497adcf240607d254d4e538fe7c48c043003d6a9e85bc89f81c77eb2a5#npm:29.7.0"],\
-            ["ts-jest", "virtual:dc141ed64cc1b273e0dca8624fb0c2c979fe0cad225fe2e7f838cc177111268d8925463b03252e267ace0a2667ce79ac6e19ac997995d1957b3611736def2556#npm:29.4.1"]\
+            ["ts-jest", "virtual:e844bd95a4bd324bbb4f5b9205872ad7ae45db999cd0567a6dc4f09f11d64ec94ae3bfb3727544e652e9b01876c3e5a381cdafb3432e79cd7bae02856d578c1f#npm:29.4.1"]\
           ],\
           "linkType": "SOFT"\
         }]\
@@ -1693,8 +1694,15 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@misc-poc/domain", "workspace:packages/domain"],\
             ["@misc-poc/shared", "workspace:packages/shared"],\
             ["@types/jest", "npm:29.5.14"],\
+            ["@types/node", "npm:24.3.0"],\
+            ["@typescript-eslint/eslint-plugin", "virtual:f01c4ee8dce1a9efb3efc1c543a035c3a83c4bdb1a47daaa9a27a97bd69ddd78cd885170041ea3f52285e3af4de8db50b76f98c8566ab495e53de92acc929d2e#npm:8.42.0"],\
+            ["@typescript-eslint/parser", "virtual:f01c4ee8dce1a9efb3efc1c543a035c3a83c4bdb1a47daaa9a27a97bd69ddd78cd885170041ea3f52285e3af4de8db50b76f98c8566ab495e53de92acc929d2e#npm:8.42.0"],\
+            ["eslint", "virtual:f01c4ee8dce1a9efb3efc1c543a035c3a83c4bdb1a47daaa9a27a97bd69ddd78cd885170041ea3f52285e3af4de8db50b76f98c8566ab495e53de92acc929d2e#npm:9.34.0"],\
             ["jest", "virtual:8b39305248b6d8f64ae376050ed4a6a01f34b01e04ae99f87537b83ce923a93718ac0e497adcf240607d254d4e538fe7c48c043003d6a9e85bc89f81c77eb2a5#npm:29.7.0"],\
-            ["ts-jest", "virtual:dc141ed64cc1b273e0dca8624fb0c2c979fe0cad225fe2e7f838cc177111268d8925463b03252e267ace0a2667ce79ac6e19ac997995d1957b3611736def2556#npm:29.4.1"]\
+            ["jest-util", "npm:29.7.0"],\
+            ["remove-accents", "npm:0.5.0"],\
+            ["ts-jest", "virtual:8b39305248b6d8f64ae376050ed4a6a01f34b01e04ae99f87537b83ce923a93718ac0e497adcf240607d254d4e538fe7c48c043003d6a9e85bc89f81c77eb2a5#npm:29.4.1"],\
+            ["typescript", "patch:typescript@npm%3A5.9.2#~builtin<compat/typescript>::version=5.9.2&hash=29ae49"]\
           ],\
           "linkType": "SOFT"\
         }]\
@@ -1708,7 +1716,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@misc-poc/shared", "workspace:packages/shared"],\
             ["@types/jest", "npm:29.5.14"],\
             ["jest", "virtual:8b39305248b6d8f64ae376050ed4a6a01f34b01e04ae99f87537b83ce923a93718ac0e497adcf240607d254d4e538fe7c48c043003d6a9e85bc89f81c77eb2a5#npm:29.7.0"],\
-            ["ts-jest", "virtual:dc141ed64cc1b273e0dca8624fb0c2c979fe0cad225fe2e7f838cc177111268d8925463b03252e267ace0a2667ce79ac6e19ac997995d1957b3611736def2556#npm:29.4.1"]\
+            ["ts-jest", "virtual:e844bd95a4bd324bbb4f5b9205872ad7ae45db999cd0567a6dc4f09f11d64ec94ae3bfb3727544e652e9b01876c3e5a381cdafb3432e79cd7bae02856d578c1f#npm:29.4.1"]\
           ],\
           "linkType": "SOFT"\
         }]\
@@ -1724,7 +1732,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/jest", "npm:29.5.14"],\
             ["commander", "npm:11.1.0"],\
             ["jest", "virtual:8b39305248b6d8f64ae376050ed4a6a01f34b01e04ae99f87537b83ce923a93718ac0e497adcf240607d254d4e538fe7c48c043003d6a9e85bc89f81c77eb2a5#npm:29.7.0"],\
-            ["ts-jest", "virtual:dc141ed64cc1b273e0dca8624fb0c2c979fe0cad225fe2e7f838cc177111268d8925463b03252e267ace0a2667ce79ac6e19ac997995d1957b3611736def2556#npm:29.4.1"]\
+            ["ts-jest", "virtual:e844bd95a4bd324bbb4f5b9205872ad7ae45db999cd0567a6dc4f09f11d64ec94ae3bfb3727544e652e9b01876c3e5a381cdafb3432e79cd7bae02856d578c1f#npm:29.4.1"]\
           ],\
           "linkType": "SOFT"\
         }]\
@@ -1744,7 +1752,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["jest", "virtual:8b39305248b6d8f64ae376050ed4a6a01f34b01e04ae99f87537b83ce923a93718ac0e497adcf240607d254d4e538fe7c48c043003d6a9e85bc89f81c77eb2a5#npm:29.7.0"],\
             ["react", "npm:18.3.1"],\
             ["react-dom", "virtual:6d059685856a83ee6bd91c2a0368ab5a6c3caeb39b921c2c2750018fda2c73608dfc96c7d00c5e79f465cf0f8ac714fb3328429722b6488ae63db5a3352e3e89#npm:18.3.1"],\
-            ["ts-jest", "virtual:dc141ed64cc1b273e0dca8624fb0c2c979fe0cad225fe2e7f838cc177111268d8925463b03252e267ace0a2667ce79ac6e19ac997995d1957b3611736def2556#npm:29.4.1"],\
+            ["ts-jest", "virtual:e844bd95a4bd324bbb4f5b9205872ad7ae45db999cd0567a6dc4f09f11d64ec94ae3bfb3727544e652e9b01876c3e5a381cdafb3432e79cd7bae02856d578c1f#npm:29.4.1"],\
             ["vite", "virtual:6d059685856a83ee6bd91c2a0368ab5a6c3caeb39b921c2c2750018fda2c73608dfc96c7d00c5e79f465cf0f8ac714fb3328429722b6488ae63db5a3352e3e89#npm:5.4.19"]\
           ],\
           "linkType": "SOFT"\
@@ -5387,6 +5395,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["husky", "npm:9.1.7"],\
             ["lint-staged", "npm:15.5.2"],\
             ["prettier", "npm:3.6.2"],\
+            ["remove-accents", "npm:0.5.0"],\
             ["typescript", "patch:typescript@npm%3A5.9.2#~builtin<compat/typescript>::version=5.9.2&hash=29ae49"]\
           ],\
           "linkType": "SOFT"\
@@ -5922,6 +5931,15 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./.yarn/cache/react-refresh-npm-0.17.0-85b5aa925e-e9d23a7054.zip/node_modules/react-refresh/",\
           "packageDependencies": [\
             ["react-refresh", "npm:0.17.0"]\
+          ],\
+          "linkType": "HARD"\
+        }]\
+      ]],\
+      ["remove-accents", [\
+        ["npm:0.5.0", {\
+          "packageLocation": "./.yarn/cache/remove-accents-npm-0.5.0-aed916f699-7045b37015.zip/node_modules/remove-accents/",\
+          "packageDependencies": [\
+            ["remove-accents", "npm:0.5.0"]\
           ],\
           "linkType": "HARD"\
         }]\
@@ -6538,10 +6556,10 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           ],\
           "linkType": "HARD"\
         }],\
-        ["virtual:dc141ed64cc1b273e0dca8624fb0c2c979fe0cad225fe2e7f838cc177111268d8925463b03252e267ace0a2667ce79ac6e19ac997995d1957b3611736def2556#npm:29.4.1", {\
-          "packageLocation": "./.yarn/__virtual__/ts-jest-virtual-491496cab3/0/cache/ts-jest-npm-29.4.1-ab76d85d32-641f17ecb4.zip/node_modules/ts-jest/",\
+        ["virtual:e844bd95a4bd324bbb4f5b9205872ad7ae45db999cd0567a6dc4f09f11d64ec94ae3bfb3727544e652e9b01876c3e5a381cdafb3432e79cd7bae02856d578c1f#npm:29.4.1", {\
+          "packageLocation": "./.yarn/__virtual__/ts-jest-virtual-b1d961493d/0/cache/ts-jest-npm-29.4.1-ab76d85d32-641f17ecb4.zip/node_modules/ts-jest/",\
           "packageDependencies": [\
-            ["ts-jest", "virtual:dc141ed64cc1b273e0dca8624fb0c2c979fe0cad225fe2e7f838cc177111268d8925463b03252e267ace0a2667ce79ac6e19ac997995d1957b3611736def2556#npm:29.4.1"],\
+            ["ts-jest", "virtual:e844bd95a4bd324bbb4f5b9205872ad7ae45db999cd0567a6dc4f09f11d64ec94ae3bfb3727544e652e9b01876c3e5a381cdafb3432e79cd7bae02856d578c1f#npm:29.4.1"],\
             ["@babel/core", null],\
             ["@jest/transform", null],\
             ["@jest/types", null],\
