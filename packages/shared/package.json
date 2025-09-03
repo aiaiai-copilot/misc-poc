@@ -12,7 +12,8 @@
     }
   },
   "scripts": {
-    "build": "tsc --build",
+    "build": "tsc --build --clean && tsc --build",
+    "build:incremental": "tsc --build",
     "test": "jest",
     "lint": "eslint src --ext .ts",
     "typecheck": "tsc --noEmit",

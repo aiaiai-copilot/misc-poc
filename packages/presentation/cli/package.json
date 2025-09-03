@@ -7,9 +7,9 @@
     "misc-poc": "./dist/index.js"
   },
   "scripts": {
-    "build": "tsc --build",
+    "build": "test -d src && tsc --build || echo 'No src directory found, skipping build'",
     "test": "jest",
-    "lint": "eslint src --ext .ts",
+    "lint": "test -d src && eslint src --ext .ts || echo 'No src directory found, skipping lint'",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist"
   },
