@@ -1756,10 +1756,12 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageDependencies": [\
             ["@misc-poc/shared", "workspace:packages/shared"],\
             ["@types/jest", "npm:29.5.14"],\
+            ["@types/node", "npm:24.3.0"],\
             ["@types/uuid", "npm:9.0.8"],\
             ["jest", "virtual:8b39305248b6d8f64ae376050ed4a6a01f34b01e04ae99f87537b83ce923a93718ac0e497adcf240607d254d4e538fe7c48c043003d6a9e85bc89f81c77eb2a5#npm:29.7.0"],\
             ["jest-util", "npm:29.7.0"],\
             ["ts-jest", "virtual:8b39305248b6d8f64ae376050ed4a6a01f34b01e04ae99f87537b83ce923a93718ac0e497adcf240607d254d4e538fe7c48c043003d6a9e85bc89f81c77eb2a5#npm:29.4.1"],\
+            ["typescript", "patch:typescript@npm%3A5.9.2#~builtin<compat/typescript>::version=5.9.2&hash=29ae49"],\
             ["uuid", "npm:9.0.1"]\
           ],\
           "linkType": "SOFT"\
@@ -6513,7 +6515,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["make-error", "npm:1.3.6"],\
             ["semver", "npm:7.7.2"],\
             ["type-fest", "npm:4.41.0"],\
-            ["typescript", null],\
+            ["typescript", "patch:typescript@npm%3A5.9.2#~builtin<compat/typescript>::version=5.9.2&hash=29ae49"],\
             ["yargs-parser", "npm:21.1.1"]\
           ],\
           "packagePeers": [\

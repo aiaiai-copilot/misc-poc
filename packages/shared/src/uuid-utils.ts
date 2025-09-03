@@ -1,7 +1,9 @@
+// @ts-ignore
 import { v4 as uuidv4 } from 'uuid';
 import { Result, Ok, Err } from './result';
 
-const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const UUID_REGEX =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const UUID_WITHOUT_DASHES_REGEX = /^[0-9a-f]{32}$/i;
 
 export function generateUuid(): string {
@@ -39,7 +41,7 @@ export function parseUuid(input: string): Result<string, string> {
       trimmed.slice(8, 12),
       trimmed.slice(12, 16),
       trimmed.slice(16, 20),
-      trimmed.slice(20, 32)
+      trimmed.slice(20, 32),
     ].join('-');
     return Ok(formatted.toLowerCase());
   }
