@@ -17,6 +17,11 @@ gh pr list --state=open
 # STOP and notify user: "There are unmerged PRs. Please approve and merge them before I continue with the next task."
 # List the open PRs and wait for user confirmation
 
+# After completing a task and creating its PR, ALWAYS verify merge status before next task:
+# Run: git checkout main && git pull origin main
+# If no new changes are pulled, the PR is still unmerged - STOP and notify user
+# Only proceed with next task if the PR has been merged (new changes pulled)
+
 # Only proceed if no blocking PRs exist, then sync with main
 git checkout main
 git pull origin main
@@ -69,11 +74,13 @@ git pull origin main
 
 I MUST:
 
-1. Immediately run `tm next` or use specified task ID
-2. Create appropriate branch automatically
-3. Set task status to in-progress
-4. Implement the task
-5. Complete the full workflow above
-6. Report completion to user
+1. First check if previous task's PR was merged: `git checkout main && git pull origin main`
+2. If no changes pulled, STOP and report: "Previous task's PR is still unmerged. Please approve and merge before continuing."
+3. Only if PR was merged: run `tm next` or use specified task ID
+4. Create appropriate branch automatically
+5. Set task status to in-progress
+6. Implement the task
+7. Complete the full workflow above
+8. Report completion to user with PR link
 
 **NEVER ask user to do these steps manually - I handle ALL TaskMaster automation!**
