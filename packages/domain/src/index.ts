@@ -6,4 +6,5 @@ export { TagParser } from './tag-parser';
 export { Tag } from './tag';
 export { TagFactory } from './tag-factory';
 export { Record } from './record';
+export { RecordFactory } from './record-factory';
 export { RecordDuplicateChecker } from './record-duplicate-checker';
