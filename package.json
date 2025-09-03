@@ -16,7 +16,8 @@
   },
   "packageManager": "yarn@3.6.4",
   "scripts": {
-    "build": "yarn workspace @misc-poc/shared build",
+    "build:shared": "yarn workspace @misc-poc/shared build",
+    "build:domain": "yarn workspace @misc-poc/domain build",
     "test": "yarn test:all",
     "test:shared": "yarn workspace @misc-poc/shared test",
     "test:domain": "yarn workspace @misc-poc/domain test",
