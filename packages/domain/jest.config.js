@@ -20,4 +20,10 @@ export default {
       statements: 95,
     },
   },
+  transformIgnorePatterns: [
+    'node_modules/(?!@misc-poc)'
+  ],
+  moduleNameMapper: {
+    '^@misc-poc/shared$': '<rootDir>/../shared/src/index.ts'
+  }
 };
