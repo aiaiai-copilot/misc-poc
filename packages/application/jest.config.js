@@ -7,14 +7,13 @@ export default {
   collectCoverageFrom: ['src/**/*.ts', '!src/**/*.d.ts', '!src/**/__tests__/**'],
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov', 'html'],
-  globals: {
-    'ts-jest': {
-      useESM: true,
-    },
+  moduleNameMapper: {
+    '^@misc-poc/shared$': '<rootDir>/../shared/src/index.ts',
+    '^@misc-poc/domain$': '<rootDir>/../domain/src/index.ts',
   },
-  moduleNameMapping: {
-    '^@misc-poc/(.*)$': '<rootDir>/../../packages/$1/src',
-  },
+  transformIgnorePatterns: [
+    'node_modules/(?!@misc-poc)'
+  ],
   transform: {
     '^.+\\.ts$': ['ts-jest', { useESM: true }],
   },

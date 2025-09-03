@@ -103,7 +103,7 @@ describe('RecordRepository Interface', () => {
     it('should return Result types for all async operations', async () => {
       const id = RecordId.generate();
       const tagIds = [TagId.generate()];
-      const query = SearchQuery.fromString('test');
+      const query = new SearchQuery('test');
 
       // Verify return types are Results
       const findByIdResult = await repository.findById(id);

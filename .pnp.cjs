@@ -1682,6 +1682,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@misc-poc/shared", "workspace:packages/shared"],\
             ["@types/jest", "npm:29.5.14"],\
             ["jest", "virtual:8b39305248b6d8f64ae376050ed4a6a01f34b01e04ae99f87537b83ce923a93718ac0e497adcf240607d254d4e538fe7c48c043003d6a9e85bc89f81c77eb2a5#npm:29.7.0"],\
+            ["jest-util", "npm:29.7.0"],\
             ["ts-jest", "virtual:e844bd95a4bd324bbb4f5b9205872ad7ae45db999cd0567a6dc4f09f11d64ec94ae3bfb3727544e652e9b01876c3e5a381cdafb3432e79cd7bae02856d578c1f#npm:29.4.1"]\
           ],\
           "linkType": "SOFT"\
@@ -1716,6 +1717,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@misc-poc/shared", "workspace:packages/shared"],\
             ["@types/jest", "npm:29.5.14"],\
             ["jest", "virtual:8b39305248b6d8f64ae376050ed4a6a01f34b01e04ae99f87537b83ce923a93718ac0e497adcf240607d254d4e538fe7c48c043003d6a9e85bc89f81c77eb2a5#npm:29.7.0"],\
+            ["jest-util", "npm:29.7.0"],\
             ["ts-jest", "virtual:e844bd95a4bd324bbb4f5b9205872ad7ae45db999cd0567a6dc4f09f11d64ec94ae3bfb3727544e652e9b01876c3e5a381cdafb3432e79cd7bae02856d578c1f#npm:29.4.1"]\
           ],\
           "linkType": "SOFT"\
@@ -1732,6 +1734,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/jest", "npm:29.5.14"],\
             ["commander", "npm:11.1.0"],\
             ["jest", "virtual:8b39305248b6d8f64ae376050ed4a6a01f34b01e04ae99f87537b83ce923a93718ac0e497adcf240607d254d4e538fe7c48c043003d6a9e85bc89f81c77eb2a5#npm:29.7.0"],\
+            ["jest-util", "npm:29.7.0"],\
             ["ts-jest", "virtual:e844bd95a4bd324bbb4f5b9205872ad7ae45db999cd0567a6dc4f09f11d64ec94ae3bfb3727544e652e9b01876c3e5a381cdafb3432e79cd7bae02856d578c1f#npm:29.4.1"]\
           ],\
           "linkType": "SOFT"\
@@ -1750,6 +1753,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/react-dom", "virtual:6d059685856a83ee6bd91c2a0368ab5a6c3caeb39b921c2c2750018fda2c73608dfc96c7d00c5e79f465cf0f8ac714fb3328429722b6488ae63db5a3352e3e89#npm:18.3.7"],\
             ["@vitejs/plugin-react", "virtual:6d059685856a83ee6bd91c2a0368ab5a6c3caeb39b921c2c2750018fda2c73608dfc96c7d00c5e79f465cf0f8ac714fb3328429722b6488ae63db5a3352e3e89#npm:4.7.0"],\
             ["jest", "virtual:8b39305248b6d8f64ae376050ed4a6a01f34b01e04ae99f87537b83ce923a93718ac0e497adcf240607d254d4e538fe7c48c043003d6a9e85bc89f81c77eb2a5#npm:29.7.0"],\
+            ["jest-util", "npm:29.7.0"],\
             ["react", "npm:18.3.1"],\
             ["react-dom", "virtual:6d059685856a83ee6bd91c2a0368ab5a6c3caeb39b921c2c2750018fda2c73608dfc96c7d00c5e79f465cf0f8ac714fb3328429722b6488ae63db5a3352e3e89#npm:18.3.1"],\
             ["ts-jest", "virtual:e844bd95a4bd324bbb4f5b9205872ad7ae45db999cd0567a6dc4f09f11d64ec94ae3bfb3727544e652e9b01876c3e5a381cdafb3432e79cd7bae02856d578c1f#npm:29.4.1"],\
@@ -6577,7 +6581,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["fast-json-stable-stringify", "npm:2.1.0"],\
             ["handlebars", "npm:4.7.8"],\
             ["jest", "virtual:8b39305248b6d8f64ae376050ed4a6a01f34b01e04ae99f87537b83ce923a93718ac0e497adcf240607d254d4e538fe7c48c043003d6a9e85bc89f81c77eb2a5#npm:29.7.0"],\
-            ["jest-util", null],\
+            ["jest-util", "npm:29.7.0"],\
             ["json5", "npm:2.2.3"],\
             ["lodash.memoize", "npm:4.1.2"],\
             ["make-error", "npm:1.3.6"],\
