@@ -7,13 +7,21 @@ import { RecordRepository } from '../../ports/record-repository';
 import { TagRepository } from '../../ports/tag-repository';
 import { UnitOfWork } from '../../ports/unit-of-work';
 import { Result, RecordContent, TagId, Ok, Err } from '@misc-poc/shared';
-import { Record, Tag, DomainError } from '@misc-poc/domain';
+import {
+  Record,
+  Tag,
+  DomainError,
+  TagParser,
+  TagFactory,
+} from '@misc-poc/domain';
 
 describe('CreateRecordUseCase', () => {
   let useCase: CreateRecordUseCase;
   let mockRecordRepository: jest.Mocked<RecordRepository>;
   let mockTagRepository: jest.Mocked<TagRepository>;
   let mockUnitOfWork: jest.Mocked<UnitOfWork>;
+  let mockTagParser: jest.Mocked<TagParser>;
+  let mockTagFactory: jest.Mocked<TagFactory>;
 
   beforeEach(() => {
     mockRecordRepository = {
@@ -57,10 +65,20 @@ describe('CreateRecordUseCase', () => {
       rollback: jest.fn().mockResolvedValue(Ok(undefined)),
     };
 
+    mockTagParser = {
+      parse: jest.fn(),
+    } as jest.Mocked<TagParser>;
+
+    mockTagFactory = {
+      createFromString: jest.fn(),
+    } as jest.Mocked<TagFactory>;
+
     useCase = new CreateRecordUseCase(
       mockRecordRepository,
       mockTagRepository,
-      mockUnitOfWork
+      mockUnitOfWork,
+      mockTagParser,
+      mockTagFactory
     );
   });
 
@@ -78,6 +96,9 @@ describe('CreateRecordUseCase', () => {
           new RecordContent('Test content #tag1 #tag2'),
           new Set([tag1.id, tag2.id])
         );
+
+        // Mock TagParser to extract tags from content
+        mockTagParser.parse.mockReturnValue(['tag1', 'tag2']);
 
         mockTagRepository.findByNormalizedValue.mockImplementation(
           (normalizedValue: string) => {
@@ -124,6 +145,12 @@ describe('CreateRecordUseCase', () => {
           new Set([newTag.id])
         );
 
+        // Mock TagParser to extract tags from content
+        mockTagParser.parse.mockReturnValue(['newtag']);
+
+        // Mock TagFactory to create new tag
+        mockTagFactory.createFromString.mockReturnValue(newTag);
+
         mockTagRepository.findByNormalizedValue.mockResolvedValue(Ok(null));
         mockTagRepository.save.mockResolvedValue(Ok(newTag));
         mockRecordRepository.findByTagSet.mockResolvedValue(Ok([]));
@@ -149,6 +176,9 @@ describe('CreateRecordUseCase', () => {
           new RecordContent('Test content without tags'),
           new Set()
         );
+
+        // Mock TagParser to return no tags
+        mockTagParser.parse.mockReturnValue([]);
 
         mockRecordRepository.findByTagSet.mockResolvedValue(Ok([]));
         mockUnitOfWork.begin.mockResolvedValue(Ok(undefined));
@@ -239,6 +269,9 @@ describe('CreateRecordUseCase', () => {
           new Set([TagId.generate()])
         );
 
+        // Mock TagParser to extract tags from content
+        mockTagParser.parse.mockReturnValue(['tag1']);
+
         mockTagRepository.findByNormalizedValue.mockResolvedValue(
           Ok(new Tag(TagId.generate(), 'tag1', 'tag1'))
         );
@@ -264,6 +297,9 @@ describe('CreateRecordUseCase', () => {
           content: 'Test content #tag1',
         };
 
+        // Mock TagParser to extract tags from content
+        mockTagParser.parse.mockReturnValue(['tag1']);
+
         mockTagRepository.findByNormalizedValue.mockResolvedValue(
           Err(new DomainError('REPOSITORY_ERROR', 'Tag repository error'))
         );
@@ -282,6 +318,14 @@ describe('CreateRecordUseCase', () => {
         const request: CreateRecordRequest = {
           content: 'Test content #newtag',
         };
+
+        const newTag = new Tag(TagId.generate(), 'newtag', 'newtag');
+
+        // Mock TagParser to extract tags from content
+        mockTagParser.parse.mockReturnValue(['newtag']);
+
+        // Mock TagFactory to create new tag
+        mockTagFactory.createFromString.mockReturnValue(newTag);
 
         mockTagRepository.findByNormalizedValue.mockResolvedValue(Ok(null));
         mockTagRepository.save.mockResolvedValue(
@@ -304,6 +348,9 @@ describe('CreateRecordUseCase', () => {
         const request: CreateRecordRequest = {
           content: 'Test content',
         };
+
+        // Mock TagParser to return no tags
+        mockTagParser.parse.mockReturnValue([]);
 
         mockRecordRepository.findByTagSet.mockResolvedValue(Ok([]));
         mockUnitOfWork.begin.mockResolvedValue(Ok(undefined));
@@ -328,6 +375,9 @@ describe('CreateRecordUseCase', () => {
         const request: CreateRecordRequest = {
           content: 'Test content',
         };
+
+        // Mock TagParser to return no tags
+        mockTagParser.parse.mockReturnValue([]);
 
         mockRecordRepository.findByTagSet.mockResolvedValue(Ok([]));
         mockUnitOfWork.begin.mockResolvedValue(
@@ -354,6 +404,9 @@ describe('CreateRecordUseCase', () => {
           new Set()
         );
 
+        // Mock TagParser to return no tags
+        mockTagParser.parse.mockReturnValue([]);
+
         mockRecordRepository.findByTagSet.mockResolvedValue(Ok([]));
         mockUnitOfWork.begin.mockResolvedValue(Ok(undefined));
         mockRecordRepository.save.mockResolvedValue(Ok(createdRecord));
@@ -378,6 +431,9 @@ describe('CreateRecordUseCase', () => {
         const request: CreateRecordRequest = {
           content: 'Test content #tag1',
         };
+
+        // Mock TagParser to extract tags from content
+        mockTagParser.parse.mockReturnValue(['tag1']);
 
         mockTagRepository.findByNormalizedValue.mockResolvedValue(
           Ok(new Tag(TagId.generate(), 'tag1', 'tag1'))
