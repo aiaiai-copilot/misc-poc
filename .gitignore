@@ -30,3 +30,11 @@ node_modules/
 
 # OS specific
 .DS_Store
+
+# Build output
+dist/
+build/
+*.tsbuildinfo
+
+# Test coverage
+coverage/

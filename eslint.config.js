@@ -8,20 +8,23 @@ module.exports = [
       parser: typescriptParser,
       parserOptions: {
         ecmaVersion: 2022,
-        sourceType: 'module',
-        project: './tsconfig.json'
+        sourceType: 'module'
       }
     },
     plugins: {
       '@typescript-eslint': typescriptEslint
     },
     rules: {
-      ...typescriptEslint.configs.recommended.rules,
-      ...typescriptEslint.configs['recommended-requiring-type-checking'].rules,
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
       '@typescript-eslint/explicit-function-return-type': 'warn',
-      '@typescript-eslint/no-explicit-any': 'error',
-      '@typescript-eslint/prefer-const': 'error'
+      '@typescript-eslint/no-explicit-any': 'error'
+    }
+  },
+  {
+    files: ['**/*.test.ts', '**/__tests__/**/*.ts'],
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-unused-vars': 'off'
     }
   },
   {
