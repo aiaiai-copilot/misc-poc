@@ -16,8 +16,14 @@ export class DomainError extends Error {
     Object.setPrototypeOf(this, DomainError.prototype);
 
     // Capture stack trace, excluding constructor call from it
-    if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, this.constructor);
+    const errorConstructor = Error as unknown as {
+      captureStackTrace?: (
+        targetObject: object,
+        constructorOpt?: Function
+      ) => void;
+    };
+    if (errorConstructor.captureStackTrace) {
+      errorConstructor.captureStackTrace(this, this.constructor);
     }
   }
 
