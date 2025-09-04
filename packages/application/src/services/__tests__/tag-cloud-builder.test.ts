@@ -141,10 +141,13 @@ describe('TagCloudBuilder', () => {
         createMockTagUsageInfo(mockUUIDs.tag4, 'nodejs', 5),
       ];
 
-      mockTagRepository.getUsageInfo.mockResolvedValue({
-        isSuccess: true,
-        value: mockTagUsageInfos,
-      });
+      const mockResult = {
+        isOk: () => true,
+        isErr: () => false,
+        unwrap: () => mockTagUsageInfos,
+        unwrapErr: () => new Error('Should not be called'),
+      };
+      mockTagRepository.getUsageInfo.mockResolvedValue(mockResult);
 
       const tagCloud = await builder.buildFromSearchResult(searchResult);
 
@@ -184,10 +187,13 @@ describe('TagCloudBuilder', () => {
         createMockTagUsageInfo(mockUUIDs.tag3, 'typescript', 3), // Below min
       ];
 
-      mockTagRepository.getUsageInfo.mockResolvedValue({
-        isSuccess: true,
-        value: mockTagUsageInfos,
-      });
+      const mockResult = {
+        isOk: () => true,
+        isErr: () => false,
+        unwrap: () => mockTagUsageInfos,
+        unwrapErr: () => new Error('Should not be called'),
+      };
+      mockTagRepository.getUsageInfo.mockResolvedValue(mockResult);
 
       const tagCloud =
         await builderWithThresholds.buildFromSearchResult(searchResult);
@@ -223,10 +229,13 @@ describe('TagCloudBuilder', () => {
         createMockTagUsageInfo(mockUUIDs.tag4, 'nodejs', 5),
       ];
 
-      mockTagRepository.getUsageInfo.mockResolvedValue({
-        isSuccess: true,
-        value: mockTagUsageInfos,
-      });
+      const mockResult = {
+        isOk: () => true,
+        isErr: () => false,
+        unwrap: () => mockTagUsageInfos,
+        unwrapErr: () => new Error('Should not be called'),
+      };
+      mockTagRepository.getUsageInfo.mockResolvedValue(mockResult);
 
       const tagCloud =
         await builderWithLimit.buildFromSearchResult(searchResult);
@@ -258,10 +267,13 @@ describe('TagCloudBuilder', () => {
         createMockTagUsageInfo(mockUUIDs.tag3, 'typescript', 8),
       ];
 
-      mockTagRepository.getUsageInfo.mockResolvedValue({
-        isSuccess: true,
-        value: mockTagUsageInfos,
-      });
+      const mockResult = {
+        isOk: () => true,
+        isErr: () => false,
+        unwrap: () => mockTagUsageInfos,
+        unwrapErr: () => new Error('Should not be called'),
+      };
+      mockTagRepository.getUsageInfo.mockResolvedValue(mockResult);
 
       const tagCloud = await builder.buildFromSearchResult(searchResult);
 
@@ -291,10 +303,13 @@ describe('TagCloudBuilder', () => {
         createMockTagUsageInfo(mockUUIDs.tag3, 'typescript', 10), // Min usage
       ];
 
-      mockTagRepository.getUsageInfo.mockResolvedValue({
-        isSuccess: true,
-        value: mockTagUsageInfos,
-      });
+      const mockResult = {
+        isOk: () => true,
+        isErr: () => false,
+        unwrap: () => mockTagUsageInfos,
+        unwrapErr: () => new Error('Should not be called'),
+      };
+      mockTagRepository.getUsageInfo.mockResolvedValue(mockResult);
 
       const tagCloud = await builder.buildFromSearchResult(searchResult);
 
@@ -323,10 +338,13 @@ describe('TagCloudBuilder', () => {
         createMockTagUsageInfo(mockUUIDs.tag1, 'javascript', 10),
       ];
 
-      mockTagRepository.getUsageInfo.mockResolvedValue({
-        isSuccess: true,
-        value: mockTagUsageInfos,
-      });
+      const mockResult = {
+        isOk: () => true,
+        isErr: () => false,
+        unwrap: () => mockTagUsageInfos,
+        unwrapErr: () => new Error('Should not be called'),
+      };
+      mockTagRepository.getUsageInfo.mockResolvedValue(mockResult);
 
       const tagCloud = await builder.buildFromSearchResult(searchResult);
 
@@ -346,10 +364,15 @@ describe('TagCloudBuilder', () => {
         hasMore: false,
       };
 
-      mockTagRepository.getUsageInfo.mockResolvedValue({
-        isSuccess: false,
-        error: new Error('Repository error'),
-      });
+      const mockErrorResult = {
+        isOk: () => false,
+        isErr: () => true,
+        unwrap: () => {
+          throw new Error('Should not be called');
+        },
+        unwrapErr: () => new Error('Repository error'),
+      };
+      mockTagRepository.getUsageInfo.mockResolvedValue(mockErrorResult);
 
       await expect(builder.buildFromSearchResult(searchResult)).rejects.toThrow(
         'Repository error'
@@ -375,10 +398,13 @@ describe('TagCloudBuilder', () => {
         createMockTagUsageInfo(mockUUIDs.tag3, 'typescript', 8),
       ];
 
-      mockTagRepository.getUsageInfo.mockResolvedValue({
-        isSuccess: true,
-        value: mockTagUsageInfos,
-      });
+      const mockResult = {
+        isOk: () => true,
+        isErr: () => false,
+        unwrap: () => mockTagUsageInfos,
+        unwrapErr: () => new Error('Should not be called'),
+      };
+      mockTagRepository.getUsageInfo.mockResolvedValue(mockResult);
 
       const tagCloud = await builder.buildFromSearchResult(searchResult);
 
@@ -477,10 +503,13 @@ describe('TagCloudBuilder', () => {
         createMockTagUsageInfo(mockUUIDs.tag1, 'javascript', 15),
       ];
 
-      mockTagRepository.getUsageInfo.mockResolvedValue({
-        isSuccess: true,
-        value: mockTagUsageInfos,
-      });
+      const mockResult = {
+        isOk: () => true,
+        isErr: () => false,
+        unwrap: () => mockTagUsageInfos,
+        unwrapErr: () => new Error('Should not be called'),
+      };
+      mockTagRepository.getUsageInfo.mockResolvedValue(mockResult);
 
       const tagCloud = await builder.buildFromSearchResult(searchResult);
 
@@ -509,10 +538,13 @@ describe('TagCloudBuilder', () => {
         createMockTagUsageInfo(mockUUIDs.tag3, 'typescript', 10),
       ];
 
-      mockTagRepository.getUsageInfo.mockResolvedValue({
-        isSuccess: true,
-        value: mockTagUsageInfos,
-      });
+      const mockResult = {
+        isOk: () => true,
+        isErr: () => false,
+        unwrap: () => mockTagUsageInfos,
+        unwrapErr: () => new Error('Should not be called'),
+      };
+      mockTagRepository.getUsageInfo.mockResolvedValue(mockResult);
 
       const tagCloud = await builder.buildFromSearchResult(searchResult);
 
@@ -549,10 +581,13 @@ describe('TagCloudBuilder', () => {
         createMockTagUsageInfo(mockUUIDs.tag4, 'rare', 10), // weight: 0 -> small
       ];
 
-      mockTagRepository.getUsageInfo.mockResolvedValue({
-        isSuccess: true,
-        value: mockTagUsageInfos,
-      });
+      const mockResult = {
+        isOk: () => true,
+        isErr: () => false,
+        unwrap: () => mockTagUsageInfos,
+        unwrapErr: () => new Error('Should not be called'),
+      };
+      mockTagRepository.getUsageInfo.mockResolvedValue(mockResult);
 
       const tagCloud = await builder.buildFromSearchResult(searchResult);
 
@@ -589,10 +624,13 @@ describe('TagCloudBuilder', () => {
           )
       );
 
-      mockTagRepository.getUsageInfo.mockResolvedValue({
-        isSuccess: true,
-        value: mockTagUsageInfos,
-      });
+      const mockResult = {
+        isOk: () => true,
+        isErr: () => false,
+        unwrap: () => mockTagUsageInfos,
+        unwrapErr: () => new Error('Should not be called'),
+      };
+      mockTagRepository.getUsageInfo.mockResolvedValue(mockResult);
 
       const start = Date.now();
       const tagCloud = await builder.buildFromSearchResult(searchResult);

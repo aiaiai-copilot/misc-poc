@@ -3,7 +3,7 @@ import {
   TagCloudItemDTO,
   TagCloudItemDTOMapper,
 } from '../dtos/tag-cloud-item-dto';
-import { TagRepository } from '../ports/tag-repository';
+import { TagRepository, TagUsageInfo } from '../ports/tag-repository';
 
 export interface TagCloudBuilderConfig {
   readonly maxCloudSize: number;
@@ -48,7 +48,7 @@ export class TagCloudBuilder {
     // Extract unique tag IDs from all records
     const uniqueTagIds = this.extractUniqueTagIds(searchResult.records);
 
-    if (uniqueTagIds.length === 0) {
+    if (uniqueTagIds.size === 0) {
       return [];
     }
 
@@ -58,16 +58,20 @@ export class TagCloudBuilder {
       sortOrder: 'desc',
     });
 
-    if (!usageInfoResult.isSuccess) {
-      throw usageInfoResult.error;
+    if (usageInfoResult.isErr()) {
+      throw usageInfoResult.unwrapErr();
     }
 
-    const tagUsageInfos = usageInfoResult.value;
+    const tagUsageInfos = usageInfoResult.unwrap();
 
     // Filter tags that appear in search results and meet frequency criteria
     const relevantTagUsageInfos = tagUsageInfos
-      .filter((usageInfo) => uniqueTagIds.has(usageInfo.tag.id.toString()))
-      .filter((usageInfo) => this.meetsFrequencyThreshold(usageInfo.usageCount))
+      .filter((usageInfo: TagUsageInfo) =>
+        uniqueTagIds.has(usageInfo.tag.id.toString())
+      )
+      .filter((usageInfo: TagUsageInfo) =>
+        this.meetsFrequencyThreshold(usageInfo.usageCount)
+      )
       .slice(0, this.config.maxCloudSize); // Limit by max cloud size
 
     // Convert to DTOs with proper weight calculation
