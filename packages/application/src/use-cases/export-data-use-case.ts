@@ -52,17 +52,17 @@ export class ExportDataUseCase {
       // Fetch all records
       const recordsResult = await this.recordRepository.findAll();
       if (recordsResult.isErr()) {
-        return Err(recordsResult.error);
+        return Err(recordsResult.unwrapErr());
       }
 
       // Fetch all tags for reference (though we'll remove UUIDs)
       const tagsResult = await this.tagRepository.findAll();
       if (tagsResult.isErr()) {
-        return Err(tagsResult.error);
+        return Err(tagsResult.unwrapErr());
       }
 
-      const records = recordsResult.value.records;
-      const tags = tagsResult.value;
+      const records = recordsResult.unwrap().records;
+      const tags = tagsResult.unwrap();
 
       // Create mapping from tag IDs to normalized values for portable export
       const tagIdToNormalizedValue = new Map<string, string>();
