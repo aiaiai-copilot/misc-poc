@@ -6,25 +6,26 @@ When the user asks me to work on ANY task in this project, I MUST automatically 
 
 ### 1. Task Selection & Branch Creation
 
-```bash
-# Check what task to work on (if not specified)
-tm next
+**CRITICAL: ALWAYS follow this EXACT sequence - NO exceptions:**
 
-# Check for unmerged PRs before proceeding
+```bash
+# STEP 1: Check for unmerged PRs FIRST
 gh pr list --state=open
+
+# STEP 2: Sync with main to get latest merged changes
+git checkout main
+git pull origin main
+
+# STEP 3: ONLY NOW check what task to work on
+tm next
 
 # If there are open PRs from previous tasks:
 # STOP and notify user: "There are unmerged PRs. Please approve and merge them before I continue with the next task."
 # List the open PRs and wait for user confirmation
 
 # After completing a task and creating its PR, ALWAYS verify merge status before next task:
-# Run: git checkout main && git pull origin main
-# If no new changes are pulled, the PR is still unmerged - STOP and notify user
-# Only proceed with next task if the PR has been merged (new changes pulled)
-
-# Only proceed if no blocking PRs exist, then sync with main
-git checkout main
-git pull origin main
+# If no new changes were pulled in STEP 2, the PR is still unmerged - STOP and notify user
+# Only proceed with next task if the PR has been merged (new changes were pulled)
 
 # Create branch automatically using format: task/<id>-<description>
 git checkout -b task/<id>-<short-description>
@@ -32,6 +33,8 @@ git checkout -b task/<id>-<short-description>
 # Set task to in-progress
 tm set-status --id=<id> --status=in-progress
 ```
+
+**NEVER announce a task as "next" until AFTER completing steps 1-3 above!**
 
 ### 2. During Task Implementation
 
