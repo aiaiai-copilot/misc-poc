@@ -1,4 +1,14 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
+# Run build:all check
+echo "🔧 Running build:all check..."
+if ! yarn build:all; then
+    echo ""
+    echo "❌ Build failed! Please fix build errors before committing."
+    echo ""
+    exit 1
+fi
+echo "✅ Build check passed"
+
 yarn lint-staged
