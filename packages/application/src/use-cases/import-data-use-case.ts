@@ -6,13 +6,7 @@ import {
   TagId,
   RecordContent,
 } from '@misc-poc/shared';
-import {
-  DomainError,
-  Record,
-  Tag,
-  RecordFactory,
-  TagFactory,
-} from '@misc-poc/domain';
+import { DomainError, Record, Tag, TagFactory } from '@misc-poc/domain';
 import { UnitOfWork } from '../ports/unit-of-work';
 import {
   ImportValidator,
@@ -41,7 +35,6 @@ export class ImportDataUseCase {
   constructor(
     private readonly unitOfWork: UnitOfWork,
     private readonly importValidator: ImportValidator,
-    private readonly recordFactory: RecordFactory,
     private readonly tagFactory: TagFactory
   ) {}
 
@@ -107,18 +100,17 @@ export class ImportDataUseCase {
         // Step 3a: Complete data replacement - delete all existing data
         const deleteResult = await uow.records.deleteAll();
         if (deleteResult.isErr()) {
-          return deleteResult;
+          return Err(deleteResult.unwrapErr());
         }
 
         // Step 3b: Process records in batches for performance
         const processResult = await this.processRecordsInBatches(
           exportData.records,
-          uow,
           this.DEFAULT_BATCH_SIZE
         );
 
         if (processResult.isErr()) {
-          return processResult;
+          return Err(processResult.unwrapErr());
         }
 
         const { records, tags } = processResult.unwrap();
@@ -126,13 +118,13 @@ export class ImportDataUseCase {
         // Step 3c: Save tags first (for referential integrity)
         const tagSaveResult = await uow.tags.saveBatch(tags);
         if (tagSaveResult.isErr()) {
-          return tagSaveResult;
+          return Err(tagSaveResult.unwrapErr());
         }
 
         // Step 3d: Save records
         const recordSaveResult = await uow.records.saveBatch(records);
         if (recordSaveResult.isErr()) {
-          return recordSaveResult;
+          return Err(recordSaveResult.unwrapErr());
         }
 
         return Ok({
@@ -145,15 +137,20 @@ export class ImportDataUseCase {
         return Err(importResult.unwrapErr());
       }
 
-      const { savedRecords } = importResult.unwrap();
+      const { savedRecords } = importResult.unwrap() as {
+        savedRecords: Record[];
+        savedTags: Tag[];
+      };
       const endTime = new Date();
 
       // Step 4: Create successful import result with statistics
       const result = ImportResultDTOMapper.createWithWarnings(
-        savedRecords.map((record) => ({
+        savedRecords.map((record: Record) => ({
           id: record.id.toString(),
           content: record.content.toString(),
-          tagIds: Array.from(record.tagIds).map((tagId) => tagId.toString()),
+          tagIds: Array.from(record.tagIds).map((tagId: TagId) =>
+            tagId.toString()
+          ),
           createdAt: record.createdAt.toISOString(),
           updatedAt: record.updatedAt.toISOString(),
         })),
@@ -177,8 +174,16 @@ export class ImportDataUseCase {
         [
           {
             isValid: false,
-            errors: [importError.message],
-            details: {
+            errors: [
+              {
+                field: 'import',
+                message: importError.message,
+                code: importError.code,
+                severity: 'error' as const,
+              },
+            ],
+            warnings: [],
+            metadata: {
               code: importError.code,
               timestamp: endTime.toISOString(),
             },
@@ -225,7 +230,6 @@ export class ImportDataUseCase {
 
   private async processRecordsInBatches(
     recordDTOs: RecordDTO[],
-    uow: UnitOfWork,
     batchSize: number
   ): Promise<Result<{ records: Record[]; tags: Tag[] }, DomainError>> {
     try {

@@ -423,7 +423,6 @@ describe('ImportDataUseCase', () => {
     useCase = new ImportDataUseCase(
       mockUnitOfWork,
       mockImportValidator,
-      recordFactory,
       tagFactory
     );
 
