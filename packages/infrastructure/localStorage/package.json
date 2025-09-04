@@ -6,9 +6,9 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "build": "test -d src && yarn exec tsc --build || echo 'No src directory found, skipping build'",
+    "build": "sh -c 'if test -d src; then yarn exec tsc --build; else echo \"No src directory found, skipping build\"; fi'",
     "test": "jest",
-    "lint": "test -d src && eslint src --ext .ts || echo 'No src directory found, skipping lint'",
+    "lint": "sh -c 'if test -d src; then eslint src --ext .ts; else echo \"No src directory found, skipping lint\"; fi'",
     "typecheck": "yarn exec tsc --noEmit",
     "clean": "rm -rf dist tsconfig.tsbuildinfo"
   },
