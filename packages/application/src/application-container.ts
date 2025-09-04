@@ -91,7 +91,7 @@ export class ApplicationContainer {
     if (descriptor.lifetime === ServiceLifetime.SINGLETON) {
       const existingInstance = this.singletonInstances.get(key);
       if (existingInstance !== undefined) {
-        return Ok(existingInstance);
+        return Ok(existingInstance as T);
       }
     }
 
@@ -111,7 +111,9 @@ export class ApplicationContainer {
     // Create instance
     let instance: T;
     try {
-      instance = descriptor.factory(resolvedDependencies);
+      instance = (descriptor as DependencyDescriptor<T>).factory(
+        resolvedDependencies
+      );
     } catch (error) {
       return Err(
         `Error creating service '${key}': ${error instanceof Error ? error.message : String(error)}`
