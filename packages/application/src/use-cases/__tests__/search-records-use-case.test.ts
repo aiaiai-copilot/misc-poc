@@ -315,29 +315,20 @@ describe('SearchRecordsUseCase', () => {
     mockRecordRepository = new MockRecordRepository();
     mockTagRepository = new MockTagRepository();
     mockRecordRepository.setTagRepository(mockTagRepository);
-    useCase = new SearchRecordsUseCase(mockRecordRepository, mockTagRepository);
+    useCase = new SearchRecordsUseCase(mockRecordRepository);
   });
 
   describe('constructor', () => {
     it('should throw error when RecordRepository is null or undefined', () => {
-      expect(
-        () => new SearchRecordsUseCase(null as any, mockTagRepository)
-      ).toThrow('RecordRepository cannot be null or undefined');
-      expect(
-        () => new SearchRecordsUseCase(undefined as any, mockTagRepository)
-      ).toThrow('RecordRepository cannot be null or undefined');
+      expect(() => new SearchRecordsUseCase(null as any)).toThrow(
+        'RecordRepository cannot be null or undefined'
+      );
+      expect(() => new SearchRecordsUseCase(undefined as any)).toThrow(
+        'RecordRepository cannot be null or undefined'
+      );
     });
 
-    it('should throw error when TagRepository is null or undefined', () => {
-      expect(
-        () => new SearchRecordsUseCase(mockRecordRepository, null as any)
-      ).toThrow('TagRepository cannot be null or undefined');
-      expect(
-        () => new SearchRecordsUseCase(mockRecordRepository, undefined as any)
-      ).toThrow('TagRepository cannot be null or undefined');
-    });
-
-    it('should create instance successfully with valid repositories', () => {
+    it('should create instance successfully with valid repository', () => {
       expect(useCase).toBeInstanceOf(SearchRecordsUseCase);
     });
   });
@@ -668,10 +659,7 @@ describe('SearchRecordsUseCase', () => {
           ),
       };
 
-      const useCaseWithError = new SearchRecordsUseCase(
-        errorRepository as any,
-        mockTagRepository
-      );
+      const useCaseWithError = new SearchRecordsUseCase(errorRepository as any);
       const request: SearchRecordsRequest = { query: 'test' };
 
       const result = await useCaseWithError.execute(request);
@@ -693,10 +681,7 @@ describe('SearchRecordsUseCase', () => {
           ),
       };
 
-      const useCaseWithError = new SearchRecordsUseCase(
-        errorRepository as any,
-        mockTagRepository
-      );
+      const useCaseWithError = new SearchRecordsUseCase(errorRepository as any);
       const request: SearchRecordsRequest = { query: '' };
 
       const result = await useCaseWithError.execute(request);
@@ -726,10 +711,7 @@ describe('SearchRecordsUseCase', () => {
         search: jest.fn().mockRejectedValue(new Error('Unexpected error')),
       };
 
-      const useCaseWithError = new SearchRecordsUseCase(
-        errorRepository as any,
-        mockTagRepository
-      );
+      const useCaseWithError = new SearchRecordsUseCase(errorRepository as any);
       const request: SearchRecordsRequest = { query: 'test' };
 
       const result = await useCaseWithError.execute(request);

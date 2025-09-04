@@ -4,7 +4,6 @@ import {
   RecordRepository,
   RecordSearchOptions,
 } from '../ports/record-repository';
-import { TagRepository } from '../ports/tag-repository';
 import {
   SearchResultDTO,
   SearchResultDTOMapper,
@@ -21,21 +20,13 @@ export interface SearchRecordsResponse {
 
 export class SearchRecordsUseCase {
   private readonly recordRepository: RecordRepository;
-  private readonly tagRepository: TagRepository;
 
-  constructor(
-    recordRepository: RecordRepository,
-    tagRepository: TagRepository
-  ) {
+  constructor(recordRepository: RecordRepository) {
     if (recordRepository == null) {
       throw new Error('RecordRepository cannot be null or undefined');
     }
-    if (tagRepository == null) {
-      throw new Error('TagRepository cannot be null or undefined');
-    }
 
     this.recordRepository = recordRepository;
-    this.tagRepository = tagRepository;
   }
 
   async execute(
