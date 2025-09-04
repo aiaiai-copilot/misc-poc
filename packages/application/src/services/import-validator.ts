@@ -73,7 +73,7 @@ export class ImportValidator {
           errors,
           warnings,
           recordCount: 0,
-          version: data.version || 'unknown',
+          version: typeof data.version === 'string' ? data.version : 'unknown',
           migrationRequired: false,
         });
       }
@@ -308,16 +308,25 @@ export class ImportValidator {
 
   private isOldFormatData(data: Record<string, unknown>): boolean {
     // Check for old format field names that indicate migration is needed
-    return (
-      data.data !== undefined || // Old format used 'data' instead of 'records'
-      (data.records &&
-        Array.isArray(data.records) &&
-        data.records.length > 0 &&
-        (data.records[0].text !== undefined || // Old format used 'text' instead of 'content'
-          data.records[0].tags !== undefined || // Old format used 'tags' instead of 'tagIds'
-          data.records[0].created !== undefined || // Old format used 'created' instead of 'createdAt'
-          data.records[0].updated !== undefined)) // Old format used 'updated' instead of 'updatedAt'
-    );
+    if (data.data !== undefined) {
+      return true; // Old format used 'data' instead of 'records'
+    }
+
+    if (
+      data.records &&
+      Array.isArray(data.records) &&
+      data.records.length > 0
+    ) {
+      const firstRecord = data.records[0] as Record<string, unknown>;
+      return (
+        firstRecord.text !== undefined || // Old format used 'text' instead of 'content'
+        firstRecord.tags !== undefined || // Old format used 'tags' instead of 'tagIds'
+        firstRecord.created !== undefined || // Old format used 'created' instead of 'createdAt'
+        firstRecord.updated !== undefined // Old format used 'updated' instead of 'updatedAt'
+      );
+    }
+
+    return false;
   }
 
   private validateRequiredFields(
@@ -410,6 +419,17 @@ export class ImportValidator {
     // Validate each record and check for duplicates
     for (let i = 0; i < records.length; i++) {
       const record = records[i];
+
+      if (!record) {
+        errors.push({
+          type: 'INVALID_RECORD',
+          field: `records[${i}]`,
+          message: `Record at index ${i} is null or undefined`,
+          severity: 'error' as const,
+          recordIndex: i,
+        });
+        continue;
+      }
 
       // Validate individual record
       const recordErrors = await this.validateRecord(record, i);
