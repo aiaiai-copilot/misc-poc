@@ -102,3 +102,44 @@ I MUST:
 - Task status changes on main branch create inconsistency
 - PRs should include both implementation AND task completion status
 - This ensures task tracking is synchronized with code changes
+
+### CRITICAL: Stay on Task Branch Throughout Implementation
+
+**NEVER SWITCH TO MAIN DURING ACTIVE TASK WORK!**
+
+❌ **WRONG WORKFLOW (causes branch confusion):**
+
+```bash
+# Working on task branch
+git checkout task/<id>-<description>
+# Implementation work...
+# MISTAKE: Switching to main during task work
+git checkout main  # ❌ DON'T DO THIS DURING TASK!
+tm set-status --id=<id> --status=done
+git commit # ❌ Wrong branch for task completion!
+```
+
+✅ **CORRECT WORKFLOW:**
+
+```bash
+# Working on task branch
+git checkout task/<id>-<description>
+# Implementation work...
+# STAY ON TASK BRANCH for completion
+tm set-status --id=<id> --status=done
+git add .
+git commit -m "feat: complete task #<id> - description"
+git push -u origin task/<id>-<description>
+
+# Create PR (method depends on your setup):
+# - GitHub: gh pr create ...
+# - GitLab: glab mr create ...
+# - Manual: create PR through web interface
+# - Or merge directly if no PR workflow
+
+# ONLY switch to main when starting NEXT task
+git checkout main
+git pull origin main
+```
+
+**Key Principle: Task work (including status updates) stays on task branch until task is fully complete and merged.**
