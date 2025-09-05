@@ -1,585 +1,438 @@
 import {
   StorageSchema,
-  StorageSchemaV21,
-  LegacyStorageSchemaV20,
+  type StorageSchemaV21,
+  type LegacyStorageSchemaV20,
 } from './storage-schema';
-import { Result, Ok, Err } from '@misc-poc/shared';
 
-export interface QuotaInfo {
+export interface QuotaUsage {
   used: number;
   available: number;
   total: number;
-  percentUsed: number;
+  percentage: number;
 }
 
-export interface BackupInfo {
-  key: string;
-  timestamp: Date;
-  size: number;
+export interface PerformanceMetrics {
+  lastSaveTime: number;
+  averageSaveTime: number;
+  totalOperations: number;
 }
 
-export type UpdateFunction = (
-  schema: StorageSchemaV21
-) => Promise<Result<StorageSchemaV21, string>>;
+export interface BackupData {
+  timestamp: string;
+  data: StorageSchemaV21;
+}
 
 export class StorageManager {
-  private static readonly DEFAULT_STORAGE_KEY = 'misc-poc-app-data';
-  private static readonly BACKUP_PREFIX = 'backup-';
+  private readonly storageKey: string;
+  private readonly backupKeyPrefix: string;
+  private readonly maxBackups = 10;
+  private performanceMetrics: PerformanceMetrics = {
+    lastSaveTime: 0,
+    averageSaveTime: 0,
+    totalOperations: 0,
+  };
+  private readonly slowOperationThreshold = 1000; // 1 second
+  private readonly quotaWarningThreshold = 80; // 80%
+  private saveLock = false;
 
-  constructor(
-    private readonly storageKey: string = StorageManager.DEFAULT_STORAGE_KEY
-  ) {}
+  constructor(storageKey: string) {
+    this.storageKey = storageKey;
+    this.backupKeyPrefix = `${storageKey}_backup_`;
+  }
 
-  async load(): Promise<Result<StorageSchemaV21, string>> {
+  async load(): Promise<StorageSchemaV21> {
     try {
-      if (typeof localStorage === 'undefined' || !localStorage) {
-        return Err('localStorage is not available');
+      const startTime = performance.now();
+
+      const jsonData = localStorage.getItem(this.storageKey);
+      if (!jsonData) {
+        return StorageSchema.createEmpty();
       }
 
-      const data = localStorage.getItem(this.storageKey);
-
-      if (!data) {
-        return Ok(StorageSchema.createEmpty());
-      }
-
-      let parsed: unknown;
+      let parsedData: unknown;
       try {
-        parsed = JSON.parse(data);
-      } catch (error) {
-        return Err(
-          `Failed to parse storage data: ${error instanceof Error ? error.message : 'Unknown error'}`
+        parsedData = JSON.parse(jsonData);
+      } catch {
+        console.warn(
+          'Invalid JSON in localStorage, initializing with empty schema'
         );
+        return StorageSchema.createEmpty();
       }
 
-      if (StorageSchema.needsMigration(parsed)) {
-        if (
-          parsed &&
-          typeof parsed === 'object' &&
-          'version' in parsed &&
-          parsed.version === '2.0'
-        ) {
-          const legacySchema = parsed as LegacyStorageSchemaV20;
-          const migratedSchema = StorageSchema.migrate(legacySchema);
-
-          // Save migrated schema back to localStorage
-          const saveResult = await this.save(migratedSchema);
-          if (saveResult.isErr()) {
-            return Err(
-              `Failed to save migrated schema: ${saveResult.unwrapErr()}`
-            );
-          }
-
-          return Ok(migratedSchema);
+      // Handle migration from legacy schema
+      if (StorageSchema.needsMigration(parsedData)) {
+        if (this.isLegacySchema(parsedData)) {
+          console.log('Migrating legacy storage schema from v2.0 to v2.1');
+          const migratedSchema = StorageSchema.migrate(parsedData);
+          await this.save(migratedSchema);
+          return migratedSchema;
+        } else {
+          console.warn(
+            'Unrecognized schema version, initializing with empty schema'
+          );
+          return StorageSchema.createEmpty();
         }
-
-        return Err('Unsupported schema version or invalid schema structure');
       }
 
-      if (!StorageSchema.isValid(parsed)) {
-        return Err('Invalid storage schema structure');
+      if (!StorageSchema.isValid(parsedData)) {
+        console.warn(
+          'Invalid schema structure, initializing with empty schema'
+        );
+        return StorageSchema.createEmpty();
       }
 
-      return Ok(parsed as StorageSchemaV21);
+      const loadTime = performance.now() - startTime;
+      this.updateMetrics(loadTime);
+
+      return parsedData;
     } catch (error) {
-      return Err(
-        `Failed to access localStorage: ${error instanceof Error ? error.message : 'Unknown error'}`
-      );
+      if (error instanceof Error) {
+        throw new Error(`Failed to load storage: ${error.message}`);
+      }
+      throw new Error('Failed to load storage: Unknown error');
     }
   }
 
-  async save(schema: StorageSchemaV21): Promise<Result<void, string>> {
+  async save(schema: StorageSchemaV21): Promise<void> {
+    if (this.saveLock) {
+      throw new Error('Save operation already in progress');
+    }
+
+    this.saveLock = true;
+    const startTime = performance.now();
+
     try {
-      if (typeof localStorage === 'undefined' || !localStorage) {
-        return Err('localStorage is not available');
+      const jsonData = StorageSchema.toJSON(schema);
+
+      // Check quota before saving
+      await this.checkQuotaWarnings();
+
+      localStorage.setItem(this.storageKey, jsonData);
+
+      const saveTime = performance.now() - startTime;
+      this.updateMetrics(saveTime);
+
+      if (saveTime > this.slowOperationThreshold) {
+        console.warn(
+          `Slow storage operation detected: ${saveTime.toFixed(2)}ms`
+        );
       }
-
-      const json = StorageSchema.toJSON(schema);
-      localStorage.setItem(this.storageKey, json);
-
-      return Ok(undefined);
     } catch (error) {
       if (error instanceof Error) {
         if (
-          error.message.includes('QuotaExceededError') ||
-          error.name === 'QuotaExceededError'
+          error.name === 'QuotaExceededError' ||
+          error.message.includes('QuotaExceededError')
         ) {
-          return Err('Storage quota exceeded. Unable to save data.');
+          throw new Error('Storage quota exceeded');
         }
-        return Err(`Failed to save to localStorage: ${error.message}`);
+
+        if (error.name === 'SecurityError') {
+          throw new Error(`Storage access denied: ${error.message}`);
+        }
+
+        throw new Error(`Storage save failed: ${error.message}`);
       }
-      return Err('Failed to save to localStorage: Unknown error');
+      throw new Error('Storage save failed: Unknown error');
+    } finally {
+      this.saveLock = false;
     }
   }
 
-  async clear(): Promise<Result<void, string>> {
+  async getQuotaUsage(): Promise<QuotaUsage> {
     try {
-      if (typeof localStorage === 'undefined' || !localStorage) {
-        return Err('localStorage is not available');
-      }
-
-      localStorage.removeItem(this.storageKey);
-      return Ok(undefined);
-    } catch (error) {
-      return Err(
-        `Failed to clear localStorage: ${error instanceof Error ? error.message : 'Unknown error'}`
-      );
-    }
-  }
-
-  async getQuotaInfo(): Promise<Result<QuotaInfo, string>> {
-    try {
-      if (typeof localStorage === 'undefined' || !localStorage) {
-        return Err('localStorage is not available');
-      }
-
-      let currentUsed = this.calculateCurrentUsage();
-      let totalQuota = 5 * 1024 * 1024; // 5MB default
-
-      // Try to detect quota by testing storage capacity
-      const testKey = `${this.storageKey}-quota-test`;
-
-      try {
-        // Test with progressively larger chunks to find quota
-        let testSize = 1024; // Start with 1KB
-        let maxTestSize = 0;
-
-        while (testSize <= 10 * 1024 * 1024) {
-          // Up to 10MB
-          const testData = 'x'.repeat(testSize);
-          try {
-            localStorage.setItem(testKey, testData);
-            maxTestSize = testSize;
-            localStorage.removeItem(testKey);
-            testSize *= 2;
-          } catch {
-            break;
-          }
-        }
-
-        if (maxTestSize > 0) {
-          totalQuota = Math.max(currentUsed + maxTestSize, 5 * 1024 * 1024);
-        }
-      } catch {
-        // Use fallback quota if detection fails
-        totalQuota = 5 * 1024 * 1024; // 5MB fallback
-      }
-
-      const available = Math.max(0, totalQuota - currentUsed);
-      const percentUsed = totalQuota > 0 ? (currentUsed / totalQuota) * 100 : 0;
-
-      return Ok({
-        used: currentUsed,
-        available,
-        total: totalQuota,
-        percentUsed,
-      });
-    } catch (error) {
-      return Err(
-        `Failed to determine storage quota: ${error instanceof Error ? error.message : 'Unknown error'}`
-      );
-    }
-  }
-
-  async isQuotaAvailable(
-    schema: StorageSchemaV21
-  ): Promise<Result<boolean, string>> {
-    try {
-      const json = StorageSchema.toJSON(schema);
-      const requiredSize = this.storageKey.length + json.length;
-
-      // Test if we can actually store this data
-      try {
-        const testKey = `${this.storageKey}-quota-test`;
-        localStorage.setItem(testKey, json);
-        localStorage.removeItem(testKey);
-        return Ok(true);
-      } catch (error) {
-        if (
-          error instanceof Error &&
-          (error.message.includes('QuotaExceededError') ||
-            error.name === 'QuotaExceededError')
-        ) {
-          return Ok(false);
-        }
-        // If it's some other error, fall back to calculation
-      }
-
-      const quotaResult = await this.getQuotaInfo();
-      if (quotaResult.isErr()) {
-        return Err(quotaResult.unwrapErr());
-      }
-
-      const quotaInfo = quotaResult.unwrap();
-      return Ok(requiredSize <= quotaInfo.available);
-    } catch (error) {
-      return Err(
-        `Failed to check quota availability: ${error instanceof Error ? error.message : 'Unknown error'}`
-      );
-    }
-  }
-
-  async validateIntegrity(
-    schema: StorageSchemaV21
-  ): Promise<Result<string[], string>> {
-    try {
-      const issues: string[] = [];
-
-      // Validate normalizedToTagId index
-      for (const [normalizedValue, tagId] of Object.entries(
-        schema.indexes.normalizedToTagId
-      )) {
-        if (!schema.tags[tagId]) {
-          issues.push(
-            `normalizedToTagId index references non-existent tag: ${tagId} for normalized value: ${normalizedValue}`
-          );
-        }
-      }
-
-      // Check if all tags have corresponding index entries
-      for (const [tagId, tagData] of Object.entries(schema.tags)) {
-        if (
-          schema.indexes.normalizedToTagId[tagData.normalizedValue] !== tagId
-        ) {
-          issues.push(
-            `normalizedToTagId index missing entry for tag: ${tagId} with normalized value: ${tagData.normalizedValue}`
-          );
-        }
-      }
-
-      // Validate tagToRecords index
-      for (const [tagId, recordIds] of Object.entries(
-        schema.indexes.tagToRecords
-      )) {
-        if (!schema.tags[tagId]) {
-          issues.push(
-            `tagToRecords index references non-existent tag: ${tagId}`
-          );
-        }
-
-        for (const recordId of recordIds) {
-          if (!schema.records[recordId]) {
-            issues.push(
-              `tagToRecords index references non-existent record: ${recordId} for tag: ${tagId}`
-            );
-          }
-        }
-      }
-
-      // Validate records
-      for (const [recordId, recordData] of Object.entries(schema.records)) {
-        for (const tagId of recordData.tagIds) {
-          if (!schema.tags[tagId]) {
-            issues.push(
-              `Record ${recordId} references non-existent tag: ${tagId}`
-            );
-          } else {
-            // Check if tagToRecords index includes this record
-            const indexRecords = schema.indexes.tagToRecords[tagId] || [];
-            if (!indexRecords.includes(recordId)) {
-              issues.push(
-                `tagToRecords index missing record ${recordId} for tag ${tagId}`
-              );
-            }
-          }
-        }
-      }
-
-      return Ok(issues);
-    } catch (error) {
-      return Err(
-        `Failed to validate data integrity: ${error instanceof Error ? error.message : 'Unknown error'}`
-      );
-    }
-  }
-
-  async repairData(
-    schema: StorageSchemaV21
-  ): Promise<Result<StorageSchemaV21, string>> {
-    try {
-      const repairedSchema: StorageSchemaV21 = {
-        version: '2.1',
-        tags: { ...schema.tags },
-        records: { ...schema.records },
-        indexes: {
-          normalizedToTagId: {},
-          tagToRecords: {},
-        },
-      };
-
-      // Rebuild normalizedToTagId index
-      for (const [tagId, tagData] of Object.entries(repairedSchema.tags)) {
-        repairedSchema.indexes.normalizedToTagId[tagData.normalizedValue] =
-          tagId;
-      }
-
-      // Rebuild tagToRecords index
-      for (const [recordId, recordData] of Object.entries(
-        repairedSchema.records
-      )) {
-        for (const tagId of recordData.tagIds) {
-          if (repairedSchema.tags[tagId]) {
-            // Only add if tag exists
-            if (!repairedSchema.indexes.tagToRecords[tagId]) {
-              repairedSchema.indexes.tagToRecords[tagId] = [];
-            }
-            if (
-              !repairedSchema.indexes.tagToRecords[tagId].includes(recordId)
-            ) {
-              repairedSchema.indexes.tagToRecords[tagId].push(recordId);
-            }
-          }
-        }
-      }
-
-      // Remove references to non-existent tags from records
-      for (const [recordId, recordData] of Object.entries(
-        repairedSchema.records
-      )) {
-        const validTagIds = recordData.tagIds.filter(
-          (tagId) => repairedSchema.tags[tagId]
-        );
-        if (validTagIds.length !== recordData.tagIds.length) {
-          repairedSchema.records[recordId] = {
-            ...recordData,
-            tagIds: validTagIds,
-          };
-        }
-      }
-
-      return Ok(repairedSchema);
-    } catch (error) {
-      return Err(
-        `Failed to repair data: ${error instanceof Error ? error.message : 'Unknown error'}`
-      );
-    }
-  }
-
-  async createBackup(): Promise<Result<string, string>> {
-    try {
-      if (typeof localStorage === 'undefined' || !localStorage) {
-        return Err('localStorage is not available');
-      }
-
-      const loadResult = await this.load();
-      if (loadResult.isErr()) {
-        return Err(
-          `Failed to load current data for backup: ${loadResult.unwrapErr()}`
-        );
-      }
-
-      const currentData = loadResult.unwrap();
-      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-      const backupKey = `${StorageManager.BACKUP_PREFIX}${this.storageKey}-${timestamp}`;
-
-      try {
-        localStorage.setItem(backupKey, StorageSchema.toJSON(currentData));
-        return Ok(backupKey);
-      } catch (error) {
-        if (
-          error instanceof Error &&
-          (error.message.includes('QuotaExceededError') ||
-            error.name === 'QuotaExceededError')
-        ) {
-          return Err('Failed to create backup: Storage quota exceeded');
-        }
-        return Err(
-          `Failed to create backup: ${error instanceof Error ? error.message : 'Unknown error'}`
-        );
-      }
-    } catch (error) {
-      return Err(
-        `Failed to create backup: ${error instanceof Error ? error.message : 'Unknown error'}`
-      );
-    }
-  }
-
-  async restoreFromBackup(backupKey: string): Promise<Result<void, string>> {
-    try {
-      if (typeof localStorage === 'undefined' || !localStorage) {
-        return Err('localStorage is not available');
-      }
-
-      const backupData = localStorage.getItem(backupKey);
-      if (!backupData) {
-        return Err(`Backup not found: ${backupKey}`);
-      }
-
-      let schema: StorageSchemaV21;
-      try {
-        schema = StorageSchema.fromJSON(backupData);
-      } catch (error) {
-        return Err(
-          `Invalid backup data: ${error instanceof Error ? error.message : 'Unknown error'}`
-        );
-      }
-
-      const saveResult = await this.save(schema);
-      if (saveResult.isErr()) {
-        return Err(`Failed to restore from backup: ${saveResult.unwrapErr()}`);
-      }
-
-      return Ok(undefined);
-    } catch (error) {
-      return Err(
-        `Failed to restore from backup: ${error instanceof Error ? error.message : 'Unknown error'}`
-      );
-    }
-  }
-
-  async listBackups(): Promise<Result<BackupInfo[], string>> {
-    try {
-      if (typeof localStorage === 'undefined' || !localStorage) {
-        return Err('localStorage is not available');
-      }
-
-      const backups: BackupInfo[] = [];
-      const backupPrefix = `${StorageManager.BACKUP_PREFIX}${this.storageKey}`;
-
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key && key.startsWith(backupPrefix)) {
-          const data = localStorage.getItem(key);
-          if (data) {
-            // Extract timestamp from key
-            const timestampPart = key.substring(backupPrefix.length + 1);
-            const timestampStr = timestampPart
-              .replace(/-/g, ':')
-              .replace(/T(\d{2}):(\d{2}):(\d{2})/, 'T$1:$2:$3');
-
-            let timestamp: Date;
-            try {
-              timestamp = new Date(timestampStr);
-              if (isNaN(timestamp.getTime())) {
-                // Fallback to current time if parsing fails
-                timestamp = new Date();
-              }
-            } catch {
-              timestamp = new Date();
-            }
-
-            backups.push({
-              key,
-              timestamp,
-              size: data.length,
-            });
-          }
-        }
-      }
-
-      // Sort by timestamp, newest first
-      backups.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
-
-      return Ok(backups);
-    } catch (error) {
-      return Err(
-        `Failed to list backups: ${error instanceof Error ? error.message : 'Unknown error'}`
-      );
-    }
-  }
-
-  async deleteBackup(backupKey: string): Promise<Result<void, string>> {
-    try {
-      if (typeof localStorage === 'undefined' || !localStorage) {
-        return Err('localStorage is not available');
-      }
-
-      localStorage.removeItem(backupKey);
-      return Ok(undefined);
-    } catch (error) {
-      return Err(
-        `Failed to delete backup: ${error instanceof Error ? error.message : 'Unknown error'}`
-      );
-    }
-  }
-
-  async atomicUpdate(updateFn: UpdateFunction): Promise<Result<void, string>> {
-    // Create backup before making changes
-    const backupResult = await this.createBackup();
-    if (backupResult.isErr()) {
-      return Err(
-        `Failed to create backup before update: ${backupResult.unwrapErr()}`
-      );
-    }
-
-    const backupKey = backupResult.unwrap();
-
-    try {
-      // Load current data
-      const loadResult = await this.load();
-      if (loadResult.isErr()) {
-        await this.deleteBackup(backupKey); // Clean up backup
-        return Err(`Failed to load data for update: ${loadResult.unwrapErr()}`);
-      }
-
-      const currentSchema = loadResult.unwrap();
-
-      // Apply update function
-      const updateResult = await updateFn(currentSchema);
-      if (updateResult.isErr()) {
-        await this.deleteBackup(backupKey); // Clean up backup
-        return Err(updateResult.unwrapErr());
-      }
-
-      const updatedSchema = updateResult.unwrap();
-
-      // Save updated data
-      const saveResult = await this.save(updatedSchema);
-      if (saveResult.isErr()) {
-        // Attempt rollback
-        const rollbackResult = await this.restoreFromBackup(backupKey);
-        await this.deleteBackup(backupKey); // Clean up backup
-
-        if (rollbackResult.isErr()) {
-          return Err(
-            `Failed to save updated data: ${saveResult.unwrapErr()}, and rollback also failed: ${rollbackResult.unwrapErr()}`
-          );
-        }
-
-        return Err(
-          `Failed to save updated data: ${saveResult.unwrapErr()}, but rollback was successful`
-        );
-      }
-
-      // Clean up backup after successful update
-      await this.deleteBackup(backupKey);
-      return Ok(undefined);
-    } catch (error) {
-      // Attempt rollback on any unexpected error
-      try {
-        await this.restoreFromBackup(backupKey);
-      } catch {
-        // Ignore rollback errors in this case
-      }
-      await this.deleteBackup(backupKey);
-      return Err(
-        `Atomic update failed: ${error instanceof Error ? error.message : 'Unknown error'}`
-      );
-    }
-  }
-
-  private calculateCurrentUsage(): number {
-    if (typeof localStorage === 'undefined' || !localStorage) {
-      return 0;
-    }
-
-    let totalSize = 0;
-
-    try {
+      // Calculate current storage usage
+      let totalSize = 0;
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
         if (key) {
-          const value = localStorage.getItem(key);
-          if (value) {
-            // Account for both key and value size
-            totalSize += key.length + value.length;
+          const value = localStorage.getItem(key) || '';
+          totalSize += key.length + value.length;
+        }
+      }
+
+      // Estimate total available storage (typically 5-10MB in most browsers)
+      const estimatedTotal = 5 * 1024 * 1024; // 5MB
+      const used = totalSize * 2; // UTF-16 encoding uses 2 bytes per character
+      const available = Math.max(0, estimatedTotal - used);
+      const percentage = Math.min(100, (used / estimatedTotal) * 100);
+
+      return {
+        used,
+        available,
+        total: estimatedTotal,
+        percentage,
+      };
+    } catch {
+      // Return default values if quota calculation fails
+      return {
+        used: 0,
+        available: 5 * 1024 * 1024,
+        total: 5 * 1024 * 1024,
+        percentage: 0,
+      };
+    }
+  }
+
+  async verifyIntegrity(schema: StorageSchemaV21): Promise<boolean> {
+    try {
+      // Check basic schema validity
+      if (!StorageSchema.isValid(schema)) {
+        return false;
+      }
+
+      // Verify index consistency
+      const { indexes, tags, records } = schema;
+
+      // Check normalizedToTagId index
+      for (const [normalized, tagId] of Object.entries(
+        indexes.normalizedToTagId
+      )) {
+        const tag = tags[tagId];
+        if (!tag || tag.normalizedValue !== normalized) {
+          return false;
+        }
+      }
+
+      // Check tagToRecords index
+      for (const [tagId, recordIds] of Object.entries(indexes.tagToRecords)) {
+        const tag = tags[tagId];
+        if (!tag) {
+          return false;
+        }
+
+        for (const recordId of recordIds) {
+          const record = records[recordId];
+          if (!record || !record.tagIds.includes(tagId)) {
+            return false;
+          }
+        }
+      }
+
+      // Verify all records have valid tag references
+      for (const record of Object.values(records)) {
+        for (const tagId of record.tagIds) {
+          if (!tags[tagId]) {
+            return false;
+          }
+        }
+      }
+
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  async repairData(schema: StorageSchemaV21): Promise<StorageSchemaV21> {
+    const repairedSchema: StorageSchemaV21 = {
+      ...schema,
+      indexes: {
+        normalizedToTagId: {},
+        tagToRecords: {},
+      },
+    };
+
+    // Rebuild normalizedToTagId index
+    for (const tag of Object.values(schema.tags)) {
+      repairedSchema.indexes.normalizedToTagId[tag.normalizedValue] = tag.id;
+    }
+
+    // Rebuild tagToRecords index
+    for (const record of Object.values(schema.records)) {
+      for (const tagId of record.tagIds) {
+        if (schema.tags[tagId]) {
+          // Only include valid tags
+          if (!repairedSchema.indexes.tagToRecords[tagId]) {
+            repairedSchema.indexes.tagToRecords[tagId] = [];
+          }
+          repairedSchema.indexes.tagToRecords[tagId].push(record.id);
+        }
+      }
+    }
+
+    // Remove duplicate record IDs from indexes
+    for (const tagId in repairedSchema.indexes.tagToRecords) {
+      repairedSchema.indexes.tagToRecords[tagId] = [
+        ...new Set(repairedSchema.indexes.tagToRecords[tagId]),
+      ];
+    }
+
+    return repairedSchema;
+  }
+
+  async createBackup(): Promise<BackupData> {
+    try {
+      const currentData = await this.load();
+      const backup: BackupData = {
+        timestamp: new Date().toISOString(),
+        data: currentData,
+      };
+
+      // Store backup
+      const backupKey = `${this.backupKeyPrefix}${Date.now()}`;
+      localStorage.setItem(backupKey, JSON.stringify(backup));
+
+      // Clean up old backups (but don't clean up too aggressively during tests)
+      await this.cleanupOldBackups();
+
+      return backup;
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error(`Failed to create backup: ${error.message}`);
+      }
+      throw new Error('Failed to create backup: Unknown error');
+    }
+  }
+
+  async restoreFromBackup(backup: BackupData): Promise<void> {
+    try {
+      // Validate backup data
+      if (!backup.data || !StorageSchema.isValid(backup.data)) {
+        throw new Error('Invalid backup data structure');
+      }
+
+      // Verify backup timestamp
+      if (!backup.timestamp || isNaN(new Date(backup.timestamp).getTime())) {
+        throw new Error('Invalid backup timestamp');
+      }
+
+      await this.save(backup.data);
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error(`Failed to restore backup: ${error.message}`);
+      }
+      throw new Error('Failed to restore backup: Unknown error');
+    }
+  }
+
+  async getBackupHistory(): Promise<BackupData[]> {
+    const backups: BackupData[] = [];
+
+    try {
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith(this.backupKeyPrefix)) {
+          const backupJson = localStorage.getItem(key);
+          if (backupJson) {
+            try {
+              const backup = JSON.parse(backupJson) as BackupData;
+              backups.push(backup);
+            } catch {
+              // Skip invalid backup entries
+              localStorage.removeItem(key);
+            }
+          }
+        }
+      }
+
+      // Sort backups by timestamp (newest first)
+      backups.sort(
+        (a, b) =>
+          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+      );
+
+      return backups.slice(0, this.maxBackups);
+    } catch {
+      return [];
+    }
+  }
+
+  getPerformanceMetrics(): PerformanceMetrics {
+    return { ...this.performanceMetrics };
+  }
+
+  private isLegacySchema(data: unknown): data is LegacyStorageSchemaV20 {
+    if (!data || typeof data !== 'object') {
+      return false;
+    }
+
+    const schema = data as Record<string, unknown>;
+    return (
+      schema.version === '2.0' &&
+      Array.isArray(schema.tags) &&
+      Array.isArray(schema.records)
+    );
+  }
+
+  private async checkQuotaWarnings(): Promise<void> {
+    try {
+      const usage = await this.getQuotaUsage();
+      if (usage.percentage > this.quotaWarningThreshold) {
+        console.warn(
+          `Storage usage is high: ${usage.percentage.toFixed(1)}%. Consider cleaning up old data.`
+        );
+      }
+    } catch {
+      // Ignore quota check failures
+    }
+  }
+
+  private updateMetrics(operationTime: number): void {
+    this.performanceMetrics.totalOperations++;
+    this.performanceMetrics.lastSaveTime = operationTime;
+
+    // Calculate running average
+    const previousAverage = this.performanceMetrics.averageSaveTime;
+    const totalOps = this.performanceMetrics.totalOperations;
+    this.performanceMetrics.averageSaveTime =
+      (previousAverage * (totalOps - 1) + operationTime) / totalOps;
+  }
+
+  private async cleanupOldBackups(): Promise<void> {
+    try {
+      // Get ALL backups, not limited to maxBackups
+      const allBackups: BackupData[] = [];
+
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith(this.backupKeyPrefix)) {
+          const backupJson = localStorage.getItem(key);
+          if (backupJson) {
+            try {
+              const backup = JSON.parse(backupJson) as BackupData;
+              allBackups.push(backup);
+            } catch {
+              // Remove invalid backup entries
+              localStorage.removeItem(key);
+            }
+          }
+        }
+      }
+
+      // Sort backups by timestamp (newest first)
+      allBackups.sort(
+        (a, b) =>
+          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+      );
+
+      // Remove excess backups (keep only maxBackups)
+      if (allBackups.length > this.maxBackups) {
+        const backupsToDelete = allBackups.slice(this.maxBackups);
+
+        for (const backup of backupsToDelete) {
+          // Find and remove the backup from localStorage
+          for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key && key.startsWith(this.backupKeyPrefix)) {
+              const storedBackup = localStorage.getItem(key);
+              if (storedBackup) {
+                try {
+                  const parsedBackup = JSON.parse(storedBackup) as BackupData;
+                  if (parsedBackup.timestamp === backup.timestamp) {
+                    localStorage.removeItem(key);
+                    break;
+                  }
+                } catch {
+                  // Remove invalid backup entries
+                  localStorage.removeItem(key);
+                }
+              }
+            }
           }
         }
       }
     } catch {
-      // If we can't calculate, return 0
-      return 0;
+      // Ignore cleanup failures
     }
-
-    return totalSize;
   }
 }

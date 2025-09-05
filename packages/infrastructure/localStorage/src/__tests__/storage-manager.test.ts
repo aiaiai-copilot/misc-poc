@@ -1,903 +1,772 @@
 import { StorageManager } from '../storage-manager';
-import { StorageSchema, StorageSchemaV21 } from '../storage-schema';
-import { Result } from '@misc-poc/shared';
+import { StorageSchema, type StorageSchemaV21 } from '../storage-schema';
 
-// Mock localStorage for testing
-const mockLocalStorage = ((): any => {
+// Mock localStorage
+const localStorageMock = ((): Storage & {
+  _getStore: () => Record<string, string>;
+  _setStore: (newStore: Record<string, string>) => void;
+} => {
   let store: Record<string, string> = {};
-  let quota = 5 * 1024 * 1024; // 5MB default quota
-  let usedSpace = 0;
 
   return {
     getItem: jest.fn((key: string) => store[key] || null),
     setItem: jest.fn((key: string, value: string) => {
-      const newSize =
-        usedSpace - (store[key]?.length || 0) + key.length + value.length;
-      if (newSize > quota) {
-        throw new Error('QuotaExceededError');
-      }
       store[key] = value;
-      usedSpace = newSize;
     }),
     removeItem: jest.fn((key: string) => {
-      if (store[key]) {
-        usedSpace -= key.length + store[key].length;
-        delete store[key];
-      }
+      delete store[key];
     }),
     clear: jest.fn(() => {
       store = {};
-      usedSpace = 0;
     }),
     get length(): number {
       return Object.keys(store).length;
     },
-    key: jest.fn(
-      (index: number): string | null => Object.keys(store)[index] || null
-    ),
-    __setQuota: (newQuota: number): void => {
-      quota = newQuota;
+    key: (index: number): string | null => {
+      const keys = Object.keys(store);
+      return keys[index] || null;
     },
-    __getUsedSpace: (): number => usedSpace,
-    __getStore: (): Record<string, string> => store,
+    // Helper method for testing
+    _getStore: (): Record<string, string> => store,
+    _setStore: (newStore: Record<string, string>): void => {
+      store = newStore;
+    },
   };
 })();
 
-// Replace global localStorage with mock
-Object.defineProperty(global, 'localStorage', {
-  value: mockLocalStorage,
-  writable: true,
+Object.defineProperty(window, 'localStorage', {
+  value: localStorageMock,
 });
 
 describe('StorageManager', () => {
-  const storageKey = 'test-app-data';
   let storageManager: StorageManager;
+  const STORAGE_KEY = 'test-storage';
 
   beforeEach(() => {
-    mockLocalStorage.clear();
-    mockLocalStorage.__setQuota(5 * 1024 * 1024); // Reset to default quota
-    jest.clearAllMocks();
-    storageManager = new StorageManager(storageKey);
+    localStorageMock.clear();
+    localStorageMock.getItem.mockClear();
+    localStorageMock.setItem.mockClear();
+    localStorageMock.removeItem.mockClear();
+    storageManager = new StorageManager(STORAGE_KEY);
   });
 
   describe('initialization', () => {
-    it('should create manager with default storage key', () => {
-      const manager = new StorageManager();
-      expect(manager).toBeDefined();
+    it('should create a new StorageManager with provided key', () => {
+      expect(storageManager).toBeInstanceOf(StorageManager);
     });
 
-    it('should create manager with custom storage key', () => {
-      const customKey = 'custom-app-data';
-      const manager = new StorageManager(customKey);
-      expect(manager).toBeDefined();
+    it('should initialize with empty schema when localStorage is empty', async () => {
+      const schema = await storageManager.load();
+      expect(schema).toEqual(StorageSchema.createEmpty());
+    });
+
+    it('should load existing valid schema from localStorage', async () => {
+      const mockSchema = StorageSchema.createEmpty();
+      mockSchema.tags['tag1'] = { id: 'tag1', normalizedValue: 'test' };
+      localStorageMock.setItem(STORAGE_KEY, StorageSchema.toJSON(mockSchema));
+
+      const schema = await storageManager.load();
+      expect(schema).toEqual(mockSchema);
+    });
+
+    it('should migrate legacy schema v2.0 to v2.1', async () => {
+      const legacySchema = {
+        version: '2.0',
+        tags: [{ id: 'tag1', normalizedValue: 'test' }],
+        records: [
+          {
+            id: 'rec1',
+            content: 'content',
+            tagIds: ['tag1'],
+            createdAt: '2023-01-01',
+            updatedAt: '2023-01-01',
+          },
+        ],
+      };
+      localStorageMock.setItem(STORAGE_KEY, JSON.stringify(legacySchema));
+
+      const schema = await storageManager.load();
+      expect(schema.version).toBe('2.1');
+      expect(schema.tags['tag1']).toEqual({
+        id: 'tag1',
+        normalizedValue: 'test',
+      });
+      expect(schema.records['rec1']).toBeDefined();
+      expect(schema.indexes.normalizedToTagId['test']).toBe('tag1');
+      expect(schema.indexes.tagToRecords['tag1']).toEqual(['rec1']);
+    });
+
+    it('should handle corrupted JSON gracefully', async () => {
+      localStorageMock.setItem(STORAGE_KEY, 'invalid-json');
+
+      const schema = await storageManager.load();
+      expect(schema).toEqual(StorageSchema.createEmpty());
     });
   });
 
-  describe('storage operations', () => {
-    describe('load', () => {
-      it('should return empty schema when localStorage is empty', async () => {
-        const result = await storageManager.load();
+  describe('save operations', () => {
+    it('should save schema to localStorage', async () => {
+      const schema = StorageSchema.createEmpty();
+      schema.tags['tag1'] = { id: 'tag1', normalizedValue: 'test' };
 
-        expect(result.isOk()).toBe(true);
-        if (result.isOk()) {
-          const schema = result.unwrap();
-          expect(schema.version).toBe('2.1');
-          expect(schema.tags).toEqual({});
-          expect(schema.records).toEqual({});
-          expect(schema.indexes.normalizedToTagId).toEqual({});
-          expect(schema.indexes.tagToRecords).toEqual({});
-        }
-      });
+      await storageManager.save(schema);
 
-      it('should load valid schema from localStorage', async () => {
-        const validSchema = StorageSchema.createEmpty();
-        validSchema.tags['tag-1'] = {
-          id: 'tag-1',
-          normalizedValue: 'test-tag',
-        };
-
-        mockLocalStorage.setItem(storageKey, StorageSchema.toJSON(validSchema));
-
-        const result = await storageManager.load();
-
-        expect(result.isOk()).toBe(true);
-        if (result.isOk()) {
-          const schema = result.unwrap();
-          expect(schema.tags['tag-1']).toEqual({
-            id: 'tag-1',
-            normalizedValue: 'test-tag',
-          });
-        }
-      });
-
-      it('should migrate legacy schema when loading', async () => {
-        const legacySchema = {
-          version: '2.0',
-          tags: [
-            { id: 'tag-1', normalizedValue: 'javascript' },
-            { id: 'tag-2', normalizedValue: 'typescript' },
-          ],
-          records: [
-            {
-              id: 'record-1',
-              content: 'Test content',
-              tagIds: ['tag-1'],
-              createdAt: '2024-01-01T00:00:00Z',
-              updatedAt: '2024-01-01T00:00:00Z',
-            },
-          ],
-        };
-
-        mockLocalStorage.setItem(storageKey, JSON.stringify(legacySchema));
-
-        const result = await storageManager.load();
-
-        expect(result.isOk()).toBe(true);
-        if (result.isOk()) {
-          const schema = result.unwrap();
-          expect(schema.version).toBe('2.1');
-          expect(schema.tags['tag-1']).toEqual({
-            id: 'tag-1',
-            normalizedValue: 'javascript',
-          });
-          expect(schema.indexes.normalizedToTagId.javascript).toBe('tag-1');
-        }
-      });
-
-      it('should handle corrupted JSON gracefully', async () => {
-        mockLocalStorage.setItem(storageKey, 'invalid json {');
-
-        const result = await storageManager.load();
-
-        expect(result.isErr()).toBe(true);
-        if (result.isErr()) {
-          expect(result.unwrapErr()).toContain('Failed to parse storage data');
-        }
-      });
-
-      it('should handle localStorage access errors', async () => {
-        const originalGetItem = mockLocalStorage.getItem;
-        mockLocalStorage.getItem.mockImplementationOnce(() => {
-          throw new Error('SecurityError: Access denied');
-        });
-
-        const result = await storageManager.load();
-
-        expect(result.isErr()).toBe(true);
-        if (result.isErr()) {
-          expect(result.unwrapErr()).toContain('Failed to access localStorage');
-        }
-
-        mockLocalStorage.getItem.mockImplementation(originalGetItem);
-      });
+      expect(localStorageMock.setItem).toHaveBeenCalledWith(
+        STORAGE_KEY,
+        StorageSchema.toJSON(schema)
+      );
     });
 
-    describe('save', () => {
-      it('should save schema to localStorage', async () => {
-        const schema = StorageSchema.createEmpty();
-        schema.tags['tag-1'] = {
-          id: 'tag-1',
-          normalizedValue: 'test-tag',
-        };
+    it('should handle save operation atomically', async () => {
+      const schema = StorageSchema.createEmpty();
+      let saveCallCount = 0;
 
-        const result = await storageManager.save(schema);
-
-        expect(result.isOk()).toBe(true);
-        expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
-          storageKey,
-          StorageSchema.toJSON(schema)
-        );
-      });
-
-      it('should handle quota exceeded errors', async () => {
-        const schema = StorageSchema.createEmpty();
-        // Create a large schema that exceeds quota
-        for (let i = 0; i < 1000; i++) {
-          schema.records[`record-${i}`] = {
-            id: `record-${i}`,
-            content: 'A'.repeat(10000), // Large content
-            tagIds: [],
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          };
-        }
-
-        // Set a small quota
-        mockLocalStorage.__setQuota(1000);
-
-        const result = await storageManager.save(schema);
-
-        expect(result.isErr()).toBe(true);
-        if (result.isErr()) {
-          expect(result.unwrapErr()).toContain('Storage quota exceeded');
+      localStorageMock.setItem.mockImplementation(() => {
+        saveCallCount++;
+        if (saveCallCount === 1) {
+          throw new Error('Storage error');
         }
       });
 
-      it('should handle localStorage access errors during save', async () => {
-        const schema = StorageSchema.createEmpty();
-        const originalSetItem = mockLocalStorage.setItem;
-        mockLocalStorage.setItem.mockImplementationOnce(() => {
-          throw new Error('SecurityError: Access denied');
-        });
-
-        const result = await storageManager.save(schema);
-
-        expect(result.isErr()).toBe(true);
-        if (result.isErr()) {
-          expect(result.unwrapErr()).toContain(
-            'Failed to save to localStorage'
-          );
-        }
-
-        mockLocalStorage.setItem.mockImplementation(originalSetItem);
-      });
-    });
-
-    describe('clear', () => {
-      it('should clear storage data', async () => {
-        const schema = StorageSchema.createEmpty();
-        await storageManager.save(schema);
-
-        const result = await storageManager.clear();
-
-        expect(result.isOk()).toBe(true);
-        expect(mockLocalStorage.removeItem).toHaveBeenCalledWith(storageKey);
-      });
-
-      it('should handle localStorage access errors during clear', async () => {
-        const originalRemoveItem = mockLocalStorage.removeItem;
-        mockLocalStorage.removeItem.mockImplementationOnce(() => {
-          throw new Error('SecurityError: Access denied');
-        });
-
-        const result = await storageManager.clear();
-
-        expect(result.isErr()).toBe(true);
-        if (result.isErr()) {
-          expect(result.unwrapErr()).toContain('Failed to clear localStorage');
-        }
-
-        mockLocalStorage.removeItem.mockImplementation(originalRemoveItem);
-      });
+      await expect(storageManager.save(schema)).rejects.toThrow(
+        'Storage error'
+      );
+      expect(localStorageMock.setItem).toHaveBeenCalledTimes(1);
     });
   });
 
   describe('quota monitoring', () => {
-    describe('getQuotaInfo', () => {
-      it('should return quota information when storage is empty', async () => {
-        const result = await storageManager.getQuotaInfo();
-
-        expect(result.isOk()).toBe(true);
-        if (result.isOk()) {
-          const info = result.unwrap();
-          expect(info.used).toBe(0);
-          expect(info.available).toBeGreaterThan(0);
-          expect(info.total).toBeGreaterThan(0);
-          expect(info.percentUsed).toBe(0);
-        }
-      });
-
-      it('should return accurate quota information with data', async () => {
-        const schema = StorageSchema.createEmpty();
-        schema.tags['tag-1'] = {
-          id: 'tag-1',
-          normalizedValue: 'test-tag',
-        };
-
-        const saveResult = await storageManager.save(schema);
-        expect(saveResult.isOk()).toBe(true);
-
-        const result = await storageManager.getQuotaInfo();
-
-        expect(result.isOk()).toBe(true);
-        if (result.isOk()) {
-          const info = result.unwrap();
-          expect(info.used).toBeGreaterThan(0);
-          expect(info.available).toBeGreaterThan(0);
-          expect(info.percentUsed).toBeGreaterThan(0);
-          expect(info.percentUsed).toBeLessThan(100);
-        }
-      });
-
-      it('should handle localStorage access errors during quota check', async () => {
-        const originalSetItem = mockLocalStorage.setItem;
-        let callCount = 0;
-        mockLocalStorage.setItem.mockImplementation(
-          (key: string, value: string) => {
-            callCount++;
-            if (callCount === 1) {
-              throw new Error('SecurityError: Access denied');
-            }
-            return originalSetItem(key, value);
-          }
-        );
-
-        const result = await storageManager.getQuotaInfo();
-
-        expect(result.isOk()).toBe(true); // Should fallback to default quota
-        if (result.isOk()) {
-          const info = result.unwrap();
-          expect(info.total).toBeGreaterThan(0); // Should use fallback quota
-        }
-
-        mockLocalStorage.setItem.mockImplementation(originalSetItem);
-      });
-    });
-
-    describe('isQuotaAvailable', () => {
-      it('should return true when quota is available', async () => {
-        const schema = StorageSchema.createEmpty();
-        const result = await storageManager.isQuotaAvailable(schema);
-
-        expect(result.isOk()).toBe(true);
-        if (result.isOk()) {
-          expect(result.unwrap()).toBe(true);
-        }
-      });
-
-      it('should return false when quota would be exceeded', async () => {
-        // Set a very small quota
-        mockLocalStorage.__setQuota(100);
-
-        const schema = StorageSchema.createEmpty();
-        // Add data that exceeds quota
-        schema.records['large-record'] = {
-          id: 'large-record',
-          content: 'A'.repeat(1000),
-          tagIds: [],
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        };
-
-        const result = await storageManager.isQuotaAvailable(schema);
-
-        expect(result.isOk()).toBe(true);
-        if (result.isOk()) {
-          expect(result.unwrap()).toBe(false);
-        }
-
-        // Reset quota for other tests
-        mockLocalStorage.__setQuota(5 * 1024 * 1024);
-      });
-    });
-  });
-
-  describe('data integrity', () => {
-    describe('validateIntegrity', () => {
-      it('should validate correct schema structure', async () => {
-        const schema = StorageSchema.createEmpty();
-        schema.tags['tag-1'] = {
-          id: 'tag-1',
-          normalizedValue: 'test-tag',
-        };
-        schema.indexes.normalizedToTagId['test-tag'] = 'tag-1';
-
-        const result = await storageManager.validateIntegrity(schema);
-
-        expect(result.isOk()).toBe(true);
-        if (result.isOk()) {
-          const issues = result.unwrap();
-          expect(issues).toEqual([]);
-        }
-      });
-
-      it('should detect missing tag in normalizedToTagId index', async () => {
-        const schema = StorageSchema.createEmpty();
-        schema.tags['tag-1'] = {
-          id: 'tag-1',
-          normalizedValue: 'test-tag',
-        };
-        // Missing index entry
-
-        const result = await storageManager.validateIntegrity(schema);
-
-        expect(result.isOk()).toBe(true);
-        if (result.isOk()) {
-          const issues = result.unwrap();
-          expect(issues).toHaveLength(1);
-          expect(issues[0]).toContain('normalizedToTagId index missing entry');
-        }
-      });
-
-      it('should detect orphaned entries in indexes', async () => {
-        const schema = StorageSchema.createEmpty();
-        schema.indexes.normalizedToTagId['test-tag'] = 'non-existent-tag';
-
-        const result = await storageManager.validateIntegrity(schema);
-
-        expect(result.isOk()).toBe(true);
-        if (result.isOk()) {
-          const issues = result.unwrap();
-          expect(issues).toHaveLength(1);
-          expect(issues[0]).toContain(
-            'normalizedToTagId index references non-existent tag'
-          );
-        }
-      });
-
-      it('should detect record referencing non-existent tags', async () => {
-        const schema = StorageSchema.createEmpty();
-        schema.records['record-1'] = {
-          id: 'record-1',
-          content: 'Test content',
-          tagIds: ['non-existent-tag'],
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        };
-
-        const result = await storageManager.validateIntegrity(schema);
-
-        expect(result.isOk()).toBe(true);
-        if (result.isOk()) {
-          const issues = result.unwrap();
-          expect(issues).toHaveLength(1);
-          expect(issues[0]).toContain(
-            'Record record-1 references non-existent tag'
-          );
-        }
-      });
-
-      it('should detect missing record in tagToRecords index', async () => {
-        const schema = StorageSchema.createEmpty();
-        schema.tags['tag-1'] = {
-          id: 'tag-1',
-          normalizedValue: 'test-tag',
-        };
-        schema.records['record-1'] = {
-          id: 'record-1',
-          content: 'Test content',
-          tagIds: ['tag-1'],
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        };
-        schema.indexes.normalizedToTagId['test-tag'] = 'tag-1';
-        // Missing tagToRecords index entry
-
-        const result = await storageManager.validateIntegrity(schema);
-
-        expect(result.isOk()).toBe(true);
-        if (result.isOk()) {
-          const issues = result.unwrap();
-          expect(issues).toHaveLength(1);
-          expect(issues[0]).toContain('tagToRecords index missing record');
-        }
-      });
-    });
-
-    describe('repairData', () => {
-      it('should repair missing normalizedToTagId index entries', async () => {
-        const schema = StorageSchema.createEmpty();
-        schema.tags['tag-1'] = {
-          id: 'tag-1',
-          normalizedValue: 'test-tag',
-        };
-
-        const result = await storageManager.repairData(schema);
-
-        expect(result.isOk()).toBe(true);
-        if (result.isOk()) {
-          const repairedSchema = result.unwrap();
-          expect(repairedSchema.indexes.normalizedToTagId['test-tag']).toBe(
-            'tag-1'
-          );
-        }
-      });
-
-      it('should remove orphaned index entries', async () => {
-        const schema = StorageSchema.createEmpty();
-        schema.indexes.normalizedToTagId['orphaned-tag'] = 'non-existent-tag';
-
-        const result = await storageManager.repairData(schema);
-
-        expect(result.isOk()).toBe(true);
-        if (result.isOk()) {
-          const repairedSchema = result.unwrap();
-          expect(
-            repairedSchema.indexes.normalizedToTagId['orphaned-tag']
-          ).toBeUndefined();
-        }
-      });
-
-      it('should rebuild tagToRecords index', async () => {
-        const schema = StorageSchema.createEmpty();
-        schema.tags['tag-1'] = {
-          id: 'tag-1',
-          normalizedValue: 'test-tag',
-        };
-        schema.records['record-1'] = {
-          id: 'record-1',
-          content: 'Test content',
-          tagIds: ['tag-1'],
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        };
-        schema.indexes.normalizedToTagId['test-tag'] = 'tag-1';
-
-        const result = await storageManager.repairData(schema);
-
-        expect(result.isOk()).toBe(true);
-        if (result.isOk()) {
-          const repairedSchema = result.unwrap();
-          expect(repairedSchema.indexes.tagToRecords['tag-1']).toEqual([
-            'record-1',
-          ]);
-        }
-      });
-    });
-  });
-
-  describe('backup and restore', () => {
-    describe('createBackup', () => {
-      it('should create backup of current data', async () => {
-        const schema = StorageSchema.createEmpty();
-        schema.tags['tag-1'] = {
-          id: 'tag-1',
-          normalizedValue: 'test-tag',
-        };
-
-        const saveResult = await storageManager.save(schema);
-        expect(saveResult.isOk()).toBe(true);
-
-        const result = await storageManager.createBackup();
-
-        expect(result.isOk()).toBe(true);
-        if (result.isOk()) {
-          const backupKey = result.unwrap();
-          expect(backupKey).toContain('backup');
-          expect(backupKey).toContain(storageKey);
-        }
-      });
-
-      it('should handle backup creation errors', async () => {
-        // First save some data
-        const schema = StorageSchema.createEmpty();
-        const saveResult = await storageManager.save(schema);
-        expect(saveResult.isOk()).toBe(true);
-
-        const originalSetItem = mockLocalStorage.setItem;
-        mockLocalStorage.setItem.mockImplementation(
-          (key: string, value: string) => {
-            if (key.includes('backup')) {
-              throw new Error('QuotaExceededError');
-            }
-            return originalSetItem(key, value);
-          }
-        );
-
-        const result = await storageManager.createBackup();
-
-        expect(result.isErr()).toBe(true);
-        if (result.isErr()) {
-          expect(result.unwrapErr()).toContain('Failed to create backup');
-        }
-
-        mockLocalStorage.setItem.mockImplementation(originalSetItem);
-      });
-    });
-
-    describe('restoreFromBackup', () => {
-      it('should restore data from backup', async () => {
-        const schema = StorageSchema.createEmpty();
-        schema.tags['original-tag'] = {
-          id: 'original-tag',
-          normalizedValue: 'original',
-        };
-
-        await storageManager.save(schema);
-        const backupResult = await storageManager.createBackup();
-
-        expect(backupResult.isOk()).toBe(true);
-        if (backupResult.isOk()) {
-          const backupKey = backupResult.unwrap();
-
-          // Modify current data
-          const modifiedSchema = StorageSchema.createEmpty();
-          modifiedSchema.tags['modified-tag'] = {
-            id: 'modified-tag',
-            normalizedValue: 'modified',
-          };
-          await storageManager.save(modifiedSchema);
-
-          // Restore from backup
-          const restoreResult =
-            await storageManager.restoreFromBackup(backupKey);
-
-          expect(restoreResult.isOk()).toBe(true);
-
-          // Verify restoration
-          const loadResult = await storageManager.load();
-          expect(loadResult.isOk()).toBe(true);
-          if (loadResult.isOk()) {
-            const restoredSchema = loadResult.unwrap();
-            expect(restoredSchema.tags['original-tag']).toBeDefined();
-            expect(restoredSchema.tags['modified-tag']).toBeUndefined();
-          }
-        }
-      });
-
-      it('should handle missing backup gracefully', async () => {
-        const result = await storageManager.restoreFromBackup(
-          'non-existent-backup'
-        );
-
-        expect(result.isErr()).toBe(true);
-        if (result.isErr()) {
-          expect(result.unwrapErr()).toContain('Backup not found');
-        }
-      });
-
-      it('should handle restore errors', async () => {
-        const schema = StorageSchema.createEmpty();
-        await storageManager.save(schema);
-        const backupResult = await storageManager.createBackup();
-
-        expect(backupResult.isOk()).toBe(true);
-        if (backupResult.isOk()) {
-          const backupKey = backupResult.unwrap();
-
-          const originalSetItem = mockLocalStorage.setItem;
-          mockLocalStorage.setItem.mockImplementation((key: string) => {
-            if (key === storageKey) {
-              throw new Error('QuotaExceededError');
-            }
-            return originalSetItem(key);
-          });
-
-          const result = await storageManager.restoreFromBackup(backupKey);
-
-          expect(result.isErr()).toBe(true);
-          if (result.isErr()) {
-            expect(result.unwrapErr()).toContain(
-              'Failed to restore from backup'
-            );
-          }
-
-          mockLocalStorage.setItem.mockImplementation(originalSetItem);
-        }
-      });
-    });
-
-    describe('listBackups', () => {
-      it('should list available backups', async () => {
-        const schema = StorageSchema.createEmpty();
-        await storageManager.save(schema);
-
-        const backup1Result = await storageManager.createBackup();
-        const backup2Result = await storageManager.createBackup();
-
-        expect(backup1Result.isOk()).toBe(true);
-        expect(backup2Result.isOk()).toBe(true);
-
-        const result = await storageManager.listBackups();
-
-        expect(result.isOk()).toBe(true);
-        if (result.isOk()) {
-          const backups = result.unwrap();
-          expect(backups).toHaveLength(2);
-          expect(backups.every((backup) => backup.key.includes('backup'))).toBe(
-            true
-          );
-          expect(backups.every((backup) => backup.timestamp)).toBe(true);
-          expect(backups.every((backup) => backup.size > 0)).toBe(true);
-        }
-      });
-
-      it('should return empty list when no backups exist', async () => {
-        const result = await storageManager.listBackups();
-
-        expect(result.isOk()).toBe(true);
-        if (result.isOk()) {
-          const backups = result.unwrap();
-          expect(backups).toEqual([]);
-        }
-      });
-    });
-
-    describe('deleteBackup', () => {
-      it('should delete specific backup', async () => {
-        const schema = StorageSchema.createEmpty();
-        await storageManager.save(schema);
-
-        const backupResult = await storageManager.createBackup();
-        expect(backupResult.isOk()).toBe(true);
-
-        if (backupResult.isOk()) {
-          const backupKey = backupResult.unwrap();
-          const deleteResult = await storageManager.deleteBackup(backupKey);
-
-          expect(deleteResult.isOk()).toBe(true);
-
-          // Verify backup was deleted
-          const listResult = await storageManager.listBackups();
-          expect(listResult.isOk()).toBe(true);
-          if (listResult.isOk()) {
-            const backups = listResult.unwrap();
-            expect(backups.find((b) => b.key === backupKey)).toBeUndefined();
-          }
-        }
-      });
-
-      it('should handle deletion of non-existent backup gracefully', async () => {
-        const result = await storageManager.deleteBackup('non-existent-backup');
-
-        expect(result.isOk()).toBe(true); // Should not error for non-existent backup
-      });
-    });
-  });
-
-  describe('atomic operations', () => {
-    describe('atomicUpdate', () => {
-      it('should perform atomic update successfully', async () => {
-        const initialSchema = StorageSchema.createEmpty();
-        initialSchema.tags['tag-1'] = {
-          id: 'tag-1',
-          normalizedValue: 'initial',
-        };
-
-        await storageManager.save(initialSchema);
-
-        const result = await storageManager.atomicUpdate(async (schema) => {
-          schema.tags['tag-2'] = {
-            id: 'tag-2',
-            normalizedValue: 'updated',
-          };
-          return { isOk: () => true, unwrap: () => schema } as Result<
-            StorageSchemaV21,
-            string
-          >;
-        });
-
-        expect(result.isOk()).toBe(true);
-
-        // Verify update was applied
-        const loadResult = await storageManager.load();
-        expect(loadResult.isOk()).toBe(true);
-        if (loadResult.isOk()) {
-          const schema = loadResult.unwrap();
-          expect(schema.tags['tag-1']).toBeDefined();
-          expect(schema.tags['tag-2']).toBeDefined();
-        }
-      });
-
-      it('should rollback on update function error', async () => {
-        const initialSchema = StorageSchema.createEmpty();
-        initialSchema.tags['tag-1'] = {
-          id: 'tag-1',
-          normalizedValue: 'initial',
-        };
-
-        await storageManager.save(initialSchema);
-
-        const result = await storageManager.atomicUpdate(async () => {
-          return {
-            isOk: () => false,
-            unwrapErr: () => 'Update failed',
-          } as Result<StorageSchemaV21, string>;
-        });
-
-        expect(result.isErr()).toBe(true);
-        if (result.isErr()) {
-          expect(result.unwrapErr()).toContain('Update failed');
-        }
-
-        // Verify original data is intact
-        const loadResult = await storageManager.load();
-        expect(loadResult.isOk()).toBe(true);
-        if (loadResult.isOk()) {
-          const schema = loadResult.unwrap();
-          expect(schema.tags['tag-1']).toBeDefined();
-        }
-      });
-
-      it('should rollback on save failure', async () => {
-        const initialSchema = StorageSchema.createEmpty();
-        await storageManager.save(initialSchema);
-
-        // Force save to fail
-        const originalSetItem = mockLocalStorage.setItem;
-        mockLocalStorage.setItem.mockImplementation((key: string) => {
-          if (key === storageKey) {
-            throw new Error('QuotaExceededError');
-          }
-          return originalSetItem(key);
-        });
-
-        const result = await storageManager.atomicUpdate(async (schema) => {
-          schema.tags['tag-1'] = {
-            id: 'tag-1',
-            normalizedValue: 'should-fail',
-          };
-          return { isOk: () => true, unwrap: () => schema } as Result<
-            StorageSchemaV21,
-            string
-          >;
-        });
-
-        expect(result.isErr()).toBe(true);
-        if (result.isErr()) {
-          expect(result.unwrapErr()).toContain('Failed to save updated data');
-        }
-
-        mockLocalStorage.setItem.mockImplementation(originalSetItem);
-
-        // Verify rollback worked
-        const loadResult = await storageManager.load();
-        expect(loadResult.isOk()).toBe(true);
-        if (loadResult.isOk()) {
-          const schema = loadResult.unwrap();
-          expect(schema.tags['tag-1']).toBeUndefined();
-        }
-      });
-
-      it('should handle rollback failure gracefully', async () => {
-        const initialSchema = StorageSchema.createEmpty();
-        await storageManager.save(initialSchema);
-
-        let callCount = 0;
-        const originalSetItem = mockLocalStorage.setItem;
-        mockLocalStorage.setItem.mockImplementation((key: string) => {
-          callCount++;
-          if (key === storageKey) {
-            throw new Error('Storage error');
-          }
-          return originalSetItem(key);
-        });
-
-        const result = await storageManager.atomicUpdate(async (schema) => {
-          schema.tags['tag-1'] = {
-            id: 'tag-1',
-            normalizedValue: 'should-fail',
-          };
-          return { isOk: () => true, unwrap: () => schema } as Result<
-            StorageSchemaV21,
-            string
-          >;
-        });
-
-        expect(result.isErr()).toBe(true);
-        if (result.isErr()) {
-          expect(result.unwrapErr()).toContain('rollback also failed');
-        }
-
-        mockLocalStorage.setItem.mockImplementation(originalSetItem);
-      });
-    });
-  });
-
-  describe('error scenarios', () => {
-    it('should handle localStorage not available', async () => {
-      const originalLocalStorage = global.localStorage;
-      // @ts-ignore
-      delete global.localStorage;
-
-      const manager = new StorageManager(storageKey);
-      const result = await manager.load();
-
-      expect(result.isErr()).toBe(true);
-      if (result.isErr()) {
-        expect(result.unwrapErr()).toContain('localStorage is not available');
-      }
-
-      global.localStorage = originalLocalStorage;
-    });
-
-    it('should handle async operation errors gracefully', async () => {
+    it('should detect storage quota exceeded', async () => {
       const schema = StorageSchema.createEmpty();
-
-      // Simulate async error in save
-      const originalSetItem = mockLocalStorage.setItem;
-      mockLocalStorage.setItem.mockImplementationOnce(() => {
-        throw new Error('Async operation failed');
+      localStorageMock.setItem.mockImplementation(() => {
+        throw new Error('QuotaExceededError');
       });
 
-      const result = await storageManager.save(schema);
+      await expect(storageManager.save(schema)).rejects.toThrow(
+        'Storage quota exceeded'
+      );
+    });
 
-      expect(result.isErr()).toBe(true);
-      if (result.isErr()) {
-        expect(result.unwrapErr()).toContain('Failed to save to localStorage');
+    it('should provide quota usage information', async () => {
+      const schema = StorageSchema.createEmpty();
+      schema.tags['tag1'] = { id: 'tag1', normalizedValue: 'test' };
+
+      // Clear any previous mock to avoid quota exceeded error
+      localStorageMock.setItem.mockClear();
+      localStorageMock.setItem.mockImplementation((key, value) => {
+        localStorageMock._getStore()[key] = value;
+      });
+
+      await storageManager.save(schema);
+
+      const usage = await storageManager.getQuotaUsage();
+      expect(usage.used).toBeGreaterThan(0);
+      expect(usage.available).toBeGreaterThan(0);
+      expect(usage.total).toBe(usage.used + usage.available);
+      expect(usage.percentage).toBeGreaterThan(0);
+      expect(usage.percentage).toBeLessThanOrEqual(100);
+    });
+
+    it('should warn when approaching storage limits', async () => {
+      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
+
+      // Clear any previous mock implementations
+      localStorageMock.setItem.mockClear();
+      localStorageMock.setItem.mockImplementation((key, value) => {
+        localStorageMock._getStore()[key] = value;
+      });
+
+      // Mock high storage usage
+      Object.defineProperty(storageManager, 'getQuotaUsage', {
+        value: jest.fn().mockResolvedValue({
+          used: 9000000,
+          available: 1000000,
+          total: 10000000,
+          percentage: 90,
+        }),
+      });
+
+      const schema = StorageSchema.createEmpty();
+      await storageManager.save(schema);
+
+      expect(consoleSpy).toHaveBeenCalledWith(
+        expect.stringContaining('Storage usage is high: 90')
+      );
+
+      consoleSpy.mockRestore();
+    });
+  });
+
+  describe('error handling', () => {
+    it('should handle localStorage unavailable', async () => {
+      // Mock localStorage as unavailable
+      Object.defineProperty(window, 'localStorage', {
+        get: () => {
+          throw new Error('localStorage not available');
+        },
+        configurable: true,
+      });
+
+      const manager = new StorageManager(STORAGE_KEY);
+      await expect(manager.load()).rejects.toThrow(
+        'localStorage not available'
+      );
+
+      // Restore localStorage
+      Object.defineProperty(window, 'localStorage', {
+        value: localStorageMock,
+        configurable: true,
+      });
+    });
+
+    it('should handle storage errors during save operations', async () => {
+      const schema = StorageSchema.createEmpty();
+      localStorageMock.setItem.mockImplementation(() => {
+        throw new Error('Storage write error');
+      });
+
+      await expect(storageManager.save(schema)).rejects.toThrow(
+        'Storage write error'
+      );
+    });
+
+    it('should provide detailed error messages for different failure scenarios', async () => {
+      // Test permission denied
+      localStorageMock.setItem.mockImplementation(() => {
+        const error = new Error('Permission denied');
+        error.name = 'SecurityError';
+        throw error;
+      });
+
+      const schema = StorageSchema.createEmpty();
+      await expect(storageManager.save(schema)).rejects.toThrow(
+        'Storage access denied: Permission denied'
+      );
+    });
+  });
+
+  describe('data integrity verification', () => {
+    it('should verify schema integrity after load', async () => {
+      // Reset mock to default behavior
+      localStorageMock.setItem.mockClear();
+      localStorageMock.setItem.mockImplementation((key, value) => {
+        localStorageMock._getStore()[key] = value;
+      });
+
+      const validSchema = StorageSchema.createEmpty();
+      validSchema.tags['tag1'] = { id: 'tag1', normalizedValue: 'test' };
+      localStorageMock.setItem(STORAGE_KEY, StorageSchema.toJSON(validSchema));
+
+      const loadedSchema = await storageManager.load();
+      const isValid = await storageManager.verifyIntegrity(loadedSchema);
+
+      expect(isValid).toBe(true);
+    });
+
+    it('should detect corrupted schema data', async () => {
+      const corruptedSchema = {
+        version: '2.1',
+        tags: { tag1: { id: 'tag1', normalizedValue: 'test' } },
+        records: {},
+        indexes: {
+          normalizedToTagId: { test: 'tag1' },
+          tagToRecords: { tag1: ['non-existent-record'] }, // Corrupted: references non-existent record
+        },
+      } as StorageSchemaV21;
+
+      const isValid = await storageManager.verifyIntegrity(corruptedSchema);
+      expect(isValid).toBe(false);
+    });
+
+    it('should repair minor data inconsistencies', async () => {
+      const inconsistentSchema = StorageSchema.createEmpty();
+      inconsistentSchema.tags['tag1'] = { id: 'tag1', normalizedValue: 'test' };
+      inconsistentSchema.records['rec1'] = {
+        id: 'rec1',
+        content: 'content',
+        tagIds: ['tag1'],
+        createdAt: '2023-01-01',
+        updatedAt: '2023-01-01',
+      };
+      // Missing index entries
+
+      const repairedSchema =
+        await storageManager.repairData(inconsistentSchema);
+
+      expect(repairedSchema.indexes.normalizedToTagId['test']).toBe('tag1');
+      expect(repairedSchema.indexes.tagToRecords['tag1']).toEqual(['rec1']);
+    });
+  });
+
+  describe('backup and restore functionality', () => {
+    it('should create a backup of current data', async () => {
+      // Reset mock to default behavior
+      localStorageMock.setItem.mockClear();
+      localStorageMock.setItem.mockImplementation((key, value) => {
+        localStorageMock._getStore()[key] = value;
+      });
+
+      const schema = StorageSchema.createEmpty();
+      schema.tags['tag1'] = { id: 'tag1', normalizedValue: 'test' };
+      await storageManager.save(schema);
+
+      const backup = await storageManager.createBackup();
+
+      expect(backup).toHaveProperty('timestamp');
+      expect(backup).toHaveProperty('data');
+      expect(backup.data).toEqual(schema);
+      expect(new Date(backup.timestamp)).toBeInstanceOf(Date);
+    });
+
+    it('should restore data from backup', async () => {
+      // Reset mock to default behavior
+      localStorageMock.setItem.mockClear();
+      localStorageMock.setItem.mockImplementation((key, value) => {
+        localStorageMock._getStore()[key] = value;
+      });
+
+      const originalSchema = StorageSchema.createEmpty();
+      originalSchema.tags['tag1'] = { id: 'tag1', normalizedValue: 'original' };
+      await storageManager.save(originalSchema);
+
+      const backup = await storageManager.createBackup();
+
+      // Modify current data
+      const modifiedSchema = StorageSchema.createEmpty();
+      modifiedSchema.tags['tag2'] = { id: 'tag2', normalizedValue: 'modified' };
+      await storageManager.save(modifiedSchema);
+
+      // Restore from backup
+      await storageManager.restoreFromBackup(backup);
+
+      const restoredSchema = await storageManager.load();
+      expect(restoredSchema).toEqual(originalSchema);
+    });
+
+    it('should validate backup data before restore', async () => {
+      const invalidBackup = {
+        timestamp: new Date().toISOString(),
+        data: { invalid: 'data' } as any,
+      };
+
+      await expect(
+        storageManager.restoreFromBackup(invalidBackup)
+      ).rejects.toThrow(
+        'Failed to restore backup: Invalid backup data structure'
+      );
+    });
+
+    it('should maintain backup history', async () => {
+      // Reset mock to default behavior and clear storage
+      localStorageMock.clear();
+      localStorageMock.setItem.mockClear();
+      localStorageMock.setItem.mockImplementation((key, value) => {
+        localStorageMock._getStore()[key] = value;
+      });
+
+      const schema1 = StorageSchema.createEmpty();
+      schema1.tags['tag1'] = { id: 'tag1', normalizedValue: 'first' };
+      await storageManager.save(schema1);
+      const backup1 = await storageManager.createBackup();
+
+      // Small delay to ensure unique Date.now() values
+      await new Promise((resolve) => setTimeout(resolve, 2));
+
+      const schema2 = StorageSchema.createEmpty();
+      schema2.tags['tag2'] = { id: 'tag2', normalizedValue: 'second' };
+      await storageManager.save(schema2);
+      const backup2 = await storageManager.createBackup();
+
+      const backups = await storageManager.getBackupHistory();
+
+      expect(backups).toHaveLength(2);
+      expect(backups[0].timestamp).toBe(backup2.timestamp);
+      expect(backups[1].timestamp).toBe(backup1.timestamp);
+    });
+
+    it('should limit backup history size', async () => {
+      // Reset mock to default behavior and clear storage
+      localStorageMock.clear();
+      localStorageMock.setItem.mockClear();
+      localStorageMock.setItem.mockImplementation((key, value) => {
+        localStorageMock._getStore()[key] = value;
+      });
+
+      // Create many backups with small delays to ensure unique timestamps
+      for (let i = 0; i < 12; i++) {
+        const schema = StorageSchema.createEmpty();
+        schema.tags[`tag${i}`] = { id: `tag${i}`, normalizedValue: `test${i}` };
+        await storageManager.save(schema);
+        await storageManager.createBackup();
+        // Small delay to ensure unique Date.now() values
+        await new Promise((resolve) => setTimeout(resolve, 2));
       }
 
-      mockLocalStorage.setItem.mockImplementation(originalSetItem);
+      const backups = await storageManager.getBackupHistory();
+      expect(backups).toHaveLength(10); // Should limit to 10 backups
+    });
+  });
+
+  describe('atomic operations simulation', () => {
+    it('should simulate atomic save operations', async () => {
+      const schema = StorageSchema.createEmpty();
+      schema.tags['tag1'] = { id: 'tag1', normalizedValue: 'test' };
+
+      // Mock partial failure during save
+      let callCount = 0;
+      localStorageMock.setItem.mockImplementation((key, value) => {
+        callCount++;
+        if (callCount === 1) {
+          throw new Error('Simulated failure');
+        }
+        localStorageMock._getStore()[key] = value;
+      });
+
+      // Should rollback on failure
+      await expect(storageManager.save(schema)).rejects.toThrow(
+        'Simulated failure'
+      );
+
+      // Storage should remain unchanged
+      const loadedSchema = await storageManager.load();
+      expect(loadedSchema).toEqual(StorageSchema.createEmpty());
+    });
+
+    it('should handle concurrent save operations', async () => {
+      // Reset mock to default behavior
+      localStorageMock.setItem.mockClear();
+      localStorageMock.setItem.mockImplementation((key, value) => {
+        localStorageMock._getStore()[key] = value;
+      });
+
+      const schema1 = StorageSchema.createEmpty();
+      schema1.tags['tag1'] = { id: 'tag1', normalizedValue: 'first' };
+
+      const schema2 = StorageSchema.createEmpty();
+      schema2.tags['tag2'] = { id: 'tag2', normalizedValue: 'second' };
+
+      // Attempt concurrent saves - expect one to fail due to save lock
+      const savePromises = [
+        storageManager.save(schema1),
+        storageManager.save(schema2).catch((e) => e), // Catch the expected error
+      ];
+
+      const results = await Promise.all(savePromises);
+
+      // One should succeed, one should fail with save lock error
+      expect(
+        results.some(
+          (r) =>
+            r instanceof Error &&
+            r.message.includes('Save operation already in progress')
+        )
+      ).toBe(true);
+
+      // Check that one schema was saved
+      const finalSchema = await storageManager.load();
+      expect(
+        finalSchema.tags['tag1'] || finalSchema.tags['tag2']
+      ).toBeDefined();
+    });
+  });
+
+  describe('performance monitoring', () => {
+    it('should track operation performance metrics', async () => {
+      // Reset mock to default behavior
+      localStorageMock.setItem.mockClear();
+      localStorageMock.setItem.mockImplementation((key, value) => {
+        localStorageMock._getStore()[key] = value;
+      });
+
+      const schema = StorageSchema.createEmpty();
+      const startTime = performance.now();
+
+      await storageManager.save(schema);
+
+      const metrics = storageManager.getPerformanceMetrics();
+      expect(metrics.lastSaveTime).toBeGreaterThan(0);
+      expect(metrics.averageSaveTime).toBeGreaterThan(0);
+      expect(metrics.totalOperations).toBeGreaterThan(0);
+    });
+
+    it('should warn about slow operations', async () => {
+      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
+
+      // Mock slow operation by making setItem synchronous but delay performance.now measurement
+      const originalNow = performance.now;
+      let callCount = 0;
+      performance.now = jest.fn(() => {
+        callCount++;
+        if (callCount === 1) return 0; // start time
+        if (callCount === 2) return 1100; // end time (1.1 seconds later)
+        return originalNow.call(performance);
+      });
+
+      localStorageMock.setItem.mockImplementation((key, value) => {
+        localStorageMock._getStore()[key] = value;
+      });
+
+      const schema = StorageSchema.createEmpty();
+      await storageManager.save(schema);
+
+      expect(consoleSpy).toHaveBeenCalledWith(
+        expect.stringContaining('Slow storage operation detected')
+      );
+
+      // Restore original functions
+      performance.now = originalNow;
+      consoleSpy.mockRestore();
+    }, 10000); // Increase timeout for this test
+  });
+
+  describe('additional coverage tests', () => {
+    it('should handle unrecognized schema version', async () => {
+      const unrecognizedSchema = {
+        version: '3.0', // Future version
+        data: 'some data',
+      };
+      localStorageMock.setItem(STORAGE_KEY, JSON.stringify(unrecognizedSchema));
+
+      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
+
+      const schema = await storageManager.load();
+      expect(schema).toEqual(StorageSchema.createEmpty());
+      expect(consoleSpy).toHaveBeenCalledWith(
+        'Unrecognized schema version, initializing with empty schema'
+      );
+
+      consoleSpy.mockRestore();
+    });
+
+    it('should handle invalid schema structure', async () => {
+      const invalidSchema = {
+        version: '2.1',
+        // Missing required fields
+        tags: null,
+        records: null,
+      };
+      localStorageMock.setItem(STORAGE_KEY, JSON.stringify(invalidSchema));
+
+      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
+
+      const schema = await storageManager.load();
+      expect(schema).toEqual(StorageSchema.createEmpty());
+      expect(consoleSpy).toHaveBeenCalledWith(
+        'Invalid schema structure, initializing with empty schema'
+      );
+
+      consoleSpy.mockRestore();
+    });
+
+    it('should handle unknown errors in load', async () => {
+      localStorageMock.getItem.mockImplementation(() => {
+        throw 'string error'; // Non-Error object
+      });
+
+      await expect(storageManager.load()).rejects.toThrow(
+        'Failed to load storage: Unknown error'
+      );
+    });
+
+    it('should handle unknown errors in save', async () => {
+      const schema = StorageSchema.createEmpty();
+      localStorageMock.setItem.mockImplementation(() => {
+        throw 'string error'; // Non-Error object
+      });
+
+      await expect(storageManager.save(schema)).rejects.toThrow(
+        'Storage save failed: Unknown error'
+      );
+    });
+
+    it('should handle quota calculation errors', async () => {
+      // Mock localStorage.length to throw an error
+      Object.defineProperty(localStorage, 'length', {
+        get: () => {
+          throw new Error('Access denied');
+        },
+        configurable: true,
+      });
+
+      const usage = await storageManager.getQuotaUsage();
+      expect(usage).toEqual({
+        used: 0,
+        available: 5 * 1024 * 1024,
+        total: 5 * 1024 * 1024,
+        percentage: 0,
+      });
+
+      // Restore localStorage length
+      Object.defineProperty(localStorage, 'length', {
+        get: () => Object.keys(localStorageMock._getStore()).length,
+        configurable: true,
+      });
+    });
+
+    it('should handle verifyIntegrity errors', async () => {
+      // Create a schema that will cause an error during verification
+      const problematicSchema = {
+        version: '2.1',
+        tags: { tag1: { id: 'tag1', normalizedValue: 'test' } },
+        records: {},
+        indexes: {
+          normalizedToTagId: {},
+          tagToRecords: {},
+        },
+      } as StorageSchemaV21;
+
+      // Mock Object.entries to throw an error
+      const originalEntries = Object.entries;
+      Object.entries = jest.fn().mockImplementation(() => {
+        throw new Error('Mock error');
+      });
+
+      const isValid = await storageManager.verifyIntegrity(problematicSchema);
+      expect(isValid).toBe(false);
+
+      // Restore Object.entries
+      Object.entries = originalEntries;
+    });
+
+    it('should handle backup creation errors with unknown error type', async () => {
+      // Mock load to throw a non-Error object
+      const originalLoad = storageManager.load;
+      storageManager.load = jest.fn().mockRejectedValue('string error');
+
+      await expect(storageManager.createBackup()).rejects.toThrow(
+        'Failed to create backup: Unknown error'
+      );
+
+      // Restore original load
+      storageManager.load = originalLoad;
+    });
+
+    it('should handle restore backup with invalid timestamp', async () => {
+      const invalidBackup = {
+        timestamp: 'invalid-timestamp',
+        data: StorageSchema.createEmpty(),
+      };
+
+      await expect(
+        storageManager.restoreFromBackup(invalidBackup)
+      ).rejects.toThrow('Failed to restore backup: Invalid backup timestamp');
+    });
+
+    it('should handle restore backup errors with unknown error type', async () => {
+      const validBackup = {
+        timestamp: new Date().toISOString(),
+        data: StorageSchema.createEmpty(),
+      };
+
+      // Mock save to throw a non-Error object
+      const originalSave = storageManager.save;
+      storageManager.save = jest.fn().mockRejectedValue('string error');
+
+      await expect(
+        storageManager.restoreFromBackup(validBackup)
+      ).rejects.toThrow('Failed to restore backup: Unknown error');
+
+      // Restore original save
+      storageManager.save = originalSave;
+    });
+
+    it('should handle getBackupHistory with storage access errors', async () => {
+      // Mock localStorage.length to throw
+      Object.defineProperty(localStorage, 'length', {
+        get: () => {
+          throw new Error('Storage access error');
+        },
+        configurable: true,
+      });
+
+      const backups = await storageManager.getBackupHistory();
+      expect(backups).toEqual([]);
+
+      // Restore localStorage length
+      Object.defineProperty(localStorage, 'length', {
+        get: () => Object.keys(localStorageMock._getStore()).length,
+        configurable: true,
+      });
+    });
+
+    it('should detect integrity issues with invalid schema', async () => {
+      const invalidSchema = {
+        version: '2.1',
+        tags: null,
+        records: null,
+        indexes: null,
+      } as any;
+
+      const isValid = await storageManager.verifyIntegrity(invalidSchema);
+      expect(isValid).toBe(false);
+    });
+
+    it('should detect integrity issues with inconsistent normalized index', async () => {
+      const inconsistentSchema: StorageSchemaV21 = {
+        version: '2.1',
+        tags: { tag1: { id: 'tag1', normalizedValue: 'correct' } },
+        records: {},
+        indexes: {
+          normalizedToTagId: { wrong: 'tag1' }, // Inconsistent with tag's normalizedValue
+          tagToRecords: {},
+        },
+      };
+
+      const isValid = await storageManager.verifyIntegrity(inconsistentSchema);
+      expect(isValid).toBe(false);
+    });
+
+    it('should detect integrity issues with missing tag in tagToRecords index', async () => {
+      const inconsistentSchema: StorageSchemaV21 = {
+        version: '2.1',
+        tags: {},
+        records: {},
+        indexes: {
+          normalizedToTagId: {},
+          tagToRecords: { 'nonexistent-tag': ['record1'] }, // Tag doesn't exist
+        },
+      };
+
+      const isValid = await storageManager.verifyIntegrity(inconsistentSchema);
+      expect(isValid).toBe(false);
+    });
+
+    it('should detect integrity issues with records having invalid tag references', async () => {
+      const inconsistentSchema: StorageSchemaV21 = {
+        version: '2.1',
+        tags: { tag1: { id: 'tag1', normalizedValue: 'test' } },
+        records: {
+          record1: {
+            id: 'record1',
+            content: 'content',
+            tagIds: ['nonexistent-tag'], // Invalid tag reference
+            createdAt: '2023-01-01',
+            updatedAt: '2023-01-01',
+          },
+        },
+        indexes: {
+          normalizedToTagId: { test: 'tag1' },
+          tagToRecords: { tag1: [] },
+        },
+      };
+
+      const isValid = await storageManager.verifyIntegrity(inconsistentSchema);
+      expect(isValid).toBe(false);
+    });
+
+    it('should handle backup creation errors with Error instance', async () => {
+      // Mock load to throw an Error object
+      const originalLoad = storageManager.load;
+      storageManager.load = jest
+        .fn()
+        .mockRejectedValue(new Error('Load failed'));
+
+      await expect(storageManager.createBackup()).rejects.toThrow(
+        'Failed to create backup: Load failed'
+      );
+
+      // Restore original load
+      storageManager.load = originalLoad;
     });
   });
 });
