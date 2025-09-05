@@ -73,15 +73,15 @@ describe('TagFactory', () => {
 
     describe('validation failures', () => {
       it('should throw error for null input', () => {
-        expect(() => factory.createFromString(null as any)).toThrow(
-          'Cannot create tag: Tag cannot be null or undefined'
-        );
+        expect(() =>
+          factory.createFromString(null as unknown as string)
+        ).toThrow('Cannot create tag: Tag cannot be null or undefined');
       });
 
       it('should throw error for undefined input', () => {
-        expect(() => factory.createFromString(undefined as any)).toThrow(
-          'Cannot create tag: Tag cannot be null or undefined'
-        );
+        expect(() =>
+          factory.createFromString(undefined as unknown as string)
+        ).toThrow('Cannot create tag: Tag cannot be null or undefined');
       });
 
       it('should throw error for empty string', () => {
@@ -202,7 +202,7 @@ describe('TagFactory', () => {
       };
 
       const factoryWithThrowingNormalizer = new TagFactory(
-        throwingNormalizer as any
+        throwingNormalizer as unknown as TagNormalizer
       );
 
       expect(() =>

@@ -175,7 +175,9 @@ describe('RecordMatcher Domain Service', () => {
     it('should handle null record gracefully', () => {
       const query = new SearchQuery('javascript');
 
-      expect(recordMatcher.matches(null as any, query, tagLookup)).toBe(false);
+      expect(
+        recordMatcher.matches(null as unknown as Record, query, tagLookup)
+      ).toBe(false);
     });
 
     it('should handle null query gracefully', () => {
@@ -187,7 +189,9 @@ describe('RecordMatcher Domain Service', () => {
         baseDate
       );
 
-      expect(recordMatcher.matches(record, null as any, tagLookup)).toBe(false);
+      expect(
+        recordMatcher.matches(record, null as unknown as SearchQuery, tagLookup)
+      ).toBe(false);
     });
 
     it('should handle null tag lookup gracefully', () => {
@@ -200,7 +204,9 @@ describe('RecordMatcher Domain Service', () => {
       );
       const query = new SearchQuery('javascript');
 
-      expect(recordMatcher.matches(record, query, null as any)).toBe(false);
+      expect(
+        recordMatcher.matches(record, query, null as unknown as Map<TagId, Tag>)
+      ).toBe(false);
     });
 
     it('should handle empty tag lookup', () => {

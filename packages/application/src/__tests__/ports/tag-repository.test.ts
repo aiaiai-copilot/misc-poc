@@ -1,4 +1,4 @@
-import { TagId, Ok } from '@misc-poc/shared';
+import { TagId, Ok, Result } from '@misc-poc/shared';
 import { Tag, DomainError } from '@misc-poc/domain';
 import {
   TagRepository,
@@ -11,71 +11,84 @@ import {
  * Mock implementation of TagRepository for testing interface contracts
  */
 class MockTagRepository implements TagRepository {
-  async findById(id: TagId) {
+  async findById(id: TagId): Promise<Result<Tag | null, DomainError>> {
     return Ok<Tag | null, DomainError>(null);
   }
 
-  async findByNormalizedValue(normalizedValue: string) {
+  async findByNormalizedValue(
+    normalizedValue: string
+  ): Promise<Result<Tag | null, DomainError>> {
     return Ok<Tag | null, DomainError>(null);
   }
 
-  async findByNormalizedValues(normalizedValues: string[]) {
+  async findByNormalizedValues(
+    normalizedValues: string[]
+  ): Promise<Result<Tag[], DomainError>> {
     return Ok<Tag[], DomainError>([]);
   }
 
-  async findAll(options?: TagSearchOptions) {
+  async findAll(
+    options?: TagSearchOptions
+  ): Promise<Result<Tag[], DomainError>> {
     return Ok<Tag[], DomainError>([]);
   }
 
-  async findByPrefix(prefix: string, limit?: number) {
+  async findByPrefix(
+    prefix: string,
+    limit?: number
+  ): Promise<Result<TagSuggestion[], DomainError>> {
     return Ok<TagSuggestion[], DomainError>([]);
   }
 
-  async getUsageInfo(options?: TagSearchOptions) {
+  async getUsageInfo(
+    options?: TagSearchOptions
+  ): Promise<Result<TagUsageInfo[], DomainError>> {
     return Ok<TagUsageInfo[], DomainError>([]);
   }
 
-  async findOrphaned() {
+  async findOrphaned(): Promise<Result<Tag[], DomainError>> {
     return Ok<Tag[], DomainError>([]);
   }
 
-  async save(tag: Tag) {
+  async save(tag: Tag): Promise<Result<Tag, DomainError>> {
     return Ok(tag);
   }
 
-  async update(tag: Tag) {
+  async update(tag: Tag): Promise<Result<Tag, DomainError>> {
     return Ok(tag);
   }
 
-  async delete(id: TagId) {
+  async delete(id: TagId): Promise<Result<void, DomainError>> {
     return Ok<void, DomainError>(undefined);
   }
 
-  async deleteBatch(ids: TagId[]) {
+  async deleteBatch(ids: TagId[]): Promise<Result<void, DomainError>> {
     return Ok<void, DomainError>(undefined);
   }
 
-  async saveBatch(tags: Tag[]) {
+  async saveBatch(tags: Tag[]): Promise<Result<Tag[], DomainError>> {
     return Ok(tags);
   }
 
-  async deleteAll() {
+  async deleteAll(): Promise<Result<void, DomainError>> {
     return Ok<void, DomainError>(undefined);
   }
 
-  async count() {
+  async count(): Promise<Result<number, DomainError>> {
     return Ok<number, DomainError>(0);
   }
 
-  async existsByNormalizedValue(normalizedValue: string) {
+  async existsByNormalizedValue(
+    normalizedValue: string
+  ): Promise<Result<boolean, DomainError>> {
     return Ok<boolean, DomainError>(false);
   }
 
-  async exists(id: TagId) {
+  async exists(id: TagId): Promise<Result<boolean, DomainError>> {
     return Ok<boolean, DomainError>(false);
   }
 
-  async getUsageCount(id: TagId) {
+  async getUsageCount(id: TagId): Promise<Result<number, DomainError>> {
     return Ok<number, DomainError>(0);
   }
 }
@@ -83,12 +96,12 @@ class MockTagRepository implements TagRepository {
 describe('TagRepository Interface', () => {
   let repository: TagRepository;
 
-  beforeEach(() => {
+  beforeEach((): void => {
     repository = new MockTagRepository();
   });
 
   describe('Contract Verification', () => {
-    it('should have all required methods', () => {
+    it('should have all required methods', (): void => {
       expect(typeof repository.findById).toBe('function');
       expect(typeof repository.findByNormalizedValue).toBe('function');
       expect(typeof repository.findByNormalizedValues).toBe('function');
@@ -108,7 +121,7 @@ describe('TagRepository Interface', () => {
       expect(typeof repository.getUsageCount).toBe('function');
     });
 
-    it('should return Result types for all async operations', async () => {
+    it('should return Result types for all async operations', async (): Promise<void> => {
       const id = TagId.generate();
       const normalizedValue = 'test';
 
@@ -138,7 +151,7 @@ describe('TagRepository Interface', () => {
   });
 
   describe('Search Options Interface', () => {
-    it('should accept valid search options', () => {
+    it('should accept valid search options', (): void => {
       const options: TagSearchOptions = {
         limit: 10,
         offset: 0,
@@ -150,7 +163,7 @@ describe('TagRepository Interface', () => {
       expect(options.sortBy).toBe('normalizedValue');
     });
 
-    it('should support usage-based sorting', () => {
+    it('should support usage-based sorting', (): void => {
       const options: TagSearchOptions = {
         sortBy: 'usage',
         sortOrder: 'desc',
@@ -162,7 +175,7 @@ describe('TagRepository Interface', () => {
   });
 
   describe('TagUsageInfo Interface', () => {
-    it('should have correct structure for tag usage info', () => {
+    it('should have correct structure for tag usage info', (): void => {
       const tag = Tag.create('test');
       const usageInfo: TagUsageInfo = {
         tag,
@@ -176,7 +189,7 @@ describe('TagRepository Interface', () => {
   });
 
   describe('TagSuggestion Interface', () => {
-    it('should have correct structure for tag suggestions', () => {
+    it('should have correct structure for tag suggestions', (): void => {
       const tag = Tag.create('test');
       const suggestion: TagSuggestion = {
         tag,

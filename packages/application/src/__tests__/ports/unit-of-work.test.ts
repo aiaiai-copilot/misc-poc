@@ -1,101 +1,134 @@
-import { Ok } from '@misc-poc/shared';
-import { DomainError } from '@misc-poc/domain';
+import { Ok, Result, RecordId, TagId, SearchQuery } from '@misc-poc/shared';
+import { DomainError, Record, Tag } from '@misc-poc/domain';
 import { UnitOfWork } from '../../ports/unit-of-work';
-import { RecordRepository } from '../../ports/record-repository';
-import { TagRepository } from '../../ports/tag-repository';
+import {
+  RecordRepository,
+  RecordSearchOptions,
+  RecordSearchResult,
+} from '../../ports/record-repository';
+import {
+  TagRepository,
+  TagSearchOptions,
+  TagUsageInfo,
+  TagSuggestion,
+} from '../../ports/tag-repository';
 
 /**
  * Mock implementations for testing
  */
 class MockRecordRepository implements RecordRepository {
-  async findById() {
+  async findById(id: RecordId): Promise<Result<Record | null, DomainError>> {
     return Ok(null);
   }
-  async findAll() {
+  async findAll(
+    options?: RecordSearchOptions
+  ): Promise<Result<RecordSearchResult, DomainError>> {
     return Ok({ records: [], total: 0, hasMore: false });
   }
-  async search() {
+  async search(
+    query: SearchQuery,
+    options?: RecordSearchOptions
+  ): Promise<Result<RecordSearchResult, DomainError>> {
     return Ok({ records: [], total: 0, hasMore: false });
   }
-  async findByTagIds() {
+  async findByTagIds(
+    tagIds: TagId[],
+    options?: RecordSearchOptions
+  ): Promise<Result<RecordSearchResult, DomainError>> {
     return Ok({ records: [], total: 0, hasMore: false });
   }
-  async findByTagSet() {
+  async findByTagSet(
+    tagIds: Set<TagId>,
+    excludeRecordId?: RecordId
+  ): Promise<Result<Record[], DomainError>> {
     return Ok([]);
   }
-  async save(record: any) {
+  async save(record: Record): Promise<Result<Record, DomainError>> {
     return Ok(record);
   }
-  async update(record: any) {
+  async update(record: Record): Promise<Result<Record, DomainError>> {
     return Ok(record);
   }
-  async delete() {
+  async delete(id: RecordId): Promise<Result<void, DomainError>> {
     return Ok<void, DomainError>(undefined);
   }
-  async saveBatch(records: any[]) {
+  async saveBatch(records: Record[]): Promise<Result<Record[], DomainError>> {
     return Ok(records);
   }
-  async deleteAll() {
+  async deleteAll(): Promise<Result<void, DomainError>> {
     return Ok<void, DomainError>(undefined);
   }
-  async count() {
+  async count(): Promise<Result<number, DomainError>> {
     return Ok<number, DomainError>(0);
   }
-  async exists() {
+  async exists(id: RecordId): Promise<Result<boolean, DomainError>> {
     return Ok<boolean, DomainError>(false);
   }
 }
 
 class MockTagRepository implements TagRepository {
-  async findById() {
+  async findById(id: TagId): Promise<Result<Tag | null, DomainError>> {
     return Ok(null);
   }
-  async findByNormalizedValue() {
+  async findByNormalizedValue(
+    normalizedValue: string
+  ): Promise<Result<Tag | null, DomainError>> {
     return Ok(null);
   }
-  async findByNormalizedValues() {
+  async findByNormalizedValues(
+    normalizedValues: string[]
+  ): Promise<Result<Tag[], DomainError>> {
     return Ok([]);
   }
-  async findAll() {
+  async findAll(
+    options?: TagSearchOptions
+  ): Promise<Result<Tag[], DomainError>> {
     return Ok([]);
   }
-  async findByPrefix() {
+  async findByPrefix(
+    prefix: string,
+    limit?: number
+  ): Promise<Result<TagSuggestion[], DomainError>> {
     return Ok([]);
   }
-  async getUsageInfo() {
+  async getUsageInfo(
+    options?: TagSearchOptions
+  ): Promise<Result<TagUsageInfo[], DomainError>> {
     return Ok([]);
   }
-  async findOrphaned() {
+  async findOrphaned(): Promise<Result<Tag[], DomainError>> {
     return Ok([]);
   }
-  async save(tag: any) {
+  async save(tag: Tag): Promise<Result<Tag, DomainError>> {
     return Ok(tag);
   }
-  async update(tag: any) {
+  async update(tag: Tag): Promise<Result<Tag, DomainError>> {
     return Ok(tag);
   }
-  async delete() {
+  async delete(id: TagId): Promise<Result<void, DomainError>> {
     return Ok<void, DomainError>(undefined);
   }
-  async deleteBatch() {
+  async deleteBatch(ids: TagId[]): Promise<Result<void, DomainError>> {
     return Ok<void, DomainError>(undefined);
   }
-  async saveBatch(tags: any[]) {
+  async saveBatch(tags: Tag[]): Promise<Result<Tag[], DomainError>> {
     return Ok(tags);
   }
-  async deleteAll() {
+  async deleteAll(): Promise<Result<void, DomainError>> {
     return Ok<void, DomainError>(undefined);
   }
-  async count() {
+  async count(): Promise<Result<number, DomainError>> {
     return Ok<number, DomainError>(0);
   }
-  async existsByNormalizedValue() {
+  async existsByNormalizedValue(
+    normalizedValue: string
+  ): Promise<Result<boolean, DomainError>> {
     return Ok<boolean, DomainError>(false);
   }
-  async exists() {
+  async exists(id: TagId): Promise<Result<boolean, DomainError>> {
     return Ok<boolean, DomainError>(false);
   }
-  async getUsageCount() {
+  async getUsageCount(id: TagId): Promise<Result<number, DomainError>> {
     return Ok<number, DomainError>(0);
   }
 }
@@ -113,22 +146,24 @@ class MockUnitOfWork implements UnitOfWork {
     this.tags = new MockTagRepository();
   }
 
-  async begin() {
+  async begin(): Promise<Result<void, DomainError>> {
     this._isActive = true;
     return Ok<void, DomainError>(undefined);
   }
 
-  async commit() {
+  async commit(): Promise<Result<void, DomainError>> {
     this._isActive = false;
     return Ok<void, DomainError>(undefined);
   }
 
-  async rollback() {
+  async rollback(): Promise<Result<void, DomainError>> {
     this._isActive = false;
     return Ok<void, DomainError>(undefined);
   }
 
-  async execute<T>(operation: (uow: UnitOfWork) => Promise<any>) {
+  async execute<T>(
+    operation: (uow: UnitOfWork) => Promise<Result<T, DomainError>>
+  ): Promise<Result<T, DomainError>> {
     await this.begin();
     try {
       const result = await operation(this);
@@ -144,11 +179,11 @@ class MockUnitOfWork implements UnitOfWork {
     }
   }
 
-  isActive() {
+  isActive(): boolean {
     return this._isActive;
   }
 
-  async dispose() {
+  async dispose(): Promise<void> {
     this._isActive = false;
   }
 }
@@ -156,12 +191,12 @@ class MockUnitOfWork implements UnitOfWork {
 describe('UnitOfWork Interface', () => {
   let unitOfWork: UnitOfWork;
 
-  beforeEach(() => {
+  beforeEach((): void => {
     unitOfWork = new MockUnitOfWork();
   });
 
   describe('Contract Verification', () => {
-    it('should have all required methods', () => {
+    it('should have all required methods', (): void => {
       expect(typeof unitOfWork.begin).toBe('function');
       expect(typeof unitOfWork.commit).toBe('function');
       expect(typeof unitOfWork.rollback).toBe('function');
@@ -170,14 +205,14 @@ describe('UnitOfWork Interface', () => {
       expect(typeof unitOfWork.dispose).toBe('function');
     });
 
-    it('should have repository properties', () => {
+    it('should have repository properties', (): void => {
       expect(unitOfWork.records).toBeDefined();
       expect(unitOfWork.tags).toBeDefined();
       expect(typeof unitOfWork.records.save).toBe('function');
       expect(typeof unitOfWork.tags.save).toBe('function');
     });
 
-    it('should return Result types for transaction operations', async () => {
+    it('should return Result types for transaction operations', async (): Promise<void> => {
       const beginResult = await unitOfWork.begin();
       expect(beginResult.isOk()).toBe(true);
 
@@ -188,7 +223,7 @@ describe('UnitOfWork Interface', () => {
       expect(rollbackResult.isOk()).toBe(true);
     });
 
-    it('should track transaction state correctly', async () => {
+    it('should track transaction state correctly', async (): Promise<void> => {
       expect(unitOfWork.isActive()).toBe(false);
 
       await unitOfWork.begin();
@@ -198,8 +233,10 @@ describe('UnitOfWork Interface', () => {
       expect(unitOfWork.isActive()).toBe(false);
     });
 
-    it('should handle transaction execution', async () => {
-      const operation = async (uow: UnitOfWork) => {
+    it('should handle transaction execution', async (): Promise<void> => {
+      const operation = async (
+        uow: UnitOfWork
+      ): Promise<Result<string, DomainError>> => {
         expect(uow.isActive()).toBe(true);
         return Ok('success');
       };
@@ -212,17 +249,17 @@ describe('UnitOfWork Interface', () => {
   });
 
   describe('Repository Access', () => {
-    it('should provide access to record repository', () => {
+    it('should provide access to record repository', (): void => {
       expect(unitOfWork.records).toBeInstanceOf(MockRecordRepository);
     });
 
-    it('should provide access to tag repository', () => {
+    it('should provide access to tag repository', (): void => {
       expect(unitOfWork.tags).toBeInstanceOf(MockTagRepository);
     });
   });
 
   describe('Resource Management', () => {
-    it('should allow disposal of resources', async () => {
+    it('should allow disposal of resources', async (): Promise<void> => {
       await unitOfWork.begin();
       expect(unitOfWork.isActive()).toBe(true);
 

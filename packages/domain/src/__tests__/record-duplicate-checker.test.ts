@@ -161,7 +161,9 @@ describe('RecordDuplicateChecker Domain Service', () => {
         baseDate
       );
 
-      expect(duplicateChecker.isDuplicate(null as any, record)).toBe(false);
+      expect(
+        duplicateChecker.isDuplicate(null as unknown as Record, record)
+      ).toBe(false);
     });
 
     it('should handle null record2 gracefully', () => {
@@ -173,13 +175,18 @@ describe('RecordDuplicateChecker Domain Service', () => {
         baseDate
       );
 
-      expect(duplicateChecker.isDuplicate(record, null as any)).toBe(false);
+      expect(
+        duplicateChecker.isDuplicate(record, null as unknown as Record)
+      ).toBe(false);
     });
 
     it('should handle both records being null', () => {
-      expect(duplicateChecker.isDuplicate(null as any, null as any)).toBe(
-        false
-      );
+      expect(
+        duplicateChecker.isDuplicate(
+          null as unknown as Record,
+          null as unknown as Record
+        )
+      ).toBe(false);
     });
 
     it('should handle undefined records gracefully', () => {
@@ -191,14 +198,17 @@ describe('RecordDuplicateChecker Domain Service', () => {
         baseDate
       );
 
-      expect(duplicateChecker.isDuplicate(undefined as any, record)).toBe(
-        false
-      );
-      expect(duplicateChecker.isDuplicate(record, undefined as any)).toBe(
-        false
-      );
       expect(
-        duplicateChecker.isDuplicate(undefined as any, undefined as any)
+        duplicateChecker.isDuplicate(undefined as unknown as Record, record)
+      ).toBe(false);
+      expect(
+        duplicateChecker.isDuplicate(record, undefined as unknown as Record)
+      ).toBe(false);
+      expect(
+        duplicateChecker.isDuplicate(
+          undefined as unknown as Record,
+          undefined as unknown as Record
+        )
       ).toBe(false);
     });
   });
@@ -355,9 +365,9 @@ describe('RecordDuplicateChecker Domain Service', () => {
         ),
       ];
 
-      expect(duplicateChecker.findDuplicatesIn(null as any, records)).toEqual(
-        []
-      );
+      expect(
+        duplicateChecker.findDuplicatesIn(null as unknown as Record, records)
+      ).toEqual([]);
     });
 
     it('should handle null records collection', () => {
@@ -370,7 +380,10 @@ describe('RecordDuplicateChecker Domain Service', () => {
       );
 
       expect(
-        duplicateChecker.findDuplicatesIn(targetRecord, null as any)
+        duplicateChecker.findDuplicatesIn(
+          targetRecord,
+          null as unknown as Record[]
+        )
       ).toEqual([]);
     });
 
@@ -392,7 +405,7 @@ describe('RecordDuplicateChecker Domain Service', () => {
         baseDate
       );
 
-      const records = [null, duplicate, null] as any;
+      const records = [null, duplicate, null] as unknown as Record[];
 
       const result = duplicateChecker.findDuplicatesIn(targetRecord, records);
 

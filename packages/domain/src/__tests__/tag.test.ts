@@ -14,21 +14,21 @@ describe('Tag', () => {
     });
 
     it('should throw error for null or undefined id', () => {
-      expect(() => new Tag(null as any, 'javascript')).toThrow(
+      expect(() => new Tag(null as unknown as TagId, 'javascript')).toThrow(
         'Tag ID cannot be null or undefined'
       );
-      expect(() => new Tag(undefined as any, 'javascript')).toThrow(
-        'Tag ID cannot be null or undefined'
-      );
+      expect(
+        () => new Tag(undefined as unknown as TagId, 'javascript')
+      ).toThrow('Tag ID cannot be null or undefined');
     });
 
     it('should throw error for null or undefined normalizedValue', () => {
       const tagId = TagId.generate();
 
-      expect(() => new Tag(tagId, null as any)).toThrow(
+      expect(() => new Tag(tagId, null as unknown as string)).toThrow(
         'Normalized value cannot be null or undefined'
       );
-      expect(() => new Tag(tagId, undefined as any)).toThrow(
+      expect(() => new Tag(tagId, undefined as unknown as string)).toThrow(
         'Normalized value cannot be null or undefined'
       );
     });
@@ -120,16 +120,19 @@ describe('Tag', () => {
     it('should return false when comparing with null or undefined', () => {
       const tag = Tag.create('javascript');
 
-      expect(tag.equals(null as any)).toBe(false);
-      expect(tag.equals(undefined as any)).toBe(false);
+      expect(tag.equals(null as unknown as Tag)).toBe(false);
+      expect(tag.equals(undefined as unknown as Tag)).toBe(false);
     });
 
     it('should return false when comparing with non-Tag objects', () => {
       const tag = Tag.create('javascript');
 
-      expect(tag.equals('javascript' as any)).toBe(false);
+      expect(tag.equals('javascript' as unknown as Tag)).toBe(false);
       expect(
-        tag.equals({ id: tag.id, normalizedValue: tag.normalizedValue } as any)
+        tag.equals({
+          id: tag.id,
+          normalizedValue: tag.normalizedValue,
+        } as unknown as Tag)
       ).toBe(false);
     });
   });
@@ -140,7 +143,7 @@ describe('Tag', () => {
       const originalId = tag.id;
 
       expect(() => {
-        (tag as any).id = TagId.generate();
+        (tag as { id: TagId }).id = TagId.generate();
       }).toThrow();
 
       expect(tag.id).toBe(originalId);
@@ -151,7 +154,7 @@ describe('Tag', () => {
       const originalValue = tag.normalizedValue;
 
       expect(() => {
-        (tag as any).normalizedValue = 'modified';
+        (tag as { normalizedValue: string }).normalizedValue = 'modified';
       }).toThrow();
 
       expect(tag.normalizedValue).toBe(originalValue);

@@ -38,61 +38,121 @@ describe('Record Entity', () => {
 
     it('should throw error when recordId is null', () => {
       expect(() => {
-        new Record(null as any, content, tagIds, baseDate, baseDate);
+        new Record(
+          null as unknown as RecordId,
+          content,
+          tagIds,
+          baseDate,
+          baseDate
+        );
       }).toThrow('Record ID cannot be null or undefined');
     });
 
     it('should throw error when recordId is undefined', () => {
       expect(() => {
-        new Record(undefined as any, content, tagIds, baseDate, baseDate);
+        new Record(
+          undefined as unknown as RecordId,
+          content,
+          tagIds,
+          baseDate,
+          baseDate
+        );
       }).toThrow('Record ID cannot be null or undefined');
     });
 
     it('should throw error when content is null', () => {
       expect(() => {
-        new Record(recordId, null as any, tagIds, baseDate, baseDate);
+        new Record(
+          recordId,
+          null as unknown as RecordContent,
+          tagIds,
+          baseDate,
+          baseDate
+        );
       }).toThrow('Record content cannot be null or undefined');
     });
 
     it('should throw error when content is undefined', () => {
       expect(() => {
-        new Record(recordId, undefined as any, tagIds, baseDate, baseDate);
+        new Record(
+          recordId,
+          undefined as unknown as RecordContent,
+          tagIds,
+          baseDate,
+          baseDate
+        );
       }).toThrow('Record content cannot be null or undefined');
     });
 
     it('should throw error when tagIds is null', () => {
       expect(() => {
-        new Record(recordId, content, null as any, baseDate, baseDate);
+        new Record(
+          recordId,
+          content,
+          null as unknown as Set<TagId>,
+          baseDate,
+          baseDate
+        );
       }).toThrow('Tag IDs set cannot be null or undefined');
     });
 
     it('should throw error when tagIds is undefined', () => {
       expect(() => {
-        new Record(recordId, content, undefined as any, baseDate, baseDate);
+        new Record(
+          recordId,
+          content,
+          undefined as unknown as Set<TagId>,
+          baseDate,
+          baseDate
+        );
       }).toThrow('Tag IDs set cannot be null or undefined');
     });
 
     it('should throw error when createdAt is null', () => {
       expect(() => {
-        new Record(recordId, content, tagIds, null as any, baseDate);
+        new Record(
+          recordId,
+          content,
+          tagIds,
+          null as unknown as Date,
+          baseDate
+        );
       }).toThrow('Created date cannot be null or undefined');
     });
 
     it('should throw error when createdAt is undefined', () => {
       expect(() => {
-        new Record(recordId, content, tagIds, undefined as any, baseDate);
+        new Record(
+          recordId,
+          content,
+          tagIds,
+          undefined as unknown as Date,
+          baseDate
+        );
       }).toThrow('Created date cannot be null or undefined');
     });
 
     it('should throw error when updatedAt is null', () => {
       expect(() => {
-        new Record(recordId, content, tagIds, baseDate, null as any);
+        new Record(
+          recordId,
+          content,
+          tagIds,
+          baseDate,
+          null as unknown as Date
+        );
       }).toThrow('Updated date cannot be null or undefined');
     });
 
     it('should throw error when updatedAt is undefined', () => {
       expect(() => {
-        new Record(recordId, content, tagIds, baseDate, undefined as any);
+        new Record(
+          recordId,
+          content,
+          tagIds,
+          baseDate,
+          undefined as unknown as Date
+        );
       }).toThrow('Updated date cannot be null or undefined');
     });
 
@@ -165,11 +225,11 @@ describe('Record Entity', () => {
     });
 
     it('should handle null tagId gracefully', () => {
-      expect(record.hasTag(null as any)).toBe(false);
+      expect(record.hasTag(null as unknown as TagId)).toBe(false);
     });
 
     it('should handle undefined tagId gracefully', () => {
-      expect(record.hasTag(undefined as any)).toBe(false);
+      expect(record.hasTag(undefined as unknown as TagId)).toBe(false);
     });
   });
 
@@ -253,11 +313,11 @@ describe('Record Entity', () => {
     });
 
     it('should handle null other record gracefully', () => {
-      expect(record.hasSameTagSet(null as any)).toBe(false);
+      expect(record.hasSameTagSet(null as unknown as Record)).toBe(false);
     });
 
     it('should handle undefined other record gracefully', () => {
-      expect(record.hasSameTagSet(undefined as any)).toBe(false);
+      expect(record.hasSameTagSet(undefined as unknown as Record)).toBe(false);
     });
   });
 
@@ -299,16 +359,16 @@ describe('Record Entity', () => {
     });
 
     it('should return false when comparing with null', () => {
-      expect(record.equals(null as any)).toBe(false);
+      expect(record.equals(null as unknown as Record)).toBe(false);
     });
 
     it('should return false when comparing with undefined', () => {
-      expect(record.equals(undefined as any)).toBe(false);
+      expect(record.equals(undefined as unknown as Record)).toBe(false);
     });
 
     it('should return false when comparing with non-Record object', () => {
       const notARecord = { id: recordId, content: content };
-      expect(record.equals(notARecord as any)).toBe(false);
+      expect(record.equals(notARecord as unknown as Record)).toBe(false);
     });
   });
 
@@ -364,7 +424,7 @@ describe('Record Entity', () => {
       const record = new Record(recordId, content, tagIds, baseDate, baseDate);
 
       expect(() => {
-        record.updateTags(null as any);
+        record.updateTags(null as unknown as Set<TagId>);
       }).toThrow('Tag IDs set cannot be null or undefined');
     });
 
@@ -372,7 +432,7 @@ describe('Record Entity', () => {
       const record = new Record(recordId, content, tagIds, baseDate, baseDate);
 
       expect(() => {
-        record.updateTags(undefined as any);
+        record.updateTags(undefined as unknown as Set<TagId>);
       }).toThrow('Tag IDs set cannot be null or undefined');
     });
   });
