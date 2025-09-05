@@ -5,6 +5,7 @@ import {
   RecordContent,
   Ok,
   Err,
+  Result,
 } from '@misc-poc/shared';
 import { Record, Tag, DomainError } from '@misc-poc/domain';
 import { UnitOfWork } from '@misc-poc/application';
@@ -310,7 +311,9 @@ describe('LocalStorageUnitOfWork', () => {
       });
 
       it('should make changes visible within the operation', async () => {
-        const operation = async (uow: UnitOfWork) => {
+        const operation = async (
+          uow: UnitOfWork
+        ): Promise<Result<string, DomainError>> => {
           // Add a new record
           const newRecord = new Record(
             new RecordId(testRecordId2),
