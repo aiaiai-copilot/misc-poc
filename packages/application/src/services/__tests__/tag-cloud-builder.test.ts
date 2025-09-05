@@ -42,7 +42,7 @@ describe('TagCloudBuilder', () => {
     tag5: '550e8400-e29b-41d4-a716-446655440005',
   } as const;
 
-  beforeEach(() => {
+  beforeEach((): void => {
     mockTagRepository = {
       getUsageInfo: jest.fn(),
     };
@@ -50,11 +50,11 @@ describe('TagCloudBuilder', () => {
   });
 
   describe('constructor', () => {
-    it('should create instance with default configuration', () => {
+    it('should create instance with default configuration', (): void => {
       expect(builder).toBeInstanceOf(TagCloudBuilder);
     });
 
-    it('should accept custom configuration', () => {
+    it('should accept custom configuration', (): void => {
       const customBuilder = new TagCloudBuilder(mockTagRepository as any, {
         maxCloudSize: 50,
         minFrequency: 2,
@@ -63,32 +63,32 @@ describe('TagCloudBuilder', () => {
       expect(customBuilder).toBeInstanceOf(TagCloudBuilder);
     });
 
-    it('should throw error for invalid maxCloudSize', () => {
-      expect(() => {
-        new TagCloudBuilder(mockTagRepository as any, {
+    it('should throw error for invalid maxCloudSize', (): void => {
+      expect((): TagCloudBuilder => {
+        return new TagCloudBuilder(mockTagRepository as any, {
           maxCloudSize: 0,
         });
       }).toThrow('maxCloudSize must be greater than 0');
     });
 
-    it('should throw error for invalid frequency range', () => {
-      expect(() => {
-        new TagCloudBuilder(mockTagRepository as any, {
+    it('should throw error for invalid frequency range', (): void => {
+      expect((): TagCloudBuilder => {
+        return new TagCloudBuilder(mockTagRepository as any, {
           minFrequency: 10,
           maxFrequency: 5,
         });
       }).toThrow('maxFrequency must be greater than minFrequency');
     });
 
-    it('should throw error for negative frequency values', () => {
-      expect(() => {
-        new TagCloudBuilder(mockTagRepository as any, {
+    it('should throw error for negative frequency values', (): void => {
+      expect((): TagCloudBuilder => {
+        return new TagCloudBuilder(mockTagRepository as any, {
           minFrequency: -1,
         });
       }).toThrow('minFrequency must be non-negative');
 
-      expect(() => {
-        new TagCloudBuilder(mockTagRepository as any, {
+      expect((): TagCloudBuilder => {
+        return new TagCloudBuilder(mockTagRepository as any, {
           maxFrequency: -1,
         });
       }).toThrow('maxFrequency must be greater than 0');
@@ -96,7 +96,7 @@ describe('TagCloudBuilder', () => {
   });
 
   describe('buildFromSearchResult', () => {
-    it('should return empty array for empty search results', async () => {
+    it('should return empty array for empty search results', async (): Promise<void> => {
       const searchResult: SearchResultDTO = {
         records: [],
         total: 0,
@@ -108,7 +108,7 @@ describe('TagCloudBuilder', () => {
       expect(tagCloud).toEqual([]);
     });
 
-    it('should handle null or undefined search results', async () => {
+    it('should handle null or undefined search results', async (): Promise<void> => {
       await expect(builder.buildFromSearchResult(null as any)).rejects.toThrow(
         'SearchResult cannot be null or undefined'
       );
@@ -117,7 +117,7 @@ describe('TagCloudBuilder', () => {
       ).rejects.toThrow('SearchResult cannot be null or undefined');
     });
 
-    it('should aggregate unique tag IDs from search results', async () => {
+    it('should aggregate unique tag IDs from search results', async (): Promise<void> => {
       const records: RecordDTO[] = [
         createMockRecord('record1', [mockUUIDs.tag1, mockUUIDs.tag2]),
         createMockRecord('record2', [mockUUIDs.tag2, mockUUIDs.tag3]),
@@ -142,10 +142,10 @@ describe('TagCloudBuilder', () => {
       ];
 
       const mockResult = {
-        isOk: () => true,
-        isErr: () => false,
-        unwrap: () => mockTagUsageInfos,
-        unwrapErr: () => new Error('Should not be called'),
+        isOk: (): boolean => true,
+        isErr: (): boolean => false,
+        unwrap: (): TagUsageInfo[] => mockTagUsageInfos,
+        unwrapErr: (): Error => new Error('Should not be called'),
       };
       mockTagRepository.getUsageInfo.mockResolvedValue(mockResult);
 
@@ -158,7 +158,7 @@ describe('TagCloudBuilder', () => {
       expect(tagCloud).toHaveLength(4);
     });
 
-    it('should filter tags by frequency thresholds', async () => {
+    it('should filter tags by frequency thresholds', async (): Promise<void> => {
       const builderWithThresholds = new TagCloudBuilder(
         mockTagRepository as any,
         {
@@ -188,10 +188,10 @@ describe('TagCloudBuilder', () => {
       ];
 
       const mockResult = {
-        isOk: () => true,
-        isErr: () => false,
-        unwrap: () => mockTagUsageInfos,
-        unwrapErr: () => new Error('Should not be called'),
+        isOk: (): boolean => true,
+        isErr: (): boolean => false,
+        unwrap: (): TagUsageInfo[] => mockTagUsageInfos,
+        unwrapErr: (): Error => new Error('Should not be called'),
       };
       mockTagRepository.getUsageInfo.mockResolvedValue(mockResult);
 
@@ -202,7 +202,7 @@ describe('TagCloudBuilder', () => {
       expect(tagCloud[0].normalizedValue).toBe('react');
     });
 
-    it('should limit results by maxCloudSize', async () => {
+    it('should limit results by maxCloudSize', async (): Promise<void> => {
       const builderWithLimit = new TagCloudBuilder(mockTagRepository as any, {
         maxCloudSize: 2,
       });
@@ -230,10 +230,10 @@ describe('TagCloudBuilder', () => {
       ];
 
       const mockResult = {
-        isOk: () => true,
-        isErr: () => false,
-        unwrap: () => mockTagUsageInfos,
-        unwrapErr: () => new Error('Should not be called'),
+        isOk: (): boolean => true,
+        isErr: (): boolean => false,
+        unwrap: (): TagUsageInfo[] => mockTagUsageInfos,
+        unwrapErr: (): Error => new Error('Should not be called'),
       };
       mockTagRepository.getUsageInfo.mockResolvedValue(mockResult);
 
@@ -246,7 +246,7 @@ describe('TagCloudBuilder', () => {
       expect(tagCloud[1].usageCount).toBe(10);
     });
 
-    it('should sort results by relevance (usage count descending)', async () => {
+    it('should sort results by relevance (usage count descending)', async (): Promise<void> => {
       const records: RecordDTO[] = [
         createMockRecord('record1', [
           mockUUIDs.tag1,
@@ -268,10 +268,10 @@ describe('TagCloudBuilder', () => {
       ];
 
       const mockResult = {
-        isOk: () => true,
-        isErr: () => false,
-        unwrap: () => mockTagUsageInfos,
-        unwrapErr: () => new Error('Should not be called'),
+        isOk: (): boolean => true,
+        isErr: (): boolean => false,
+        unwrap: (): TagUsageInfo[] => mockTagUsageInfos,
+        unwrapErr: (): Error => new Error('Should not be called'),
       };
       mockTagRepository.getUsageInfo.mockResolvedValue(mockResult);
 
@@ -282,7 +282,7 @@ describe('TagCloudBuilder', () => {
       expect(tagCloud[2].usageCount).toBe(8); // typescript
     });
 
-    it('should calculate correct weights and visual sizes', async () => {
+    it('should calculate correct weights and visual sizes', async (): Promise<void> => {
       const records: RecordDTO[] = [
         createMockRecord('record1', [
           mockUUIDs.tag1,
@@ -304,10 +304,10 @@ describe('TagCloudBuilder', () => {
       ];
 
       const mockResult = {
-        isOk: () => true,
-        isErr: () => false,
-        unwrap: () => mockTagUsageInfos,
-        unwrapErr: () => new Error('Should not be called'),
+        isOk: (): boolean => true,
+        isErr: (): boolean => false,
+        unwrap: (): TagUsageInfo[] => mockTagUsageInfos,
+        unwrapErr: (): Error => new Error('Should not be called'),
       };
       mockTagRepository.getUsageInfo.mockResolvedValue(mockResult);
 
@@ -323,7 +323,7 @@ describe('TagCloudBuilder', () => {
       expect(tagCloud[2].fontSize).toBe('small'); // weight 0
     });
 
-    it('should handle single tag with weight 1', async () => {
+    it('should handle single tag with weight 1', async (): Promise<void> => {
       const records: RecordDTO[] = [
         createMockRecord('record1', [mockUUIDs.tag1]),
       ];
@@ -339,10 +339,10 @@ describe('TagCloudBuilder', () => {
       ];
 
       const mockResult = {
-        isOk: () => true,
-        isErr: () => false,
-        unwrap: () => mockTagUsageInfos,
-        unwrapErr: () => new Error('Should not be called'),
+        isOk: (): boolean => true,
+        isErr: (): boolean => false,
+        unwrap: (): TagUsageInfo[] => mockTagUsageInfos,
+        unwrapErr: (): Error => new Error('Should not be called'),
       };
       mockTagRepository.getUsageInfo.mockResolvedValue(mockResult);
 
@@ -353,7 +353,7 @@ describe('TagCloudBuilder', () => {
       expect(tagCloud[0].fontSize).toBe('xlarge');
     });
 
-    it('should handle repository errors', async () => {
+    it('should handle repository errors', async (): Promise<void> => {
       const records: RecordDTO[] = [
         createMockRecord('record1', [mockUUIDs.tag1]),
       ];
@@ -365,12 +365,12 @@ describe('TagCloudBuilder', () => {
       };
 
       const mockErrorResult = {
-        isOk: () => false,
-        isErr: () => true,
-        unwrap: () => {
+        isOk: (): boolean => false,
+        isErr: (): boolean => true,
+        unwrap: (): never => {
           throw new Error('Should not be called');
         },
-        unwrapErr: () => new Error('Repository error'),
+        unwrapErr: (): Error => new Error('Repository error'),
       };
       mockTagRepository.getUsageInfo.mockResolvedValue(mockErrorResult);
 
@@ -379,7 +379,7 @@ describe('TagCloudBuilder', () => {
       );
     });
 
-    it('should deduplicate tag IDs from multiple records', async () => {
+    it('should deduplicate tag IDs from multiple records', async (): Promise<void> => {
       const records: RecordDTO[] = [
         createMockRecord('record1', [mockUUIDs.tag1, mockUUIDs.tag2]),
         createMockRecord('record2', [mockUUIDs.tag1, mockUUIDs.tag2]), // Same tags
@@ -399,10 +399,10 @@ describe('TagCloudBuilder', () => {
       ];
 
       const mockResult = {
-        isOk: () => true,
-        isErr: () => false,
-        unwrap: () => mockTagUsageInfos,
-        unwrapErr: () => new Error('Should not be called'),
+        isOk: (): boolean => true,
+        isErr: (): boolean => false,
+        unwrap: (): TagUsageInfo[] => mockTagUsageInfos,
+        unwrapErr: (): Error => new Error('Should not be called'),
       };
       mockTagRepository.getUsageInfo.mockResolvedValue(mockResult);
 
@@ -418,7 +418,7 @@ describe('TagCloudBuilder', () => {
   });
 
   describe('getConfiguration', () => {
-    it('should return current configuration', () => {
+    it('should return current configuration', (): void => {
       const config = builder.getConfiguration();
       expect(config).toEqual({
         maxCloudSize: 30,
@@ -427,7 +427,7 @@ describe('TagCloudBuilder', () => {
       });
     });
 
-    it('should return custom configuration', () => {
+    it('should return custom configuration', (): void => {
       const customBuilder = new TagCloudBuilder(mockTagRepository as any, {
         maxCloudSize: 50,
         minFrequency: 2,
@@ -444,7 +444,7 @@ describe('TagCloudBuilder', () => {
   });
 
   describe('updateConfiguration', () => {
-    it('should update configuration with valid values', () => {
+    it('should update configuration with valid values', (): void => {
       builder.updateConfiguration({
         maxCloudSize: 40,
         minFrequency: 3,
@@ -459,14 +459,14 @@ describe('TagCloudBuilder', () => {
       });
     });
 
-    it('should throw error for invalid configuration', () => {
-      expect(() => {
+    it('should throw error for invalid configuration', (): void => {
+      expect((): void => {
         builder.updateConfiguration({
           maxCloudSize: 0,
         });
       }).toThrow('maxCloudSize must be greater than 0');
 
-      expect(() => {
+      expect((): void => {
         builder.updateConfiguration({
           minFrequency: 10,
           maxFrequency: 5,
@@ -474,7 +474,7 @@ describe('TagCloudBuilder', () => {
       }).toThrow('maxFrequency must be greater than minFrequency');
     });
 
-    it('should allow partial updates', () => {
+    it('should allow partial updates', (): void => {
       builder.updateConfiguration({
         maxCloudSize: 25,
       });
@@ -487,7 +487,7 @@ describe('TagCloudBuilder', () => {
   });
 
   describe('edge cases', () => {
-    it('should handle records with empty tagIds arrays', async () => {
+    it('should handle records with empty tagIds arrays', async (): Promise<void> => {
       const records: RecordDTO[] = [
         createMockRecord('record1', []),
         createMockRecord('record2', [mockUUIDs.tag1]),
@@ -504,10 +504,10 @@ describe('TagCloudBuilder', () => {
       ];
 
       const mockResult = {
-        isOk: () => true,
-        isErr: () => false,
-        unwrap: () => mockTagUsageInfos,
-        unwrapErr: () => new Error('Should not be called'),
+        isOk: (): boolean => true,
+        isErr: (): boolean => false,
+        unwrap: (): TagUsageInfo[] => mockTagUsageInfos,
+        unwrapErr: (): Error => new Error('Should not be called'),
       };
       mockTagRepository.getUsageInfo.mockResolvedValue(mockResult);
 
@@ -517,7 +517,7 @@ describe('TagCloudBuilder', () => {
       expect(tagCloud[0].normalizedValue).toBe('javascript');
     });
 
-    it('should handle tags with identical usage counts', async () => {
+    it('should handle tags with identical usage counts', async (): Promise<void> => {
       const records: RecordDTO[] = [
         createMockRecord('record1', [
           mockUUIDs.tag1,
@@ -539,10 +539,10 @@ describe('TagCloudBuilder', () => {
       ];
 
       const mockResult = {
-        isOk: () => true,
-        isErr: () => false,
-        unwrap: () => mockTagUsageInfos,
-        unwrapErr: () => new Error('Should not be called'),
+        isOk: (): boolean => true,
+        isErr: (): boolean => false,
+        unwrap: (): TagUsageInfo[] => mockTagUsageInfos,
+        unwrapErr: (): Error => new Error('Should not be called'),
       };
       mockTagRepository.getUsageInfo.mockResolvedValue(mockResult);
 
@@ -550,7 +550,7 @@ describe('TagCloudBuilder', () => {
 
       expect(tagCloud).toHaveLength(3);
       // All should have same weight since usage is identical
-      tagCloud.forEach((item) => {
+      tagCloud.forEach((item): void => {
         expect(item.weight).toBe(1); // Single value gets max weight
         expect(item.usageCount).toBe(10);
       });
@@ -558,7 +558,7 @@ describe('TagCloudBuilder', () => {
   });
 
   describe('visual size calculation', () => {
-    it('should calculate correct fontSize based on weight ranges', async () => {
+    it('should calculate correct fontSize based on weight ranges', async (): Promise<void> => {
       const records: RecordDTO[] = [
         createMockRecord('record1', [
           mockUUIDs.tag1,
@@ -582,10 +582,10 @@ describe('TagCloudBuilder', () => {
       ];
 
       const mockResult = {
-        isOk: () => true,
-        isErr: () => false,
-        unwrap: () => mockTagUsageInfos,
-        unwrapErr: () => new Error('Should not be called'),
+        isOk: (): boolean => true,
+        isErr: (): boolean => false,
+        unwrap: (): TagUsageInfo[] => mockTagUsageInfos,
+        unwrapErr: (): Error => new Error('Should not be called'),
       };
       mockTagRepository.getUsageInfo.mockResolvedValue(mockResult);
 
@@ -599,13 +599,18 @@ describe('TagCloudBuilder', () => {
   });
 
   describe('performance with large datasets', () => {
-    it('should handle large number of tags efficiently', async () => {
+    it('should handle large number of tags efficiently', async (): Promise<void> => {
       // Generate UUIDs for large dataset test
       const generateUUID = (index: number): string =>
         `550e8400-e29b-41d4-a716-${String(index).padStart(12, '0')}`;
 
-      const records: RecordDTO[] = Array.from({ length: 100 }, (_, i) =>
-        createMockRecord(`record${i}`, [generateUUID(i), generateUUID(i + 100)])
+      const records: RecordDTO[] = Array.from(
+        { length: 100 },
+        (_, i): RecordDTO =>
+          createMockRecord(`record${i}`, [
+            generateUUID(i),
+            generateUUID(i + 100),
+          ])
       );
 
       const searchResult: SearchResultDTO = {
@@ -616,7 +621,7 @@ describe('TagCloudBuilder', () => {
 
       const mockTagUsageInfos: TagUsageInfo[] = Array.from(
         { length: 200 },
-        (_, i) =>
+        (_, i): TagUsageInfo =>
           createMockTagUsageInfo(
             generateUUID(i),
             `tag-${i}`,
@@ -625,10 +630,10 @@ describe('TagCloudBuilder', () => {
       );
 
       const mockResult = {
-        isOk: () => true,
-        isErr: () => false,
-        unwrap: () => mockTagUsageInfos,
-        unwrapErr: () => new Error('Should not be called'),
+        isOk: (): boolean => true,
+        isErr: (): boolean => false,
+        unwrap: (): TagUsageInfo[] => mockTagUsageInfos,
+        unwrapErr: (): Error => new Error('Should not be called'),
       };
       mockTagRepository.getUsageInfo.mockResolvedValue(mockResult);
 

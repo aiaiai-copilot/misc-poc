@@ -9,5 +9,9 @@
   },
   "include": ["src/**/*"],
   "exclude": ["dist", "**/*.test.ts", "**/*.spec.ts"],
-  "references": [{ "path": "../../shared" }, { "path": "../../domain" }]
+  "references": [
+    { "path": "../../shared" },
+    { "path": "../../domain" },
+    { "path": "../../application" }
+  ]
 }

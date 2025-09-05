@@ -1,4 +1,11 @@
-import { RecordId, TagId, SearchQuery, Ok, Err } from '@misc-poc/shared';
+import {
+  RecordId,
+  TagId,
+  SearchQuery,
+  Ok,
+  Err,
+  Result,
+} from '@misc-poc/shared';
 import { Record, DomainError } from '@misc-poc/domain';
 import {
   RecordRepository,
@@ -11,13 +18,15 @@ import {
  * This verifies that all required methods exist and have correct signatures
  */
 class MockRecordRepository implements RecordRepository {
-  async findById(id: RecordId) {
+  async findById(id: RecordId): Promise<Result<Record | null, DomainError>> {
     // Verify method signature and return type
     const result: ReturnType<RecordRepository['findById']> = Ok(null);
     return result;
   }
 
-  async findAll(options?: RecordSearchOptions) {
+  async findAll(
+    options?: RecordSearchOptions
+  ): Promise<Result<RecordSearchResult, DomainError>> {
     const result: RecordSearchResult = {
       records: [],
       total: 0,
@@ -26,7 +35,10 @@ class MockRecordRepository implements RecordRepository {
     return Ok(result);
   }
 
-  async search(query: SearchQuery, options?: RecordSearchOptions) {
+  async search(
+    query: SearchQuery,
+    options?: RecordSearchOptions
+  ): Promise<Result<RecordSearchResult, DomainError>> {
     const result: RecordSearchResult = {
       records: [],
       total: 0,
@@ -35,7 +47,10 @@ class MockRecordRepository implements RecordRepository {
     return Ok(result);
   }
 
-  async findByTagIds(tagIds: TagId[], options?: RecordSearchOptions) {
+  async findByTagIds(
+    tagIds: TagId[],
+    options?: RecordSearchOptions
+  ): Promise<Result<RecordSearchResult, DomainError>> {
     const result: RecordSearchResult = {
       records: [],
       total: 0,
@@ -44,35 +59,38 @@ class MockRecordRepository implements RecordRepository {
     return Ok(result);
   }
 
-  async findByTagSet(tagIds: Set<TagId>, excludeRecordId?: RecordId) {
+  async findByTagSet(
+    tagIds: Set<TagId>,
+    excludeRecordId?: RecordId
+  ): Promise<Result<Record[], DomainError>> {
     return Ok<Record[], DomainError>([]);
   }
 
-  async save(record: Record) {
+  async save(record: Record): Promise<Result<Record, DomainError>> {
     return Ok(record);
   }
 
-  async update(record: Record) {
+  async update(record: Record): Promise<Result<Record, DomainError>> {
     return Ok(record);
   }
 
-  async delete(id: RecordId) {
+  async delete(id: RecordId): Promise<Result<void, DomainError>> {
     return Ok<void, DomainError>(undefined);
   }
 
-  async saveBatch(records: Record[]) {
+  async saveBatch(records: Record[]): Promise<Result<Record[], DomainError>> {
     return Ok(records);
   }
 
-  async deleteAll() {
+  async deleteAll(): Promise<Result<void, DomainError>> {
     return Ok<void, DomainError>(undefined);
   }
 
-  async count() {
+  async count(): Promise<Result<number, DomainError>> {
     return Ok<number, DomainError>(0);
   }
 
-  async exists(id: RecordId) {
+  async exists(id: RecordId): Promise<Result<boolean, DomainError>> {
     return Ok<boolean, DomainError>(false);
   }
 }
@@ -80,12 +98,12 @@ class MockRecordRepository implements RecordRepository {
 describe('RecordRepository Interface', () => {
   let repository: RecordRepository;
 
-  beforeEach(() => {
+  beforeEach((): void => {
     repository = new MockRecordRepository();
   });
 
   describe('Contract Verification', () => {
-    it('should have all required methods', () => {
+    it('should have all required methods', (): void => {
       expect(typeof repository.findById).toBe('function');
       expect(typeof repository.findAll).toBe('function');
       expect(typeof repository.search).toBe('function');
@@ -100,7 +118,7 @@ describe('RecordRepository Interface', () => {
       expect(typeof repository.exists).toBe('function');
     });
 
-    it('should return Result types for all async operations', async () => {
+    it('should return Result types for all async operations', async (): Promise<void> => {
       const id = RecordId.generate();
       const tagIds = [TagId.generate()];
       const query = new SearchQuery('test');
@@ -130,7 +148,7 @@ describe('RecordRepository Interface', () => {
   });
 
   describe('Search Options Interface', () => {
-    it('should accept valid search options', () => {
+    it('should accept valid search options', (): void => {
       const options: RecordSearchOptions = {
         limit: 10,
         offset: 0,
@@ -143,7 +161,7 @@ describe('RecordRepository Interface', () => {
       expect(options.sortBy).toBe('createdAt');
     });
 
-    it('should allow partial search options', () => {
+    it('should allow partial search options', (): void => {
       const options1: RecordSearchOptions = { limit: 10 };
       const options2: RecordSearchOptions = { sortBy: 'updatedAt' };
       const options3: RecordSearchOptions = {};
@@ -155,7 +173,7 @@ describe('RecordRepository Interface', () => {
   });
 
   describe('Search Result Interface', () => {
-    it('should have correct structure for search results', () => {
+    it('should have correct structure for search results', (): void => {
       const result: RecordSearchResult = {
         records: [],
         total: 0,

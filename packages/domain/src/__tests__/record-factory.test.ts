@@ -2,7 +2,7 @@ import { RecordFactory } from '../record-factory';
 import { Record } from '../record';
 import { TagParser } from '../tag-parser';
 import { TagFactory } from '../tag-factory';
-import { RecordContent, TagId } from '@misc-poc/shared';
+import { TagId } from '@misc-poc/shared';
 
 describe('RecordFactory', () => {
   let factory: RecordFactory;
@@ -58,7 +58,9 @@ describe('RecordFactory', () => {
         };
 
         mockTagParser.parse.mockReturnValue(tagStrings);
-        mockTagFactory.createFromString.mockReturnValue(mockTag as any);
+        mockTagFactory.createFromString.mockReturnValue(
+          mockTag as unknown as Tag
+        );
 
         const record = factory.createFromContent(content);
 
@@ -83,7 +85,7 @@ describe('RecordFactory', () => {
         mockTagParser.parse.mockReturnValue(tagStrings);
         mockTagFactory.createFromString.mockImplementation((tagString) => {
           const index = tagStrings.indexOf(tagString);
-          return mockTags[index] as any;
+          return mockTags[index] as unknown as Tag;
         });
 
         const record = factory.createFromContent(content);
@@ -112,8 +114,8 @@ describe('RecordFactory', () => {
 
         mockTagParser.parse.mockReturnValue(tagStrings);
         mockTagFactory.createFromString.mockImplementation((tagString) => {
-          if (tagString === 'javascript') return mockJsTag as any;
-          if (tagString === 'programming') return mockProgTag as any;
+          if (tagString === 'javascript') return mockJsTag as unknown as Tag;
+          if (tagString === 'programming') return mockProgTag as unknown as Tag;
           throw new Error('Unexpected tag string');
         });
 
@@ -156,15 +158,15 @@ describe('RecordFactory', () => {
 
     describe('validation failures', () => {
       it('should throw error for null content', () => {
-        expect(() => factory.createFromContent(null as any)).toThrow(
-          'Cannot create record: Content cannot be null or undefined'
-        );
+        expect(() =>
+          factory.createFromContent(null as unknown as string)
+        ).toThrow('Cannot create record: Content cannot be null or undefined');
       });
 
       it('should throw error for undefined content', () => {
-        expect(() => factory.createFromContent(undefined as any)).toThrow(
-          'Cannot create record: Content cannot be null or undefined'
-        );
+        expect(() =>
+          factory.createFromContent(undefined as unknown as string)
+        ).toThrow('Cannot create record: Content cannot be null or undefined');
       });
 
       it('should throw error for empty string content', () => {
@@ -215,10 +217,10 @@ describe('RecordFactory', () => {
         const mockRubyTag = { id: TagId.generate(), normalizedValue: 'ruby' };
 
         mockTagFactory.createFromString.mockImplementation((tagString) => {
-          if (tagString === 'javascript') return mockJsTag as any;
+          if (tagString === 'javascript') return mockJsTag as unknown as Tag;
           if (tagString === 'python')
             throw new Error('Python tag creation failed');
-          if (tagString === 'ruby') return mockRubyTag as any;
+          if (tagString === 'ruby') return mockRubyTag as unknown as Tag;
           throw new Error('Unexpected tag');
         });
 
@@ -273,7 +275,9 @@ describe('RecordFactory', () => {
         const mockTag = { id: TagId.generate(), normalizedValue: 'javascript' };
 
         mockTagParser.parse.mockReturnValue(['javascript']);
-        mockTagFactory.createFromString.mockReturnValue(mockTag as any);
+        mockTagFactory.createFromString.mockReturnValue(
+          mockTag as unknown as Tag
+        );
 
         const record = factory.createFromContent(content);
 
@@ -310,7 +314,9 @@ describe('RecordFactory', () => {
         const mockTag = { id: TagId.generate(), normalizedValue: 'javascript' };
 
         mockTagParser.parse.mockReturnValue(tagStrings);
-        mockTagFactory.createFromString.mockReturnValue(mockTag as any);
+        mockTagFactory.createFromString.mockReturnValue(
+          mockTag as unknown as Tag
+        );
 
         const record = factory.createFromContent(content);
 
@@ -341,7 +347,7 @@ describe('RecordFactory', () => {
       mockTagParser.parse.mockReturnValue(manyTags);
       mockTagFactory.createFromString.mockImplementation((tagString) => {
         const index = manyTags.indexOf(tagString);
-        return mockTags[index] as any;
+        return mockTags[index] as unknown as Tag;
       });
 
       const record = factory.createFromContent(content);

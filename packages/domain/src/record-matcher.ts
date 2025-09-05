@@ -23,7 +23,7 @@ export class RecordMatcher {
     const recordTagValues = this.getRecordTagValues(record, tagLookup);
 
     // AND logic: all query tokens must match at least one tag
-    return normalizedQueryTokens.every((token) =>
+    return normalizedQueryTokens.every((token: string) =>
       recordTagValues.some((tagValue) => tagValue.includes(token))
     );
   }
