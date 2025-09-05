@@ -48,28 +48,9 @@ yarn clean
 # Все тесты (259 тестов: shared + domain + другие пакеты)
 yarn test
 
-# Тесты отдельных пакетов
-yarn test:shared  # 229 тестов shared пакета
-yarn test:domain  # 30 тестов domain пакета (TagNormalizer и др.)
-
-# Устаревший способ (то же самое что yarn test)
-yarn test:all
-```
-
-### Команды для всех пакетов
-
-```bash
-# Линтинг всех пакетов
-yarn lint:all
-
-# Проверка типов всех пакетов
-yarn typecheck:all
-
-# Сборка всех пакетов
-yarn build:all
-
-# Очистка всех пакетов
-yarn clean:all
+# Тесты отдельных пакетов (используйте workspace команды)
+yarn workspace @misc-poc/shared test  # 229 тестов shared пакета
+yarn workspace @misc-poc/domain test  # 30 тестов domain пакета (TagNormalizer и др.)
 ```
 
 ### Команды для конкретных пакетов
