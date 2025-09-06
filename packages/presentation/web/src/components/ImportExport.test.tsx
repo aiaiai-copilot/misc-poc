@@ -130,7 +130,7 @@ describe('ImportExport', () => {
         items: [
           {
             kind: 'file',
-            getAsFile: () => file,
+            getAsFile: (): File => file,
           },
         ],
       };
@@ -203,7 +203,7 @@ describe('ImportExport', () => {
         items: [
           {
             kind: 'file',
-            getAsFile: () => file,
+            getAsFile: (): File => file,
           },
         ],
       };
@@ -226,7 +226,7 @@ describe('ImportExport', () => {
         items: [
           {
             kind: 'string', // Not a file
-            getAsFile: () => null,
+            getAsFile: (): File | null => null,
           },
         ],
       };

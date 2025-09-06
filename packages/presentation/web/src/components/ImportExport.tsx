@@ -101,7 +101,7 @@ export const ImportExport: React.FC<ImportExportProps> = ({
     return null;
   };
 
-  const handleFileSelect = useCallback((files: FileList | null) => {
+  const handleFileSelect = useCallback((files: FileList | null): void => {
     if (!files || files.length === 0) return;
 
     const file = files[0];
@@ -121,11 +121,11 @@ export const ImportExport: React.FC<ImportExportProps> = ({
     });
   }, []);
 
-  const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (event: ChangeEvent<HTMLInputElement>): void => {
     handleFileSelect(event.target.files);
   };
 
-  const handleClearFile = () => {
+  const handleClearFile = (): void => {
     setSelectedFile(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
@@ -134,23 +134,23 @@ export const ImportExport: React.FC<ImportExportProps> = ({
     setImportResult(null);
   };
 
-  const handleDragEnter = (event: DragEvent<HTMLDivElement>) => {
+  const handleDragEnter = (event: DragEvent<HTMLDivElement>): void => {
     event.preventDefault();
     setIsDragOver(true);
   };
 
-  const handleDragLeave = (event: DragEvent<HTMLDivElement>) => {
+  const handleDragLeave = (event: DragEvent<HTMLDivElement>): void => {
     event.preventDefault();
     if (!event.currentTarget.contains(event.relatedTarget as Node)) {
       setIsDragOver(false);
     }
   };
 
-  const handleDragOver = (event: DragEvent<HTMLDivElement>) => {
+  const handleDragOver = (event: DragEvent<HTMLDivElement>): void => {
     event.preventDefault();
   };
 
-  const handleDrop = (event: DragEvent<HTMLDivElement>) => {
+  const handleDrop = (event: DragEvent<HTMLDivElement>): void => {
     event.preventDefault();
     setIsDragOver(false);
 
@@ -181,7 +181,7 @@ export const ImportExport: React.FC<ImportExportProps> = ({
     }
   };
 
-  const handleDropZoneKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+  const handleDropZoneKeyDown = (event: KeyboardEvent<HTMLDivElement>): void => {
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
       fileInputRef.current?.click();
@@ -189,7 +189,7 @@ export const ImportExport: React.FC<ImportExportProps> = ({
     }
   };
 
-  const handleImportClick = async () => {
+  const handleImportClick = async (): Promise<void> => {
     if (!selectedFile || !onImport) return;
 
     if (hasExistingData) {
@@ -200,7 +200,7 @@ export const ImportExport: React.FC<ImportExportProps> = ({
     await performImport();
   };
 
-  const performImport = async () => {
+  const performImport = async (): Promise<void> => {
     if (!selectedFile || !onImport) return;
 
     setError(null);
@@ -224,7 +224,7 @@ export const ImportExport: React.FC<ImportExportProps> = ({
     }
   };
 
-  const handleExportClick = async () => {
+  const handleExportClick = async (): Promise<void> => {
     if (!onExport) return;
 
     setError(null);
@@ -244,11 +244,11 @@ export const ImportExport: React.FC<ImportExportProps> = ({
     }
   };
 
-  const handleConfirmImport = () => {
+  const handleConfirmImport = (): void => {
     performImport();
   };
 
-  const handleCancelImport = () => {
+  const handleCancelImport = (): void => {
     setShowConfirmDialog(false);
   };
 
@@ -259,7 +259,7 @@ export const ImportExport: React.FC<ImportExportProps> = ({
     }
   }, [isImporting, isExporting]);
 
-  const renderProgressBar = (label: string) => (
+  const renderProgressBar = (label: string): JSX.Element => (
     <div className="progress-container" role="progressbar" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100}>
       <div className="progress-label">{label}</div>
       {progress !== undefined && (
@@ -276,7 +276,7 @@ export const ImportExport: React.FC<ImportExportProps> = ({
     </div>
   );
 
-  const renderImportResult = () => {
+  const renderImportResult = (): JSX.Element | null => {
     if (!importResult) return null;
 
     if (importResult.success) {
@@ -296,7 +296,7 @@ export const ImportExport: React.FC<ImportExportProps> = ({
     return null;
   };
 
-  const renderConfirmDialog = () => {
+  const renderConfirmDialog = (): JSX.Element | null => {
     if (!showConfirmDialog) return null;
 
     return (
