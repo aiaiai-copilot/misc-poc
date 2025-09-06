@@ -14,7 +14,7 @@ nvm use
 # Установить зависимости
 yarn install
 
-# Запустить разработку
+# Запустить веб-приложение
 yarn dev
 ```
 
@@ -41,6 +41,28 @@ yarn build:incremental
 # Очистка основного пакета
 yarn clean
 ```
+
+### Веб-приложение
+
+```bash
+# Запустить веб-приложение (сборка + preview сервер)
+yarn dev
+# или альтернативная команда
+yarn web:start
+
+# Приложение будет доступно на http://localhost:4173/
+
+# Только сборка веб-приложения
+yarn workspace @misc-poc/presentation-web build
+
+# Только preview сервер (после сборки)
+yarn workspace @misc-poc/presentation-web preview
+
+# Тестирование веб-приложения
+yarn workspace @misc-poc/presentation-web test
+```
+
+**Примечание**: Development сервер на порту 3000 недоступен из-за проблем совместимости Node.js v22 с Yarn PnP. Используется production preview сервер на порту 4173, который предоставляет ту же функциональность.
 
 ### Тестирование
 
