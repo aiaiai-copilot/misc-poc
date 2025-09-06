@@ -1,5 +1,5 @@
 import React, { createRef, useState } from 'react';
-import { render, screen, within } from '@testing-library/react';
+import { render, screen, within, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { AutoComplete } from './AutoComplete';
 
@@ -9,7 +9,9 @@ describe('AutoComplete', () => {
   });
 
   afterEach(() => {
-    jest.runOnlyPendingTimers();
+    act(() => {
+      jest.runOnlyPendingTimers();
+    });
     jest.useRealTimers();
   });
 
@@ -28,7 +30,7 @@ describe('AutoComplete', () => {
     'Spring Boot',
     'MongoDB',
     'PostgreSQL',
-    'MySQL'
+    'MySQL',
   ];
 
   describe('Basic rendering and accessibility', () => {
@@ -45,9 +47,9 @@ describe('AutoComplete', () => {
 
     it('supports custom placeholder and aria-label', () => {
       render(
-        <AutoComplete 
-          suggestions={[]} 
-          placeholder="Search tags..." 
+        <AutoComplete
+          suggestions={[]}
+          placeholder="Search tags..."
           ariaLabel="Tag search input"
         />
       );
@@ -80,7 +82,7 @@ describe('AutoComplete', () => {
       expect(screen.getByText('Vue.js')).toBeInTheDocument();
       expect(screen.getByText('Node.js')).toBeInTheDocument();
       expect(screen.getByText('Express.js')).toBeInTheDocument();
-      
+
       expect(screen.queryByText('Python')).not.toBeInTheDocument();
       expect(screen.queryByText('Java')).not.toBeInTheDocument();
     });
@@ -118,7 +120,7 @@ describe('AutoComplete', () => {
 
       const listbox = screen.getByRole('listbox');
       const options = within(listbox).getAllByRole('option');
-      
+
       // First options should be exact prefix matches, with shorter strings first
       expect(options[0]).toHaveTextContent('Java');
       expect(options[1]).toHaveTextContent('Jasmine');
@@ -135,7 +137,7 @@ describe('AutoComplete', () => {
 
       const listbox = screen.getByRole('listbox');
       const options = within(listbox).getAllByRole('option');
-      
+
       expect(options).toHaveLength(3);
     });
   });
@@ -151,7 +153,7 @@ describe('AutoComplete', () => {
 
       // ArrowDown should highlight first suggestion
       await user.keyboard('{ArrowDown}');
-      
+
       const listbox = screen.getByRole('listbox');
       const firstOption = within(listbox).getAllByRole('option')[0];
       expect(firstOption).toHaveAttribute('aria-selected', 'true');
@@ -197,7 +199,9 @@ describe('AutoComplete', () => {
       const onSelect = jest.fn();
       const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
 
-      render(<AutoComplete suggestions={['Apple', 'Banana']} onSelect={onSelect} />);
+      render(
+        <AutoComplete suggestions={['Apple', 'Banana']} onSelect={onSelect} />
+      );
 
       const input = screen.getByRole('combobox');
       await user.type(input, 'a');
@@ -214,7 +218,9 @@ describe('AutoComplete', () => {
       const onSelect = jest.fn();
       const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
 
-      render(<AutoComplete suggestions={['Apple', 'Banana']} onSelect={onSelect} />);
+      render(
+        <AutoComplete suggestions={['Apple', 'Banana']} onSelect={onSelect} />
+      );
 
       const input = screen.getByRole('combobox');
       await user.type(input, 'a');
@@ -262,7 +268,9 @@ describe('AutoComplete', () => {
       const onSelect = jest.fn();
       const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
 
-      render(<AutoComplete suggestions={['Apple', 'Banana']} onSelect={onSelect} />);
+      render(
+        <AutoComplete suggestions={['Apple', 'Banana']} onSelect={onSelect} />
+      );
 
       const input = screen.getByRole('combobox');
       await user.type(input, 'a');
@@ -302,29 +310,37 @@ describe('AutoComplete', () => {
       const bananaOption = screen.getByText('Banana');
       await user.hover(bananaOption);
 
-      expect(bananaOption.closest('li')).toHaveAttribute('aria-selected', 'true');
+      expect(bananaOption.closest('li')).toHaveAttribute(
+        'aria-selected',
+        'true'
+      );
     });
   });
 
   describe('Performance optimization', () => {
     it('handles large suggestion lists efficiently', async () => {
-      const largeSuggestions = Array.from({ length: 10000 }, (_, i) => `Item ${i}`);
+      const largeSuggestions = Array.from(
+        { length: 10000 },
+        (_, i) => `Item ${i}`
+      );
       const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
 
       const startTime = performance.now();
-      render(<AutoComplete suggestions={largeSuggestions} maxSuggestions={100} />);
+      render(
+        <AutoComplete suggestions={largeSuggestions} maxSuggestions={100} />
+      );
 
       const input = screen.getByRole('combobox');
       await user.type(input, '5');
 
       const endTime = performance.now();
-      
+
       // Should render within reasonable time (less than 100ms for this simple case)
       expect(endTime - startTime).toBeLessThan(100);
 
       const listbox = screen.getByRole('listbox');
       const options = within(listbox).getAllByRole('option');
-      
+
       // Should limit to maxSuggestions
       expect(options.length).toBeLessThanOrEqual(100);
     });
@@ -333,7 +349,9 @@ describe('AutoComplete', () => {
       const onSearch = jest.fn();
       const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
 
-      render(<AutoComplete suggestions={[]} onSearch={onSearch} debounceMs={500} />);
+      render(
+        <AutoComplete suggestions={[]} onSearch={onSearch} debounceMs={500} />
+      );
 
       const input = screen.getByRole('combobox');
       await user.type(input, 'test');
@@ -364,7 +382,10 @@ describe('AutoComplete', () => {
     });
 
     it('virtualizes long suggestion lists', async () => {
-      const largeSuggestions = Array.from({ length: 1000 }, (_, i) => `Suggestion ${i}`);
+      const largeSuggestions = Array.from(
+        { length: 1000 },
+        (_, i) => `Suggestion ${i}`
+      );
       const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
 
       render(<AutoComplete suggestions={largeSuggestions} />);
@@ -384,7 +405,7 @@ describe('AutoComplete', () => {
       const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
 
       render(
-        <AutoComplete 
+        <AutoComplete
           suggestions={['Apple', 'Banana']}
           renderInput={(props) => (
             <div data-testid="custom-input">
@@ -415,7 +436,10 @@ describe('AutoComplete', () => {
           <AutoComplete
             suggestions={['Apple', 'Banana']}
             value={value}
-            onChange={setValue}
+            onChange={(newValue) => {
+              setValue(newValue);
+              setShowSuggestions(newValue.length > 0);
+            }}
             onSelect={(selection) => {
               onSelect(selection);
               setValue(selection);
@@ -430,8 +454,15 @@ describe('AutoComplete', () => {
       render(<TestComponent />);
 
       const input = screen.getByRole('combobox');
+
+      // Type to trigger suggestions
       await user.type(input, 'a');
-      
+
+      // Wait for suggestions to appear and advance timers
+      await act(async () => {
+        jest.advanceTimersByTime(100);
+      });
+
       const appleOption = screen.getByText('Apple');
       await user.click(appleOption);
 
@@ -442,7 +473,7 @@ describe('AutoComplete', () => {
   describe('Custom styling and positioning', () => {
     it('applies custom styles to dropdown', () => {
       render(
-        <AutoComplete 
+        <AutoComplete
           suggestions={['Apple']}
           value="a"
           dropdownStyle={{ backgroundColor: 'red', zIndex: 9999 }}
@@ -456,11 +487,7 @@ describe('AutoComplete', () => {
 
     it('supports custom positioning', () => {
       render(
-        <AutoComplete 
-          suggestions={['Apple']}
-          value="a"
-          placement="top"
-        />
+        <AutoComplete suggestions={['Apple']} value="a" placement="top" />
       );
 
       const listbox = screen.getByRole('listbox');
@@ -471,14 +498,14 @@ describe('AutoComplete', () => {
       const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
 
       render(
-        <AutoComplete 
+        <AutoComplete
           suggestions={['Apple', 'Banana']}
           renderOption={(option, { isHighlighted }) => (
-            <div 
+            <div
               data-testid={`option-${option}`}
-              style={{ 
+              style={{
                 backgroundColor: isHighlighted ? 'blue' : 'white',
-                fontWeight: 'bold'
+                fontWeight: 'bold',
               }}
             >
               {option}
@@ -503,7 +530,9 @@ describe('AutoComplete', () => {
       const onChange = jest.fn();
       const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
 
-      render(<AutoComplete suggestions={['Apple']} value="" onChange={onChange} />);
+      render(
+        <AutoComplete suggestions={['Apple']} value="" onChange={onChange} />
+      );
 
       const input = screen.getByRole('combobox');
       await user.type(input, 'a');
@@ -549,7 +578,13 @@ describe('AutoComplete', () => {
     });
 
     it('handles malformed suggestion objects', async () => {
-      const malformedSuggestions = [null, undefined, '', 'valid', 123] as unknown as string[];
+      const malformedSuggestions = [
+        null,
+        undefined,
+        '',
+        'valid',
+        123,
+      ] as unknown as string[];
       const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
 
       render(<AutoComplete suggestions={malformedSuggestions} />);
@@ -611,7 +646,9 @@ describe('AutoComplete', () => {
       const onOpenChange = jest.fn();
       const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
 
-      render(<AutoComplete suggestions={['Apple']} onOpenChange={onOpenChange} />);
+      render(
+        <AutoComplete suggestions={['Apple']} onOpenChange={onOpenChange} />
+      );
 
       const input = screen.getByRole('combobox');
       await user.type(input, 'a');

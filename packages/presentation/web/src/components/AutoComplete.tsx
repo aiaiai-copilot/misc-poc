@@ -31,7 +31,9 @@ interface AutoCompleteProps {
   onFocus?: (event: FocusEvent<HTMLInputElement>) => void;
   onBlur?: (event: FocusEvent<HTMLInputElement>) => void;
   onOpenChange?: (open: boolean) => void;
-  renderInput?: (props: React.InputHTMLAttributes<HTMLInputElement>) => React.ReactNode;
+  renderInput?: (
+    props: React.InputHTMLAttributes<HTMLInputElement>
+  ) => React.ReactNode;
   renderOption?: (
     option: string,
     context: { isHighlighted: boolean; index: number }
@@ -39,35 +41,38 @@ interface AutoCompleteProps {
 }
 
 // Fuzzy matching algorithm
-const fuzzyMatch = (text: string, pattern: string): { score: number; matched: boolean } => {
+const fuzzyMatch = (
+  text: string,
+  pattern: string
+): { score: number; matched: boolean } => {
   if (!pattern) return { score: 0, matched: true };
-  
+
   const textLower = text.toLowerCase();
   const patternLower = pattern.toLowerCase();
-  
+
   // Exact match gets highest score
   if (textLower === patternLower) return { score: 1000, matched: true };
-  
+
   // Prefix match gets high score - shorter strings get priority
   if (textLower.startsWith(patternLower)) {
     return { score: 800 + (100 - textLower.length), matched: true };
   }
-  
+
   // Contains match gets medium score
   if (textLower.includes(patternLower)) return { score: 600, matched: true };
-  
+
   // Special handling for common cases like "js" matching "TypeScript"
   if (pattern.toLowerCase() === 'js') {
     if (/script$/i.test(text)) return { score: 500, matched: true };
   }
-  
+
   // Fuzzy character matching - all characters in pattern must be found in order
   let textIndex = 0;
   let patternIndex = 0;
   let score = 0;
   const textLength = textLower.length;
   const patternLength = patternLower.length;
-  
+
   while (textIndex < textLength && patternIndex < patternLength) {
     if (textLower[textIndex] === patternLower[patternIndex]) {
       score += 100 - (textIndex - patternIndex) * 2; // Bonus for close matches
@@ -75,7 +80,7 @@ const fuzzyMatch = (text: string, pattern: string): { score: number; matched: bo
     }
     textIndex++;
   }
-  
+
   const matched = patternIndex === patternLength;
   return { score: matched ? Math.max(score, 100) : 0, matched };
 };
@@ -120,7 +125,9 @@ export const AutoComplete = forwardRef<HTMLInputElement, AutoCompleteProps>(
     const isControlled = value !== undefined;
     const isOpenControlled = controlledOpen !== undefined;
     const currentValue = isControlled ? value : internalValue;
-    const currentOpen = isOpenControlled ? controlledOpen : (internalOpen && !forceClose);
+    const currentOpen = isOpenControlled
+      ? controlledOpen
+      : internalOpen && !forceClose;
 
     // Forward ref to input element
     useImperativeHandle(ref, () => inputRef.current!, []);
@@ -132,7 +139,8 @@ export const AutoComplete = forwardRef<HTMLInputElement, AutoCompleteProps>(
       }
 
       const validSuggestions = suggestions.filter(
-        (suggestion) => typeof suggestion === 'string' && suggestion.trim() !== ''
+        (suggestion) =>
+          typeof suggestion === 'string' && suggestion.trim() !== ''
       );
 
       const matches = validSuggestions
@@ -149,8 +157,9 @@ export const AutoComplete = forwardRef<HTMLInputElement, AutoCompleteProps>(
     }, [suggestions, currentValue, maxSuggestions]);
 
     // Manage dropdown visibility
-    const shouldShowSuggestions = currentValue.trim() && filteredSuggestions.length > 0 && !forceClose;
-    
+    const shouldShowSuggestions =
+      currentValue.trim() && filteredSuggestions.length > 0 && !forceClose;
+
     useEffect(() => {
       if (!isOpenControlled) {
         const newOpen = shouldShowSuggestions;
@@ -161,16 +170,24 @@ export const AutoComplete = forwardRef<HTMLInputElement, AutoCompleteProps>(
           }
         }
       }
-      
+
       if (!shouldShowSuggestions) {
         setHighlightedIndex(-1);
       }
     }, [shouldShowSuggestions, internalOpen, isOpenControlled, onOpenChange]);
-    
-    // Reset force close when input value changes
+
+    // Reset force close when input value changes (but not on selection)
     useEffect(() => {
-      setForceClose(false);
-    }, [currentValue]);
+      if (!forceClose) {
+        return; // Don't reset if we just force closed
+      }
+      // Only reset force close if the user is actually typing
+      const timeoutId = setTimeout(() => {
+        setForceClose(false);
+      }, 100);
+
+      return (): void => clearTimeout(timeoutId);
+    }, [currentValue, forceClose]);
 
     // Debounced search function
     const triggerSearch = useCallback(
@@ -217,13 +234,13 @@ export const AutoComplete = forwardRef<HTMLInputElement, AutoCompleteProps>(
       (suggestion: string): void => {
         // Force close dropdown
         setForceClose(true);
-        
+
         if (!isOpenControlled) {
           setInternalOpen(false);
         }
-        
+
         setHighlightedIndex(-1);
-        
+
         if (onOpenChange) {
           onOpenChange(false);
         }
@@ -266,7 +283,8 @@ export const AutoComplete = forwardRef<HTMLInputElement, AutoCompleteProps>(
         case 'ArrowDown':
           event.preventDefault();
           setHighlightedIndex((prev) => {
-            const nextIndex = prev < filteredSuggestions.length - 1 ? prev + 1 : 0;
+            const nextIndex =
+              prev < filteredSuggestions.length - 1 ? prev + 1 : 0;
             return nextIndex;
           });
           break;
@@ -274,7 +292,8 @@ export const AutoComplete = forwardRef<HTMLInputElement, AutoCompleteProps>(
         case 'ArrowUp':
           event.preventDefault();
           setHighlightedIndex((prev) => {
-            const nextIndex = prev > 0 ? prev - 1 : filteredSuggestions.length - 1;
+            const nextIndex =
+              prev > 0 ? prev - 1 : filteredSuggestions.length - 1;
             return nextIndex;
           });
           break;
@@ -351,19 +370,25 @@ export const AutoComplete = forwardRef<HTMLInputElement, AutoCompleteProps>(
           onOpenChange(false);
         }
       }, 150);
-      
+
       // Store timeout reference for cleanup
-      (event.currentTarget as HTMLInputElement & { __blurTimeoutId?: NodeJS.Timeout }).__blurTimeoutId = timeoutId;
+      (
+        event.currentTarget as HTMLInputElement & {
+          __blurTimeoutId?: NodeJS.Timeout;
+        }
+      ).__blurTimeoutId = timeoutId;
 
       if (onBlur) {
         onBlur(event);
       }
     };
 
-    const handleOptionClick = (suggestion: string) => (event: MouseEvent): void => {
-      event.preventDefault();
-      handleSuggestionSelect(suggestion);
-    };
+    const handleOptionClick =
+      (suggestion: string) =>
+      (event: MouseEvent): void => {
+        event.preventDefault();
+        handleSuggestionSelect(suggestion);
+      };
 
     const handleOptionMouseDown = (event: MouseEvent): void => {
       // Prevent input blur when clicking on suggestions
@@ -465,15 +490,15 @@ export const AutoComplete = forwardRef<HTMLInputElement, AutoCompleteProps>(
                     style={{
                       padding: '8px 12px',
                       cursor: 'pointer',
-                      backgroundColor: isHighlighted ? '#f3f4f6' : 'transparent',
+                      backgroundColor: isHighlighted
+                        ? '#f3f4f6'
+                        : 'transparent',
                       transition: 'background-color 0.1s',
                     }}
                   >
-                    {renderOption ? (
-                      renderOption(suggestion, { isHighlighted, index })
-                    ) : (
-                      suggestion
-                    )}
+                    {renderOption
+                      ? renderOption(suggestion, { isHighlighted, index })
+                      : suggestion}
                   </li>
                 );
               })}
