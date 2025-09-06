@@ -17,7 +17,8 @@
   "packageManager": "yarn@3.6.4",
   "scripts": {
     "test": "yarn workspace @misc-poc/shared test; yarn workspace @misc-poc/domain test; yarn workspace @misc-poc/application test --passWithNoTests; yarn workspace @misc-poc/infrastructure-localstorage test --passWithNoTests; yarn workspace @misc-poc/presentation-cli test --passWithNoTests; yarn workspace @misc-poc/presentation-web test --passWithNoTests",
-    "dev": "yarn workspace @misc-poc/presentation-web dev",
+    "dev": "yarn workspace @misc-poc/presentation-web build && yarn workspace @misc-poc/presentation-web preview",
+    "web:start": "yarn workspace @misc-poc/presentation-web build && yarn workspace @misc-poc/presentation-web preview",
     "clean": "yarn workspace @misc-poc/shared clean; yarn workspace @misc-poc/domain clean; yarn workspace @misc-poc/application clean; yarn workspace @misc-poc/infrastructure-localstorage clean; yarn workspace @misc-poc/presentation-cli clean; yarn workspace @misc-poc/presentation-web clean",
     "all": "echo 'Use: yarn test, yarn lint, yarn typecheck, yarn build, or yarn clean'",
     "lint": "yarn exec eslint packages/shared/src --ext .ts; yarn exec eslint packages/domain/src --ext .ts; yarn exec eslint packages/application/src --ext .ts; yarn exec eslint packages/infrastructure/localStorage/src --ext .ts; echo 'CLI: No src directory found, skipping lint'; yarn exec eslint packages/presentation/web/src --ext .ts,.tsx",
