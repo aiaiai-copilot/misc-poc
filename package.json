@@ -17,6 +17,7 @@
   "packageManager": "yarn@3.6.4",
   "scripts": {
     "test": "yarn workspace @misc-poc/shared test; yarn workspace @misc-poc/domain test; yarn workspace @misc-poc/application test --passWithNoTests; yarn workspace @misc-poc/infrastructure-localstorage test --passWithNoTests; yarn workspace @misc-poc/presentation-cli test --passWithNoTests; yarn workspace @misc-poc/presentation-web test --passWithNoTests",
+    "test:strict": "yarn workspace @misc-poc/shared test && yarn workspace @misc-poc/domain test && yarn workspace @misc-poc/application test && yarn workspace @misc-poc/infrastructure-localstorage test && yarn workspace @misc-poc/presentation-cli test && yarn workspace @misc-poc/presentation-web test",
     "dev": "yarn workspace @misc-poc/presentation-web build && yarn workspace @misc-poc/presentation-web preview",
     "web:start": "yarn workspace @misc-poc/presentation-web build && yarn workspace @misc-poc/presentation-web preview",
     "clean": "yarn workspace @misc-poc/shared clean; yarn workspace @misc-poc/domain clean; yarn workspace @misc-poc/application clean; yarn workspace @misc-poc/infrastructure-localstorage clean; yarn workspace @misc-poc/presentation-cli clean; yarn workspace @misc-poc/presentation-web clean",
