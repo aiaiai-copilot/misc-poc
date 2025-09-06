@@ -119,7 +119,7 @@ export const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
         }, debounceMs);
       }
 
-      return () => {
+      return (): void => {
         if (debounceRef.current) {
           clearTimeout(debounceRef.current);
         }
