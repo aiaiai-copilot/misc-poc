@@ -186,7 +186,7 @@ export const AutoComplete = forwardRef<HTMLInputElement, AutoCompleteProps>(
         setForceClose(false);
       }, 100);
 
-      return () => clearTimeout(timeoutId);
+      return (): void => clearTimeout(timeoutId);
     }, [currentValue, forceClose]);
 
     // Debounced search function
