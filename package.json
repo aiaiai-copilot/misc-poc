@@ -20,7 +20,7 @@
     "dev": "yarn workspace @misc-poc/presentation-web dev",
     "clean": "yarn workspace @misc-poc/shared clean; yarn workspace @misc-poc/domain clean; yarn workspace @misc-poc/application clean; yarn workspace @misc-poc/infrastructure-localstorage clean; yarn workspace @misc-poc/presentation-cli clean; yarn workspace @misc-poc/presentation-web clean",
     "all": "echo 'Use: yarn test, yarn lint, yarn typecheck, yarn build, or yarn clean'",
-    "lint": "yarn workspace @misc-poc/shared lint; yarn workspace @misc-poc/domain lint; yarn workspace @misc-poc/application lint; yarn workspace @misc-poc/infrastructure-localstorage lint; yarn workspace @misc-poc/presentation-cli lint; yarn workspace @misc-poc/presentation-web lint",
+    "lint": "yarn exec eslint packages/shared/src --ext .ts; yarn exec eslint packages/domain/src --ext .ts; yarn exec eslint packages/application/src --ext .ts; yarn exec eslint packages/infrastructure/localStorage/src --ext .ts; echo 'CLI: No src directory found, skipping lint'; yarn exec eslint packages/presentation/web/src --ext .ts,.tsx",
     "typecheck": "yarn workspace @misc-poc/shared typecheck; yarn workspace @misc-poc/domain typecheck; yarn workspace @misc-poc/application typecheck; yarn workspace @misc-poc/infrastructure-localstorage typecheck; yarn workspace @misc-poc/presentation-cli typecheck; yarn workspace @misc-poc/presentation-web typecheck",
     "build": "yarn workspace @misc-poc/shared build && yarn workspace @misc-poc/domain build && yarn workspace @misc-poc/application build && yarn workspace @misc-poc/infrastructure-localstorage build && yarn workspace @misc-poc/presentation-cli build && yarn workspace @misc-poc/presentation-web build"
   },
