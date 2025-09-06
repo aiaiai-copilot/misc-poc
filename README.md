@@ -81,22 +81,42 @@ yarn workspace @misc-poc/domain test  # 30 тестов domain пакета (Tag
 # Запустить тесты конкретного пакета
 yarn workspace @misc-poc/shared test
 yarn workspace @misc-poc/domain test
+yarn workspace @misc-poc/application test
+yarn workspace @misc-poc/infrastructure-localstorage test
+yarn workspace @misc-poc/presentation-cli test  # ❌ No tests found
+yarn workspace @misc-poc/presentation-web test
 
 # Запустить тесты с покрытием
 yarn workspace @misc-poc/shared test --coverage
 yarn workspace @misc-poc/domain test --coverage
+yarn workspace @misc-poc/application test --coverage
+yarn workspace @misc-poc/infrastructure-localstorage test --coverage
+yarn workspace @misc-poc/presentation-cli test --coverage
+yarn workspace @misc-poc/presentation-web test --coverage
 
 # Линтинг конкретного пакета
-yarn workspace @misc-poc/shared lint
-yarn workspace @misc-poc/domain lint
+yarn workspace @misc-poc/shared lint  # ❌ PnP compatibility issue - use 'yarn lint' instead
+yarn workspace @misc-poc/domain lint  # ❌ PnP compatibility issue - use 'yarn lint' instead
+yarn workspace @misc-poc/application lint  # ❌ PnP compatibility issue - use 'yarn lint' instead
+yarn workspace @misc-poc/infrastructure-localstorage lint  # ❌ PnP compatibility issue - use 'yarn lint' instead
+yarn workspace @misc-poc/presentation-cli lint
+yarn workspace @misc-poc/presentation-web lint  # ❌ PnP compatibility issue - use 'yarn lint' instead
 
 # Проверка типов конкретного пакета
 yarn workspace @misc-poc/shared typecheck
 yarn workspace @misc-poc/domain typecheck
+yarn workspace @misc-poc/application typecheck
+yarn workspace @misc-poc/infrastructure-localstorage typecheck
+yarn workspace @misc-poc/presentation-cli typecheck
+yarn workspace @misc-poc/presentation-web typecheck
 
 # Сборка конкретного пакета
 yarn workspace @misc-poc/shared build
 yarn workspace @misc-poc/domain build
+yarn workspace @misc-poc/application build
+yarn workspace @misc-poc/infrastructure-localstorage build
+yarn workspace @misc-poc/presentation-cli build
+yarn workspace @misc-poc/presentation-web build
 ```
 
 ## Контроль качества при коммитах
