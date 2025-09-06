@@ -12,14 +12,14 @@ export default {
   ],
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov', 'html'],
-  // coverageThreshold: {
-  //   global: {
-  //     branches: 95,
-  //     functions: 80,
-  //     lines: 95,
-  //     statements: 95,
-  //   },
-  // },
+  coverageThreshold: {
+    global: {
+      branches: 95,
+      functions: 80,
+      lines: 95,
+      statements: 95,
+    },
+  },
   transformIgnorePatterns: [
     'node_modules/(?!@misc-poc)'
   ],
