@@ -8,7 +8,7 @@
   "scripts": {
     "build": "sh -c 'if test -d src; then yarn exec tsc --build; else echo \"No src directory found, skipping build\"; fi'",
     "test": "jest",
-    "lint": "sh -c 'if test -d src; then eslint src --ext .ts; else echo \"No src directory found, skipping lint\"; fi'",
+    "lint": "sh -c 'if test -d src; then cd ../../../.. && yarn exec eslint packages/infrastructure/localStorage/src --ext .ts; else echo \"No src directory found, skipping lint\"; fi'",
     "typecheck": "sh -c 'if test -d src; then cd ../../.. && yarn tsc --noEmit --project packages/infrastructure/localStorage; else echo \"No src directory found, skipping typecheck\"; fi'",
     "clean": "rm -rf dist tsconfig.tsbuildinfo"
   },

@@ -8,7 +8,7 @@
   "scripts": {
     "build": "test -d src && yarn exec tsc --build",
     "test": "jest",
-    "lint": "test -d src && eslint src --ext .ts",
+    "lint": "test -d src && cd ../../.. && yarn exec eslint packages/application/src --ext .ts",
     "typecheck": "yarn exec tsc --noEmit",
     "clean": "rm -rf dist tsconfig.tsbuildinfo"
   },

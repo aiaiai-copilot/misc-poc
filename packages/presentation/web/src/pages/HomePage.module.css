@@ -1,0 +1,38 @@
+.homePage {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.homePage h2 {
+  color: #333;
+  margin-bottom: 1rem;
+}
+
+.homePage p {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: #666;
+  margin-bottom: 2rem;
+}
+
+.features {
+  background-color: #f8f9fa;
+  padding: 1.5rem;
+  border-radius: 8px;
+  border-left: 4px solid #007bff;
+}
+
+.features h3 {
+  margin-top: 0;
+  color: #333;
+}
+
+.features ul {
+  margin: 0;
+  padding-left: 1.5rem;
+}
+
+.features li {
+  margin-bottom: 0.5rem;
+  color: #555;
+}

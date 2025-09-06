@@ -15,7 +15,7 @@
     "build": "yarn exec tsc --build --clean && yarn exec tsc --build",
     "build:incremental": "yarn exec tsc --build",
     "test": "jest",
-    "lint": "eslint src --ext .ts",
+    "lint": "cd ../../.. && yarn exec eslint packages/shared/src --ext .ts",
     "typecheck": "yarn exec tsc --noEmit",
     "clean": "rm -rf dist tsconfig.tsbuildinfo"
   },
