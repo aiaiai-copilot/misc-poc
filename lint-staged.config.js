@@ -3,7 +3,7 @@ module.exports = {
     'eslint --fix',
     'prettier --write', 
     () => 'yarn typecheck',
-    () => 'yarn test --passWithNoTests --coverage=false'
+    () => 'yarn test:strict --coverage=false'
   ],
   '*.{json,md}': ['prettier --write']
 };
