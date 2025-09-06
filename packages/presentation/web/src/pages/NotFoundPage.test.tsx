@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { NotFoundPage } from './NotFoundPage';
 
-const renderNotFoundPage = () => {
+const renderNotFoundPage = (): JSX.Element => {
   return render(
     <BrowserRouter>
       <NotFoundPage />
@@ -14,7 +14,9 @@ const renderNotFoundPage = () => {
 describe('NotFoundPage', () => {
   it('renders the 404 heading', () => {
     renderNotFoundPage();
-    expect(screen.getByRole('heading', { name: /404 - page not found/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: /404 - page not found/i })
+    ).toBeInTheDocument();
   });
 
   it('renders a link to go back home', () => {

@@ -8,7 +8,7 @@
     "build": "sh -c 'if test -d src && test -f index.html; then rm -rf dist && vite build; else echo \"No src directory or index.html found, skipping build\"; fi'",
     "preview": "vite preview",
     "test": "jest",
-    "lint": "sh -c 'if test -d src; then eslint src --ext .ts,.tsx; else echo \"No src directory found, skipping lint\"; fi'",
+    "lint": "sh -c 'if test -d src; then cd ../../../.. && yarn exec eslint packages/presentation/web/src --ext .ts,.tsx; else echo \"No src directory found, skipping lint\"; fi'",
     "typecheck": "sh -c 'if test -d src; then echo \"TypeScript checking handled by Vite - build succeeds with types validated\"; else echo \"No src directory found, skipping typecheck\"; fi'",
     "clean": "rm -rf dist tsconfig.tsbuildinfo"
   },
