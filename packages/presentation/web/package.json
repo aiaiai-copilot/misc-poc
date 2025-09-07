@@ -1,0 +1,15 @@
+{
+  "name": "@misc-poc/presentation-web",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "echo 'Ready for Lovable implementation'",
+    "build": "echo 'No src directory found, skipping build'",
+    "preview": "echo 'Ready for Lovable implementation'",
+    "test": "echo 'No tests found'",
+    "lint": "echo 'No src directory found, skipping lint'",
+    "typecheck": "echo 'No src directory found, skipping typecheck'",
+    "clean": "rm -rf dist tsconfig.tsbuildinfo"
+  }
+}
