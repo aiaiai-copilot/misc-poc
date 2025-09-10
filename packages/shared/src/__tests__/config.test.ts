@@ -30,6 +30,11 @@ describe('Configuration', () => {
       expect(config).toEqual(DefaultConfig);
     });
 
+    it('should handle no parameters (default argument)', () => {
+      const config = createConfig();
+      expect(config).toEqual(DefaultConfig);
+    });
+
     it('should deep merge nested objects', () => {
       const config = createConfig({ 
         database: { name: 'custom-db' },
