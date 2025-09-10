@@ -16,13 +16,6 @@ node_modules/
 !.yarn/releases
 !.yarn/versions
 
-# Yarn PnP files
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/versions
-
 # Environment variables
 .env
 
