@@ -43,9 +43,9 @@ export const useRecordsIntegrated = (): UseRecordsIntegratedReturn => {
           const response = result.unwrap();
           const mappedRecords = response.searchResult.records.map(recordDTO => ({
             id: recordDTO.id,
-            tags: Array.from(recordDTO.tagIds),
-            createdAt: recordDTO.createdAt,
-            updatedAt: recordDTO.updatedAt,
+            tags: recordDTO.content.trim().split(/\s+/).filter(Boolean),
+            createdAt: new Date(recordDTO.createdAt),
+            updatedAt: new Date(recordDTO.updatedAt),
           }));
           setRecords(mappedRecords);
         }
@@ -114,7 +114,12 @@ export const useRecordsIntegrated = (): UseRecordsIntegratedReturn => {
   }, [records]);
 
   const createRecord = useCallback(async (tags: string[]) => {
-    if (tags.length === 0 || !createRecordUseCase) return false;
+    if (tags.length === 0) return false;
+    
+    if (!createRecordUseCase) {
+      console.error('createRecordUseCase is not initialized');
+      return false;
+    }
     
     try {
       const content = tags.join(' ');
@@ -124,9 +129,9 @@ export const useRecordsIntegrated = (): UseRecordsIntegratedReturn => {
         const response = result.unwrap();
         const newRecord: Record = {
           id: response.record.id,
-          tags: Array.from(response.record.tagIds),
-          createdAt: response.record.createdAt,
-          updatedAt: response.record.updatedAt,
+          tags: response.record.content.trim().split(/\s+/).filter(Boolean),
+          createdAt: new Date(response.record.createdAt),
+          updatedAt: new Date(response.record.updatedAt),
         };
         setRecords(prev => [newRecord, ...prev]);
         return true;
@@ -139,7 +144,7 @@ export const useRecordsIntegrated = (): UseRecordsIntegratedReturn => {
       }
     } catch (error) {
       console.error('Failed to create record:', error);
-      throw error;
+      return false; // Don't re-throw, just return false
     }
   }, [createRecordUseCase]);
 
@@ -154,9 +159,9 @@ export const useRecordsIntegrated = (): UseRecordsIntegratedReturn => {
         const response = result.unwrap();
         const updatedRecord: Record = {
           id: response.record.id,
-          tags: Array.from(response.record.tagIds),
-          createdAt: response.record.createdAt,
-          updatedAt: response.record.updatedAt,
+          tags: response.record.content.trim().split(/\s+/).filter(Boolean),
+          createdAt: new Date(response.record.createdAt),
+          updatedAt: new Date(response.record.updatedAt),
         };
         
         setRecords(prev =>
@@ -179,6 +184,9 @@ export const useRecordsIntegrated = (): UseRecordsIntegratedReturn => {
     if (!deleteRecordUseCase) return false;
 
     try {
+      console.log('Attempting to delete record with ID:', id);
+      console.log('Current records:', records.map(r => ({ id: r.id, tags: r.tags })));
+      
       const result = await deleteRecordUseCase.execute({ id });
 
       if (result.isOk()) {
@@ -186,13 +194,22 @@ export const useRecordsIntegrated = (): UseRecordsIntegratedReturn => {
         return true;
       } else {
         const error = result.unwrapErr();
+        console.error('Delete failed with error:', error);
+        
+        // If record not found, it might be already deleted - sync UI state
+        if (error.code === 'RECORD_NOT_FOUND') {
+          console.log('Record not found in storage, removing from UI state');
+          setRecords(prev => prev.filter(record => record.id !== id));
+          return true; // Treat as success since the record is gone
+        }
+        
         throw new Error(error.message);
       }
     } catch (error) {
       console.error('Failed to delete record:', error);
-      throw error;
+      return false; // Return false instead of throwing to prevent UI crashes
     }
-  }, [deleteRecordUseCase]);
+  }, [deleteRecordUseCase, records]);
 
   const performSearch = useCallback(async (query: string) => {
     if (!searchRecordsUseCase) return;
@@ -213,9 +230,9 @@ export const useRecordsIntegrated = (): UseRecordsIntegratedReturn => {
         const response = result.unwrap();
         const mappedRecords = response.searchResult.records.map(recordDTO => ({
           id: recordDTO.id,
-          tags: Array.from(recordDTO.tagIds),
-          createdAt: recordDTO.createdAt,
-          updatedAt: recordDTO.updatedAt,
+          tags: recordDTO.content.trim().split(/\s+/).filter(Boolean),
+          createdAt: new Date(recordDTO.createdAt),
+          updatedAt: new Date(recordDTO.updatedAt),
         }));
         setRecords(mappedRecords);
       }

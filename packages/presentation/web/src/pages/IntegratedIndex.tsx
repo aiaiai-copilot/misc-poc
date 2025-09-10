@@ -36,8 +36,8 @@ const IntegratedIndex = (): JSX.Element => {
   }, [inputValue, setSearchQuery]);
 
   // Determine display mode based on search state
-  const showTagCloud = !inputValue.trim() || filteredRecords.length > 12;
-  const showRecordsList = inputValue.trim() && filteredRecords.length > 0 && filteredRecords.length <= 12;
+  const showTagCloud = filteredRecords.length > 12;
+  const showRecordsList = filteredRecords.length > 0 && filteredRecords.length <= 12;
   const showCreateState = inputValue.trim() && filteredRecords.length === 0;
   const showEmptyState = !inputValue.trim() && filteredRecords.length === 0;
 
@@ -130,7 +130,7 @@ const IntegratedIndex = (): JSX.Element => {
         </div>
 
         {/* Input Field */}
-        <div className="mb-4 w-full max-w-6xl mx-auto">
+        <div className="mb-4 w-full max-w-2xl mx-auto">
           <MiscInput
             ref={inputRef}
             value={inputValue}
@@ -190,9 +190,11 @@ const IntegratedIndex = (): JSX.Element => {
         )}
 
         {showEmptyState && !isLoading && (
-          <div className="text-center py-16">
-            <div className="text-lg text-muted-foreground">No records yet</div>
-            <div className="text-sm mt-2 text-muted-foreground/70">Start by typing some tags above</div>
+          <div className="results-area">
+            <div className="text-center py-16">
+              <div className="text-lg text-muted-foreground">No records yet</div>
+              <div className="text-sm mt-2 text-muted-foreground/70">Start by typing some tags above</div>
+            </div>
           </div>
         )}
 

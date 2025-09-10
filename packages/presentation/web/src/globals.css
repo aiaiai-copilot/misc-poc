@@ -68,16 +68,102 @@
   }
 }
 
+@layer base {
+  :root {
+    --hover-bg: 220 14.3% 97.6%;
+    --input-border: 0 0% 10.2%;
+    --input-focus: 0 0% 10.2%;
+    --transition-quick: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-smooth: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .dark {
+    --hover-bg: 217.2 32.6% 17.5%;
+  }
+}
+
 @layer components {
   .calculator-input {
-    @apply flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm;
+    background: hsl(var(--background));
+    border: 1px solid hsl(var(--border));
+    border-radius: 4px;
+    padding: 12px 16px;
+    font-size: 16px;
+    outline: none;
+    transition: var(--transition-quick);
+    text-align: center !important;
+  }
+  
+  .calculator-input:focus {
+    border-color: hsl(var(--ring));
+    box-shadow: 0 0 0 2px hsl(var(--ring) / 0.2);
+  }
+  
+  .calculator-input::placeholder {
+    color: hsl(var(--muted-foreground));
   }
   
   .record-item {
-    @apply transition-colors hover:bg-muted/50;
+    transition: var(--transition-quick);
+    border-bottom: 1px solid hsl(var(--border));
+  }
+  
+  .record-item:hover {
+    background-color: hsl(var(--hover-bg));
+  }
+  
+  .delete-button {
+    opacity: 0;
+    transition: var(--transition-quick);
+  }
+  
+  .record-item:hover .delete-button {
+    opacity: 1;
   }
   
   .tag-cloud-item {
-    @apply p-2 rounded-md border border-transparent hover:border-border hover:bg-muted/50 transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2;
+    transition: var(--transition-quick);
+    cursor: pointer;
+    background: hsl(var(--muted));
+    color: hsl(var(--foreground));
+    padding: 8px 16px;
+    border-radius: 4px;
+    border: 1px solid hsl(var(--border));
+    font-size: 14px;
+    font-weight: 500;
+  }
+  
+  .tag-cloud-item:hover {
+    background: hsl(var(--accent));
+    color: hsl(var(--accent-foreground));
+    transform: translateY(-1px);
+  }
+  
+  .autocomplete-dropdown {
+    background: hsl(var(--popover) / 0.1);
+    backdrop-filter: blur(2px);
+    border: 1px solid hsl(var(--border) / 0.2);
+    box-shadow: 0 1px 4px hsl(var(--foreground) / 0.03);
+  }
+  
+  .results-area {
+    border: 1px solid hsl(var(--border));
+    padding: 2rem;
+    border-radius: 4px;
+    margin-top: 0.5rem;
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 1024px;
+    background: hsl(var(--background));
+  }
+  
+  .results-area .tag-cloud-item {
+    background: hsl(var(--muted));
+    color: hsl(var(--foreground));
+  }
+  
+  .results-area .tag-cloud-item:hover {
+    background: hsl(var(--accent));
+    color: hsl(var(--accent-foreground));
   }
 }

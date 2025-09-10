@@ -55,9 +55,15 @@ export const ApplicationContextProvider: React.FC<ApplicationContextProviderProp
         const storageManager = new StorageManager('misc-poc-storage')
         const indexManager = new IndexManager()
         
+        console.log('StorageManager created:', !!storageManager)
+        console.log('IndexManager created:', !!indexManager)
+        
         // Register repositories
         container.register('recordRepository', new DependencyDescriptor(
-          () => new LocalStorageRecordRepository(storageManager, indexManager),
+          () => {
+            console.log('Creating LocalStorageRecordRepository with:', { storageManager: !!storageManager, indexManager: !!indexManager })
+            return new LocalStorageRecordRepository(storageManager, indexManager)
+          },
           ServiceLifetime.SINGLETON
         ))
 
@@ -67,7 +73,7 @@ export const ApplicationContextProvider: React.FC<ApplicationContextProviderProp
         ))
 
         container.register('unitOfWork', new DependencyDescriptor(
-          () => new LocalStorageUnitOfWork(),
+          () => new LocalStorageUnitOfWork(storageManager, indexManager),
           ServiceLifetime.SINGLETON
         ))
 
@@ -163,8 +169,13 @@ export const ApplicationContextProvider: React.FC<ApplicationContextProviderProp
             exportDataUseCase: exportDataResult.unwrap(),
             importDataUseCase: importDataResult.unwrap()
           })
+          console.log('Application context initialized successfully')
         } else {
-          console.error('Failed to resolve use cases from container')
+          console.error('Failed to resolve use cases from container:')
+          console.error('createRecordResult:', createRecordResult.isOk() ? 'OK' : createRecordResult.unwrapErr())
+          console.error('searchRecordsResult:', searchRecordsResult.isOk() ? 'OK' : searchRecordsResult.unwrapErr())
+          console.error('updateRecordResult:', updateRecordResult.isOk() ? 'OK' : updateRecordResult.unwrapErr())
+          console.error('deleteRecordResult:', deleteRecordResult.isOk() ? 'OK' : deleteRecordResult.unwrapErr())
         }
 
       } catch (error) {
