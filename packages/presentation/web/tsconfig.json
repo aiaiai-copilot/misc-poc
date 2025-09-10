@@ -1,34 +1,25 @@
 {
   "compilerOptions": {
-    "target": "ES2020",
-    "useDefineForClassFields": true,
-    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "module": "ESNext",
-    "skipLibCheck": true,
-
-    /* Bundler mode */
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
-
-    /* Linting */
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "skipLibCheck": true,
     "strict": false,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
-    "noFallthroughCasesInSwitch": true,
-    
-    /* Path mapping */
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
-    },
-    
-    "noImplicitAny": false,
-    "allowJs": true,
-    "strictNullChecks": false
+    }
   },
-  "include": ["src"]
+  "include": ["src/**/*"],
+  "exclude": ["dist", "**/*.test.*", "**/*.spec.*", "node_modules"]
 }

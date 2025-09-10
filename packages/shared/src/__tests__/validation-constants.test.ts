@@ -45,6 +45,15 @@ describe('Validation Constants', () => {
       expect(result.isErr()).toBe(true);
     });
 
+    it('should reject tags that are too long', () => {
+      const longTag = 'a'.repeat(ValidationConstants.MAX_TAG_LENGTH + 1);
+      const result = ValidationRules.validateTag(longTag);
+      expect(result.isErr()).toBe(true);
+      if (result.isErr()) {
+        expect(result.error).toBe(ValidationConstants.ERRORS.TAG_TOO_LONG);
+      }
+    });
+
     it('should validate email', () => {
       const result = ValidationRules.validateEmail('test@example.com');
       expect(result.isOk()).toBe(true);
