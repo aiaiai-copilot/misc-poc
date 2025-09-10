@@ -1,8 +1,7 @@
-// Using eval to avoid TypeScript module resolution issues
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const removeAccents = (eval('require') as any)('remove-accents') as (
-  str: string
-) => string;
+// Browser-compatible diacritics removal
+function removeAccents(str: string): string {
+  return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
 
 export interface TagNormalizerConfig {
   lowercase?: boolean;
