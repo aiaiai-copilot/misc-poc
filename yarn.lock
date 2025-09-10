@@ -1205,7 +1205,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@misc-poc/infrastructure-localstorage@workspace:packages/infrastructure/localStorage":
+"@misc-poc/infrastructure-localstorage@workspace:*, @misc-poc/infrastructure-localstorage@workspace:packages/infrastructure/localStorage":
   version: 0.0.0-use.local
   resolution: "@misc-poc/infrastructure-localstorage@workspace:packages/infrastructure/localStorage"
   dependencies:
@@ -1240,6 +1240,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@misc-poc/presentation-web@workspace:packages/presentation/web"
   dependencies:
+    "@misc-poc/application": "workspace:*"
+    "@misc-poc/infrastructure-localstorage": "workspace:*"
     "@radix-ui/react-slot": ^1.2.3
     "@testing-library/dom": ^10.4.0
     "@testing-library/jest-dom": ^6.6.3
@@ -1260,7 +1262,8 @@ __metadata:
     react-dom: ^18.3.1
     tailwind-merge: ^2.6.0
     tailwindcss: ^3.4.17
-    typescript: ^5.8.3
+    tailwindcss-animate: ^1.0.7
+    typescript: ^5.9.2
     vite: ^5.4.19
     vitest: ^2.1.8
   languageName: unknown
@@ -6672,6 +6675,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"tailwindcss-animate@npm:^1.0.7":
+  version: 1.0.7
+  resolution: "tailwindcss-animate@npm:1.0.7"
+  peerDependencies:
+    tailwindcss: "*"
+  checksum: c1760983eb3fec0c8421e95082bf308e6845df43e2f90862386366e82545c801b26b4d189c4cd23d6915252b76d18005c8e5f591f8b119944c7fb8650d0f8bce
+  languageName: node
+  linkType: hard
+
 "tailwindcss@npm:^3.4.17":
   version: 3.4.17
   resolution: "tailwindcss@npm:3.4.17"
@@ -6931,7 +6943,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@npm:^5.5.0, typescript@npm:^5.8.3, typescript@npm:^5.9.2":
+"typescript@npm:^5.5.0, typescript@npm:^5.9.2":
   version: 5.9.2
   resolution: "typescript@npm:5.9.2"
   bin:
@@ -6941,7 +6953,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@patch:typescript@^5.5.0#~builtin<compat/typescript>, typescript@patch:typescript@^5.8.3#~builtin<compat/typescript>, typescript@patch:typescript@^5.9.2#~builtin<compat/typescript>":
+"typescript@patch:typescript@^5.5.0#~builtin<compat/typescript>, typescript@patch:typescript@^5.9.2#~builtin<compat/typescript>":
   version: 5.9.2
   resolution: "typescript@patch:typescript@npm%3A5.9.2#~builtin<compat/typescript>::version=5.9.2&hash=29ae49"
   bin:
