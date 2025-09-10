@@ -340,8 +340,14 @@ describe('MiscInputIntegrated - SearchRecords Integration', () => {
       
       await waitFor(() => {
         expect(toast.error).toHaveBeenCalledWith('Search failed: Search failed')
-        expect(onSearchResults).not.toHaveBeenCalled()
       })
+
+      // The component calls onSearchResults(null) on mount for empty input,
+      // but should not call it with actual search results on error
+      expect(onSearchResults).toHaveBeenCalledWith(null)
+      expect(onSearchResults).not.toHaveBeenCalledWith(expect.objectContaining({
+        records: expect.any(Array)
+      }))
     })
 
     it('should clear search results when input is cleared', async () => {
