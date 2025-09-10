@@ -67,7 +67,7 @@ export const ApplicationContextProvider: React.FC<ApplicationContextProviderProp
 
         // Register use cases
         container.register('createRecordUseCase', new DependencyDescriptor(
-          (deps) => new CreateRecordUseCase(
+          (deps: Record<string, unknown>) => new CreateRecordUseCase(
             deps.recordRepository as LocalStorageRecordRepository,
             deps.tagRepository as LocalStorageTagRepository,
             deps.unitOfWork as LocalStorageUnitOfWork
@@ -77,7 +77,7 @@ export const ApplicationContextProvider: React.FC<ApplicationContextProviderProp
         ))
 
         container.register('searchRecordsUseCase', new DependencyDescriptor(
-          (deps) => new SearchRecordsUseCase(
+          (deps: Record<string, unknown>) => new SearchRecordsUseCase(
             deps.recordRepository as LocalStorageRecordRepository
           ),
           ServiceLifetime.SINGLETON,
@@ -85,7 +85,7 @@ export const ApplicationContextProvider: React.FC<ApplicationContextProviderProp
         ))
 
         container.register('updateRecordUseCase', new DependencyDescriptor(
-          (deps) => new UpdateRecordUseCase(
+          (deps: Record<string, unknown>) => new UpdateRecordUseCase(
             deps.recordRepository as LocalStorageRecordRepository,
             deps.tagRepository as LocalStorageTagRepository,
             deps.unitOfWork as LocalStorageUnitOfWork
@@ -95,7 +95,7 @@ export const ApplicationContextProvider: React.FC<ApplicationContextProviderProp
         ))
 
         container.register('deleteRecordUseCase', new DependencyDescriptor(
-          (deps) => new DeleteRecordUseCase(
+          (deps: Record<string, unknown>) => new DeleteRecordUseCase(
             deps.recordRepository as LocalStorageRecordRepository,
             deps.tagRepository as LocalStorageTagRepository,
             deps.unitOfWork as LocalStorageUnitOfWork
@@ -105,7 +105,7 @@ export const ApplicationContextProvider: React.FC<ApplicationContextProviderProp
         ))
 
         container.register('getTagSuggestionsUseCase', new DependencyDescriptor(
-          (deps) => new GetTagSuggestionsUseCase(
+          (deps: Record<string, unknown>) => new GetTagSuggestionsUseCase(
             deps.tagRepository as LocalStorageTagRepository
           ),
           ServiceLifetime.SINGLETON,
@@ -113,7 +113,7 @@ export const ApplicationContextProvider: React.FC<ApplicationContextProviderProp
         ))
 
         container.register('exportDataUseCase', new DependencyDescriptor(
-          (deps) => new ExportDataUseCase(
+          (deps: Record<string, unknown>) => new ExportDataUseCase(
             deps.recordRepository as LocalStorageRecordRepository,
             deps.tagRepository as LocalStorageTagRepository
           ),
@@ -122,7 +122,7 @@ export const ApplicationContextProvider: React.FC<ApplicationContextProviderProp
         ))
 
         container.register('importDataUseCase', new DependencyDescriptor(
-          (deps) => new ImportDataUseCase(
+          (deps: Record<string, unknown>) => new ImportDataUseCase(
             deps.recordRepository as LocalStorageRecordRepository,
             deps.tagRepository as LocalStorageTagRepository,
             deps.unitOfWork as LocalStorageUnitOfWork

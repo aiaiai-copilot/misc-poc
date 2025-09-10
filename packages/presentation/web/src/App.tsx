@@ -11,7 +11,7 @@ interface Record {
   createdAt: Date
 }
 
-function App() {
+function App(): JSX.Element {
   const [records, setRecords] = useState<Record[]>([
     {
       id: '1',
@@ -32,7 +32,7 @@ function App() {
   
   const allTags = Array.from(new Set(records.flatMap(r => r.tags)))
   
-  const handleSubmit = (tags: string[]) => {
+  const handleSubmit = (tags: string[]): void => {
     if (inputValue.trim() && tags.length > 0) {
       const newRecord: Record = {
         id: Math.random().toString(36).substr(2, 9),
