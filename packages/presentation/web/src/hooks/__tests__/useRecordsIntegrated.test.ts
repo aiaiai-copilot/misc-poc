@@ -52,6 +52,7 @@ describe('useRecordsIntegrated', () => {
         records: [
           {
             id: 'record-1',
+            content: 'tag1 tag2',
             tagIds: new Set(['tag1', 'tag2']),
             createdAt: new Date('2023-01-01'),
             updatedAt: new Date('2023-01-01'),
@@ -92,6 +93,7 @@ describe('useRecordsIntegrated', () => {
       const mockRecordResponse = {
         record: {
           id: 'new-record',
+          content: 'new tag',
           tagIds: new Set(['new', 'tag']),
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -150,6 +152,7 @@ describe('useRecordsIntegrated', () => {
       const mockUpdateResponse = {
         record: {
           id: 'record-1',
+          content: 'updated tags',
           tagIds: new Set(['updated', 'tags']),
           createdAt: new Date('2023-01-01'),
           updatedAt: new Date(),
@@ -163,6 +166,7 @@ describe('useRecordsIntegrated', () => {
         records: [
           {
             id: 'record-1',
+            content: 'old tags',
             tagIds: new Set(['old', 'tags']),
             createdAt: new Date('2023-01-01'),
             updatedAt: new Date('2023-01-01'),
@@ -209,6 +213,7 @@ describe('useRecordsIntegrated', () => {
         records: [
           {
             id: 'record-1',
+            content: 'tag1 tag2',
             tagIds: new Set(['tag1', 'tag2']),
             createdAt: new Date('2023-01-01'),
             updatedAt: new Date('2023-01-01'),
@@ -246,12 +251,14 @@ describe('useRecordsIntegrated', () => {
         records: [
           {
             id: 'record-1',
+            content: 'javascript react',
             tagIds: new Set(['javascript', 'react']),
             createdAt: new Date('2023-01-01'),
             updatedAt: new Date('2023-01-01'),
           },
           {
-            id: 'record-2', 
+            id: 'record-2',
+            content: 'python django',
             tagIds: new Set(['python', 'django']),
             createdAt: new Date('2023-01-02'),
             updatedAt: new Date('2023-01-02'),

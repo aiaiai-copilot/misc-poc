@@ -148,7 +148,7 @@ export class ImportDataUseCase {
         savedRecords.map((record: Record) => ({
           id: record.id.toString(),
           content: record.content.toString(),
-          tagIds: Array.from(record.tagIds).map((tagId: TagId) =>
+          tagIds: Array.from(record.tagIds).map((tagId) =>
             tagId.toString()
           ),
           createdAt: record.createdAt.toISOString(),
