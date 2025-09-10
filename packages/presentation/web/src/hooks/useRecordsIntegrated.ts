@@ -1,0 +1,242 @@
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useApplicationContext } from '../contexts/ApplicationContext';
+import { Record } from '../types/Record';
+
+interface UseRecordsIntegratedReturn {
+  records: Record[];
+  filteredRecords: Record[];
+  tagFrequencies: { tag: string; count: number }[];
+  allTags: string[];
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
+  createRecord: (tags: string[]) => Promise<boolean>;
+  updateRecord: (id: string, tags: string[]) => Promise<boolean>;
+  deleteRecord: (id: string) => Promise<boolean>;
+  performSearch: (query: string) => Promise<void>;
+  isLoading: boolean;
+}
+
+export const useRecordsIntegrated = (): UseRecordsIntegratedReturn => {
+  const { searchRecordsUseCase, createRecordUseCase, updateRecordUseCase, deleteRecordUseCase } = useApplicationContext();
+  const [records, setRecords] = useState<Record[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Load initial records on mount
+  useEffect(() => {
+    const loadInitialRecords = async (): Promise<void> => {
+      if (!searchRecordsUseCase) return;
+
+      setIsLoading(true);
+      try {
+        const result = await searchRecordsUseCase.execute({
+          query: '',
+          options: {
+            limit: 50,
+            offset: 0,
+            sortBy: 'createdAt',
+            sortOrder: 'desc',
+          },
+        });
+
+        if (result.isOk()) {
+          const response = result.unwrap();
+          const mappedRecords = response.searchResult.records.map(recordDTO => ({
+            id: recordDTO.id,
+            tags: Array.from(recordDTO.tagIds),
+            createdAt: recordDTO.createdAt,
+            updatedAt: recordDTO.updatedAt,
+          }));
+          setRecords(mappedRecords);
+        }
+      } catch (error) {
+        console.error('Failed to load initial records:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadInitialRecords();
+  }, [searchRecordsUseCase]);
+
+  // Filter records based on search query, sorted by most recent first
+  const filteredRecords = useMemo(() => {
+    const sorted = [...records].sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
+    
+    if (!searchQuery.trim()) return sorted;
+    
+    const searchTags = searchQuery.toLowerCase().split(/\s+/).filter(Boolean);
+    return sorted.filter(record => {
+      const recordTags = record.tags.map(tag => tag.toLowerCase());
+      
+      // All complete tags (all but the last) must be exact matches
+      const completeTags = searchTags.slice(0, -1);
+      const incompleteTag = searchTags[searchTags.length - 1];
+      
+      // Check complete tags first
+      const completeTagsMatch = completeTags.every(searchTag =>
+        recordTags.includes(searchTag)
+      );
+      
+      if (!completeTagsMatch) return false;
+      
+      // Check incomplete tag with prefix matching
+      const incompleteTagMatch = recordTags.some(recordTag =>
+        recordTag.startsWith(incompleteTag)
+      );
+      
+      return incompleteTagMatch;
+    });
+  }, [records, searchQuery]);
+
+  // Get tag frequencies for tag cloud (based on all records, not filtered)
+  const tagFrequencies = useMemo(() => {
+    const frequencies = new Map<string, number>();
+    
+    records.forEach(record => {
+      record.tags.forEach(tag => {
+        frequencies.set(tag, (frequencies.get(tag) || 0) + 1);
+      });
+    });
+
+    return Array.from(frequencies.entries())
+      .map(([tag, count]) => ({ tag, count }))
+      .sort((a, b) => b.count - a.count);
+  }, [records]);
+
+  // Get all unique tags for autocomplete
+  const allTags = useMemo(() => {
+    const tagSet = new Set<string>();
+    records.forEach(record => {
+      record.tags.forEach(tag => tagSet.add(tag));
+    });
+    return Array.from(tagSet).sort();
+  }, [records]);
+
+  const createRecord = useCallback(async (tags: string[]) => {
+    if (tags.length === 0 || !createRecordUseCase) return false;
+    
+    try {
+      const content = tags.join(' ');
+      const result = await createRecordUseCase.execute({ content });
+
+      if (result.isOk()) {
+        const response = result.unwrap();
+        const newRecord: Record = {
+          id: response.record.id,
+          tags: Array.from(response.record.tagIds),
+          createdAt: response.record.createdAt,
+          updatedAt: response.record.updatedAt,
+        };
+        setRecords(prev => [newRecord, ...prev]);
+        return true;
+      } else {
+        const error = result.unwrapErr();
+        if (error.code === 'DUPLICATE_RECORD') {
+          return false; // Duplicate
+        }
+        throw new Error(error.message);
+      }
+    } catch (error) {
+      console.error('Failed to create record:', error);
+      throw error;
+    }
+  }, [createRecordUseCase]);
+
+  const updateRecord = useCallback(async (id: string, tags: string[]) => {
+    if (!updateRecordUseCase) return false;
+
+    try {
+      const content = tags.join(' ');
+      const result = await updateRecordUseCase.execute({ id, content });
+
+      if (result.isOk()) {
+        const response = result.unwrap();
+        const updatedRecord: Record = {
+          id: response.record.id,
+          tags: Array.from(response.record.tagIds),
+          createdAt: response.record.createdAt,
+          updatedAt: response.record.updatedAt,
+        };
+        
+        setRecords(prev =>
+          prev.map(record =>
+            record.id === updatedRecord.id ? updatedRecord : record
+          )
+        );
+        return true;
+      } else {
+        const error = result.unwrapErr();
+        throw new Error(error.message);
+      }
+    } catch (error) {
+      console.error('Failed to update record:', error);
+      throw error;
+    }
+  }, [updateRecordUseCase]);
+
+  const deleteRecord = useCallback(async (id: string) => {
+    if (!deleteRecordUseCase) return false;
+
+    try {
+      const result = await deleteRecordUseCase.execute({ id });
+
+      if (result.isOk()) {
+        setRecords(prev => prev.filter(record => record.id !== id));
+        return true;
+      } else {
+        const error = result.unwrapErr();
+        throw new Error(error.message);
+      }
+    } catch (error) {
+      console.error('Failed to delete record:', error);
+      throw error;
+    }
+  }, [deleteRecordUseCase]);
+
+  const performSearch = useCallback(async (query: string) => {
+    if (!searchRecordsUseCase) return;
+
+    setIsLoading(true);
+    try {
+      const result = await searchRecordsUseCase.execute({
+        query,
+        options: {
+          limit: 50,
+          offset: 0,
+          sortBy: 'createdAt',
+          sortOrder: 'desc',
+        },
+      });
+
+      if (result.isOk()) {
+        const response = result.unwrap();
+        const mappedRecords = response.searchResult.records.map(recordDTO => ({
+          id: recordDTO.id,
+          tags: Array.from(recordDTO.tagIds),
+          createdAt: recordDTO.createdAt,
+          updatedAt: recordDTO.updatedAt,
+        }));
+        setRecords(mappedRecords);
+      }
+    } catch (error) {
+      console.error('Search failed:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [searchRecordsUseCase]);
+
+  return {
+    records,
+    filteredRecords,
+    tagFrequencies,
+    allTags,
+    searchQuery,
+    setSearchQuery,
+    createRecord,
+    updateRecord,
+    deleteRecord,
+    performSearch,
+    isLoading,
+  };
+};
