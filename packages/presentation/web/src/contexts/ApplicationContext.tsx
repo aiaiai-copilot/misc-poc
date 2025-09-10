@@ -14,7 +14,9 @@ import {
 import { 
   LocalStorageRecordRepository,
   LocalStorageTagRepository,
-  LocalStorageUnitOfWork 
+  LocalStorageUnitOfWork,
+  StorageManager,
+  IndexManager
 } from '@misc-poc/infrastructure-localstorage'
 
 export interface ApplicationContextValue {
@@ -49,14 +51,18 @@ export const ApplicationContextProvider: React.FC<ApplicationContextProviderProp
       try {
         const container = new ApplicationContainer()
 
+        // Register dependencies
+        const storageManager = new StorageManager('misc-poc-storage')
+        const indexManager = new IndexManager()
+        
         // Register repositories
         container.register('recordRepository', new DependencyDescriptor(
-          () => new LocalStorageRecordRepository(),
+          () => new LocalStorageRecordRepository(storageManager, indexManager),
           ServiceLifetime.SINGLETON
         ))
 
         container.register('tagRepository', new DependencyDescriptor(
-          () => new LocalStorageTagRepository(),
+          () => new LocalStorageTagRepository(storageManager, indexManager),
           ServiceLifetime.SINGLETON
         ))
 
