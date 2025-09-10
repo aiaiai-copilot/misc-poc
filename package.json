@@ -16,15 +16,19 @@
   },
   "packageManager": "yarn@3.6.4",
   "scripts": {
+    "prebuild": "yarn install",
+    "build": "yarn workspace @misc-poc/shared build && yarn workspace @misc-poc/domain build && yarn workspace @misc-poc/application build && yarn workspace @misc-poc/infrastructure-localstorage build && yarn workspace @misc-poc/presentation-cli build && yarn workspace @misc-poc/presentation-web build",
+    "build:packages": "yarn workspace @misc-poc/shared build && yarn workspace @misc-poc/domain build && yarn workspace @misc-poc/application build",
+    "pretest": "yarn build:packages",
     "test": "yarn workspace @misc-poc/shared test; yarn workspace @misc-poc/domain test; yarn workspace @misc-poc/application test --passWithNoTests; yarn workspace @misc-poc/infrastructure-localstorage test --passWithNoTests; yarn workspace @misc-poc/presentation-cli test --passWithNoTests; yarn workspace @misc-poc/presentation-web test --passWithNoTests --run",
-    "test:strict": "yarn workspace @misc-poc/shared test && yarn workspace @misc-poc/domain test && yarn workspace @misc-poc/application test && yarn workspace @misc-poc/infrastructure-localstorage test && yarn workspace @misc-poc/presentation-cli test --passWithNoTests && yarn workspace @misc-poc/presentation-web test --run",
-    "dev": "yarn workspace @misc-poc/presentation-web build && yarn workspace @misc-poc/presentation-web preview",
+    "test:strict": "yarn build:packages && yarn workspace @misc-poc/shared test && yarn workspace @misc-poc/domain test && yarn workspace @misc-poc/application test && yarn workspace @misc-poc/infrastructure-localstorage test && yarn workspace @misc-poc/presentation-cli test --passWithNoTests && yarn workspace @misc-poc/presentation-web test --run",
+    "test:no-build": "yarn workspace @misc-poc/shared test; yarn workspace @misc-poc/domain test; yarn workspace @misc-poc/application test --passWithNoTests; yarn workspace @misc-poc/infrastructure-localstorage test --passWithNoTests; yarn workspace @misc-poc/presentation-cli test --passWithNoTests; yarn workspace @misc-poc/presentation-web test --passWithNoTests --run",
+    "dev": "yarn build:packages && yarn workspace @misc-poc/presentation-web build && yarn workspace @misc-poc/presentation-web preview",
     "web:start": "yarn workspace @misc-poc/presentation-web build && yarn workspace @misc-poc/presentation-web preview",
     "clean": "yarn workspace @misc-poc/shared clean; yarn workspace @misc-poc/domain clean; yarn workspace @misc-poc/application clean; yarn workspace @misc-poc/infrastructure-localstorage clean; yarn workspace @misc-poc/presentation-cli clean; yarn workspace @misc-poc/presentation-web clean",
     "all": "echo 'Use: yarn test, yarn lint, yarn typecheck, yarn build, or yarn clean'",
     "lint": "yarn exec eslint packages/shared/src --ext .ts; yarn exec eslint packages/domain/src --ext .ts; yarn exec eslint packages/application/src --ext .ts; yarn exec eslint packages/infrastructure/localStorage/src --ext .ts; echo 'CLI: No src directory found, skipping lint'; test -d packages/presentation/web/src && yarn exec eslint packages/presentation/web/src --ext .ts,.tsx || echo 'Presentation web: No src directory found, skipping lint'",
-    "typecheck": "yarn workspace @misc-poc/shared typecheck; yarn workspace @misc-poc/domain typecheck; yarn workspace @misc-poc/application typecheck; yarn workspace @misc-poc/infrastructure-localstorage typecheck; yarn workspace @misc-poc/presentation-cli typecheck; yarn workspace @misc-poc/presentation-web typecheck",
-    "build": "yarn workspace @misc-poc/shared build && yarn workspace @misc-poc/domain build && yarn workspace @misc-poc/application build && yarn workspace @misc-poc/infrastructure-localstorage build && yarn workspace @misc-poc/presentation-cli build && yarn workspace @misc-poc/presentation-web build"
+    "typecheck": "yarn workspace @misc-poc/shared typecheck; yarn workspace @misc-poc/domain typecheck; yarn workspace @misc-poc/application typecheck; yarn workspace @misc-poc/infrastructure-localstorage typecheck; yarn workspace @misc-poc/presentation-cli typecheck; yarn workspace @misc-poc/presentation-web typecheck"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.10.2",
