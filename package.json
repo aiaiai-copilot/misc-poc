@@ -27,6 +27,8 @@
     "build": "yarn workspace @misc-poc/shared build && yarn workspace @misc-poc/domain build && yarn workspace @misc-poc/application build && yarn workspace @misc-poc/infrastructure-localstorage build && yarn workspace @misc-poc/presentation-cli build && yarn workspace @misc-poc/presentation-web build"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.10.2",
+    "@playwright/test": "^1.55.0",
     "@types/node": "^22.0.0",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
     "@typescript-eslint/parser": "^8.0.0",
@@ -35,6 +37,7 @@
     "eslint-plugin-prettier": "^5.0.0",
     "husky": "^9.0.0",
     "lint-staged": "^15.0.0",
+    "playwright": "^1.55.0",
     "prettier": "^3.0.0",
     "remove-accents": "^0.5.0",
     "typescript": "^5.5.0"

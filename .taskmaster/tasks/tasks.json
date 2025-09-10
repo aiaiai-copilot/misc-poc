@@ -19,7 +19,9 @@
         "details": "Using TDD: First write tests for Result<T, E> type for error handling, UUID utilities using 'uuid' library v9.x, date utilities, string normalization helpers, validation constants, and default configuration values. Then implement to pass tests. Include comprehensive TypeScript definitions and setup Jest testing framework.",
         "testStrategy": "TDD cycle: Write failing tests first → Implement minimal code to pass → Refactor. Unit tests for all utility functions with >95% coverage, integration tests for Result type usage patterns",
         "priority": "high",
-        "dependencies": [1],
+        "dependencies": [
+          1
+        ],
         "status": "done",
         "subtasks": []
       },
@@ -30,7 +32,9 @@
         "details": "TDD approach: First write comprehensive tests for RecordId as immutable value object using uuid v4. Test cases: creation from existing UUID string, generation of new UUID, equals() method, toString() method, and validation of UUID format. Then implement RecordId to make tests pass. Follow Red-Green-Refactor cycle.",
         "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test UUID generation, validation of valid/invalid UUIDs, immutability, equality comparison, and serialization/deserialization",
         "priority": "high",
-        "dependencies": [2],
+        "dependencies": [
+          2
+        ],
         "status": "done",
         "subtasks": []
       },
@@ -41,7 +45,9 @@
         "details": "TDD approach: Write tests first for TagId following same pattern as RecordId. Test factory methods for creation, validation, and comparison. Ensure immutability and proper TypeScript typing for compile-time safety. Then implement to satisfy all tests.",
         "testStrategy": "TDD cycle: Red-Green-Refactor. Test UUID generation, validation, equality operations, and type safety at compile time",
         "priority": "high",
-        "dependencies": [2],
+        "dependencies": [
+          2
+        ],
         "status": "done",
         "subtasks": []
       },
@@ -52,7 +58,9 @@
         "details": "TDD approach: Write tests first for RecordContent to store original user input as string, preserving tag order and formatting. Test validation for non-empty content, length limits, and proper encoding. Test extraction of individual tokens for parsing. Then implement the value object.",
         "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test content preservation, validation rules, empty content rejection, and Unicode character handling",
         "priority": "high",
-        "dependencies": [2],
+        "dependencies": [
+          2
+        ],
         "status": "done",
         "subtasks": []
       },
@@ -63,7 +71,9 @@
         "details": "TDD approach: First write tests for SearchQuery to handle user search input with normalization. Test parsing input into tokens, applying case normalization and optional diacritic removal. Test AND logic for multiple terms and empty query handling. Then implement to pass all tests.",
         "testStrategy": "TDD cycle: Red-Green-Refactor. Test query parsing, normalization rules, token extraction, and edge cases with special characters",
         "priority": "high",
-        "dependencies": [2],
+        "dependencies": [
+          2
+        ],
         "status": "done",
         "subtasks": []
       },
@@ -74,7 +84,10 @@
         "details": "TDD approach: Write comprehensive tests first for TagNormalizer with configurable rules: lowercase conversion, optional diacritic removal (using libraries like 'remove-accents' v0.5.x), and Unicode normalization. Test configuration injection and consistent behavior. Then implement the service.",
         "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test normalization with various languages, diacritics, case combinations, and Unicode edge cases",
         "priority": "high",
-        "dependencies": [5, 6],
+        "dependencies": [
+          5,
+          6
+        ],
         "status": "done",
         "subtasks": []
       },
@@ -85,7 +98,9 @@
         "details": "TDD approach: First write tests for TagValidator with rules: length 1-100 characters, no forbidden characters ({}[]:,\"\\), no whitespace, Unicode support. Test detailed validation results with specific error messages for different validation failures. Then implement the validator.",
         "testStrategy": "TDD cycle: Red-Green-Refactor. Test all validation rules, edge cases with Unicode, boundary conditions, and error message accuracy",
         "priority": "high",
-        "dependencies": [7],
+        "dependencies": [
+          7
+        ],
         "status": "done",
         "subtasks": []
       },
@@ -96,7 +111,9 @@
         "details": "TDD approach: Write tests first for TagParser to split RecordContent by whitespace, validate each token using TagValidator, normalize using TagNormalizer, and return array of valid normalized tag values. Test empty tokens and duplicate removal. Then implement the parser.",
         "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test parsing with various input formats, whitespace handling, duplicate removal, and validation integration",
         "priority": "high",
-        "dependencies": [8],
+        "dependencies": [
+          8
+        ],
         "status": "done",
         "subtasks": []
       },
@@ -107,7 +124,10 @@
         "details": "TDD approach: First write tests for Tag entity with TagId and normalizedValue. Test factory method for creation, equals() method for comparison, and invariants validation. Test immutability after creation and unique normalized values. Then implement the entity.",
         "testStrategy": "TDD cycle: Red-Green-Refactor. Test entity creation, identity comparison, invariant validation, and factory method behavior",
         "priority": "high",
-        "dependencies": [4, 7],
+        "dependencies": [
+          4,
+          7
+        ],
         "status": "done",
         "subtasks": []
       },
@@ -118,7 +138,9 @@
         "details": "TDD approach: Write tests first for TagFactory with methods to create Tag from raw string value. Test normalization application, validation, and UUID generation. Test error handling for invalid inputs and duplicate checking preparation. Then implement the factory.",
         "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test factory creation with valid/invalid inputs, normalization application, and error handling",
         "priority": "high",
-        "dependencies": [10],
+        "dependencies": [
+          10
+        ],
         "status": "done",
         "subtasks": []
       },
@@ -129,7 +151,11 @@
         "details": "TDD approach: First write comprehensive tests for Record entity with RecordId, RecordContent, Set<TagId>, createdAt, updatedAt. Test methods: hasTag(), hasSameTagSet(), equals(). Test tagIds synchronization with content and proper invariant validation. Then implement the entity.",
         "testStrategy": "TDD cycle: Red-Green-Refactor. Test entity creation, tag operations, equality comparison, invariant maintenance, and date handling",
         "priority": "high",
-        "dependencies": [3, 5, 10],
+        "dependencies": [
+          3,
+          5,
+          10
+        ],
         "status": "done",
         "subtasks": []
       },
@@ -140,7 +166,10 @@
         "details": "TDD approach: Write tests first for RecordFactory to create Record from content string. Test parsing content using TagParser, creating/finding tags using TagFactory, building Set<TagId>, and ensuring all invariants. Test timestamp generation and validation. Then implement the factory.",
         "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test factory creation process, tag association, invariant validation, and error handling for invalid content",
         "priority": "high",
-        "dependencies": [12, 11],
+        "dependencies": [
+          12,
+          11
+        ],
         "status": "done",
         "subtasks": []
       },
@@ -151,7 +180,10 @@
         "details": "TDD approach: First write tests for RecordMatcher with AND logic for search terms. Test comparing normalized query tokens against record's tagIds through tag lookup. Test efficient matching algorithm and boolean result with match confidence scoring preparation. Then implement the matcher.",
         "testStrategy": "TDD cycle: Red-Green-Refactor. Test matching logic with single/multiple terms, edge cases with empty queries, and performance with large tag sets",
         "priority": "high",
-        "dependencies": [12, 6],
+        "dependencies": [
+          12,
+          6
+        ],
         "status": "done",
         "subtasks": []
       },
@@ -162,7 +194,9 @@
         "details": "TDD approach: Write tests first for RecordDuplicateChecker to compare records by their tag sets (order independent). Test Set operations for efficient comparison, edge cases with empty records, and exclusion of specific record from duplicate check. Then implement the checker.",
         "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test duplicate detection with various tag combinations, set equality edge cases, and exclusion logic",
         "priority": "high",
-        "dependencies": [12],
+        "dependencies": [
+          12
+        ],
         "status": "done",
         "subtasks": []
       },
@@ -173,7 +207,11 @@
         "details": "TDD approach: First write tests for DomainError base class and specific errors: InvalidRecordContentError, InvalidTagError, DuplicateRecordError, TagLimitExceededError. Test error codes, descriptive messages, and context information for debugging. Then implement the error classes.",
         "testStrategy": "TDD cycle: Red-Green-Refactor. Test error creation, inheritance hierarchy, message formatting, and error context preservation",
         "priority": "medium",
-        "dependencies": [13, 14, 15],
+        "dependencies": [
+          13,
+          14,
+          15
+        ],
         "status": "done",
         "subtasks": []
       },
@@ -184,7 +222,9 @@
         "details": "Implement RecordRepository and TagRepository interfaces with full CRUD operations, search capabilities, and bulk operations. Include UnitOfWork interface for transaction management. Use Result<T, E> pattern for error handling and async operations.",
         "testStrategy": "Test interface contracts through mock implementations and verify all required operations are covered",
         "priority": "high",
-        "dependencies": [16],
+        "dependencies": [
+          16
+        ],
         "status": "done",
         "subtasks": []
       },
@@ -195,7 +235,9 @@
         "details": "TDD approach: Write tests first for RecordDTO, SearchResultDTO, TagCloudItemDTO, ExportDTO, ImportResultDTO, ValidationResultDTO. Test proper TypeScript typing, optional fields, and serialization support. Test mapping from domain entities to DTOs with data transformation. Then implement the DTOs.",
         "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test DTO creation, serialization/deserialization, mapping from domain entities, and type safety",
         "priority": "high",
-        "dependencies": [17],
+        "dependencies": [
+          17
+        ],
         "status": "done",
         "subtasks": []
       },
@@ -206,7 +248,9 @@
         "details": "TDD approach: First write comprehensive tests for CreateRecord use case with input validation, tag parsing/creation, duplicate checking, and persistence. Test dependency injection for repositories, all domain errors handling, and detailed result with created record DTO. Then implement the use case.",
         "testStrategy": "TDD cycle: Red-Green-Refactor. Test successful creation, validation failures, duplicate detection, and error propagation. Use mock repositories",
         "priority": "high",
-        "dependencies": [18],
+        "dependencies": [
+          18
+        ],
         "status": "done",
         "subtasks": []
       },
@@ -217,7 +261,9 @@
         "details": "TDD approach: Write tests first for SearchRecords use case with query normalization, tag lookup, record matching, and result pagination. Test search performance optimization and result sorting by creation date. Test empty query handling. Then implement the use case.",
         "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test search functionality, query normalization, result accuracy, performance with large datasets, and edge cases",
         "priority": "high",
-        "dependencies": [19],
+        "dependencies": [
+          19
+        ],
         "status": "done",
         "subtasks": []
       },
@@ -228,7 +274,9 @@
         "details": "TDD approach: First write tests for SearchModeDetector to analyze search results and determine optimal display mode. Test with various result counts, screen size constraints, and user preferences. Test configurable thresholds and responsive behavior. Then implement the service.",
         "testStrategy": "TDD cycle: Red-Green-Refactor. Test mode detection with various result counts, threshold configurations, and boundary conditions",
         "priority": "medium",
-        "dependencies": [20],
+        "dependencies": [
+          20
+        ],
         "status": "done",
         "subtasks": []
       },
@@ -239,7 +287,9 @@
         "details": "TDD approach: Write tests first for TagCloudBuilder to aggregate tags from search results, calculate usage frequency, determine visual size (1-5), and sort by relevance. Test configuration for maximum cloud size and frequency thresholds. Then implement the builder.",
         "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test tag aggregation, frequency calculation, size determination, and sorting algorithms",
         "priority": "medium",
-        "dependencies": [21],
+        "dependencies": [
+          21
+        ],
         "status": "done",
         "subtasks": []
       },
@@ -250,7 +300,9 @@
         "details": "TDD approach: First write tests for UpdateRecord use case with content parsing, duplicate checking (excluding current record), tag association updates, and orphaned tag cleanup. Test optimistic locking and concurrent modification scenarios. Then implement the use case.",
         "testStrategy": "TDD cycle: Red-Green-Refactor. Test record updates, duplicate prevention, tag cleanup, concurrent modification handling, and error scenarios with mock repositories",
         "priority": "high",
-        "dependencies": [22],
+        "dependencies": [
+          22
+        ],
         "status": "done",
         "subtasks": []
       },
@@ -261,7 +313,9 @@
         "details": "TDD approach: Write tests first for DeleteRecord use case with record removal and automatic cleanup of unused tags. Test soft delete option preparation and referential integrity maintenance. Test cascade operations safety. Then implement the use case.",
         "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test record deletion, tag cleanup, referential integrity, and error handling for non-existent records",
         "priority": "high",
-        "dependencies": [23],
+        "dependencies": [
+          23
+        ],
         "status": "done",
         "subtasks": []
       },
@@ -272,7 +326,9 @@
         "details": "TDD approach: First write tests for GetTagSuggestions use case with prefix matching, frequency-based sorting, and performance optimization. Test fuzzy matching preparation and configurable suggestion limits. Test real-time suggestions with debouncing. Then implement the use case.",
         "testStrategy": "TDD cycle: Red-Green-Refactor. Test prefix matching, suggestion ranking, performance with large tag sets, and edge cases",
         "priority": "medium",
-        "dependencies": [24],
+        "dependencies": [
+          24
+        ],
         "status": "done",
         "subtasks": []
       },
@@ -283,7 +339,9 @@
         "details": "TDD approach: Write tests first for ExportData use case to export all records in JSON format without UUIDs. Test version metadata, record count, export timestamp, and normalization settings. Test clean data export for portability. Then implement the use case.",
         "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test export format, data completeness, UUID exclusion, metadata accuracy, and large dataset handling",
         "priority": "high",
-        "dependencies": [25],
+        "dependencies": [
+          25
+        ],
         "status": "done",
         "subtasks": []
       },
@@ -294,7 +352,9 @@
         "details": "TDD approach: First write comprehensive tests for ImportValidator to validate JSON structure, version compatibility, record format, and content validity. Test detailed error reporting and recovery suggestions. Test schema migration preparation. Then implement the validator.",
         "testStrategy": "TDD cycle: Red-Green-Refactor. Test validation with valid/invalid formats, version compatibility, error reporting, and edge cases",
         "priority": "high",
-        "dependencies": [26],
+        "dependencies": [
+          26
+        ],
         "status": "done",
         "subtasks": []
       },
@@ -305,7 +365,9 @@
         "details": "TDD approach: Write tests first for ImportData use case with complete data replacement (not incremental). Test automatic backup creation, data validation, batch processing for performance, and rollback capability on failure. Then implement the use case.",
         "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test full data replacement, backup creation, validation integration, error handling, and rollback scenarios",
         "priority": "high",
-        "dependencies": [27],
+        "dependencies": [
+          27
+        ],
         "status": "done",
         "subtasks": []
       },
@@ -316,7 +378,9 @@
         "details": "TDD approach: First write tests for ApplicationConfig with type-safe configuration for tag limits, normalization rules, search settings, display preferences, and storage limits. Test validation, default values, and environment-based overrides. Then implement the configuration system.",
         "testStrategy": "TDD cycle: Red-Green-Refactor. Test configuration loading, validation, default handling, and type safety",
         "priority": "medium",
-        "dependencies": [28],
+        "dependencies": [
+          28
+        ],
         "status": "done",
         "subtasks": []
       },
@@ -327,7 +391,9 @@
         "details": "TDD approach: Write tests first for ApplicationContainer with dependency injection for use cases, services, and repositories. Test lightweight DI approach with TypeScript support, lifecycle management, and circular dependency detection. Then implement the container.",
         "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test dependency resolution, lifecycle management, error handling, and container performance",
         "priority": "medium",
-        "dependencies": [29],
+        "dependencies": [
+          29
+        ],
         "status": "done",
         "subtasks": []
       },
@@ -338,7 +404,9 @@
         "details": "TDD approach: First write tests for StorageSchema with version 2.1 structure: tags and records as objects (not arrays) for O(1) access, indexes for fast search (normalizedToTagId, tagToRecords), and schema migration support. Then implement the schema.",
         "testStrategy": "TDD cycle: Red-Green-Refactor. Test schema validation, migration logic, index consistency, and performance with large datasets",
         "priority": "high",
-        "dependencies": [30],
+        "dependencies": [
+          30
+        ],
         "status": "done",
         "subtasks": []
       },
@@ -349,7 +417,9 @@
         "details": "TDD approach: Write tests first for StorageManager with localStorage operations, quota monitoring, error handling for storage full scenarios, atomic operations simulation, and data integrity verification. Test backup/restore functionality. Then implement the manager.",
         "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test storage operations, quota handling, error scenarios, data integrity, and backup functionality",
         "priority": "high",
-        "dependencies": [31],
+        "dependencies": [
+          31
+        ],
         "status": "done",
         "subtasks": []
       },
@@ -360,7 +430,9 @@
         "details": "TDD approach: First write comprehensive tests for IndexManager to maintain normalizedToTagId and tagToRecords indexes. Test index rebuilding, consistency checking, and performance optimization for search operations. Test index corruption recovery. Then implement the manager.",
         "testStrategy": "TDD cycle: Red-Green-Refactor. Test index maintenance, consistency, rebuilding, performance optimization, and corruption recovery",
         "priority": "high",
-        "dependencies": [32],
+        "dependencies": [
+          32
+        ],
         "status": "done",
         "subtasks": []
       },
@@ -371,7 +443,9 @@
         "details": "TDD approach: Write tests first for LocalStorageRecordRepository and LocalStorageTagRepository with full CRUD operations, search optimization using indexes, batch operations, and error handling. Test data mapping between domain entities and storage format. Then implement the repositories.",
         "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test all CRUD operations, search performance, batch processing, error handling, and data mapping accuracy",
         "priority": "high",
-        "dependencies": [33],
+        "dependencies": [
+          33
+        ],
         "status": "done",
         "subtasks": []
       },
@@ -382,7 +456,9 @@
         "details": "TDD approach: First write tests for LocalStorageUnitOfWork to simulate transactions with localStorage. Test change tracking, rollback capability, and atomic operation simulation using backup/restore mechanism. Then implement the UnitOfWork.",
         "testStrategy": "TDD cycle: Red-Green-Refactor. Test transaction simulation, rollback functionality, change tracking, and atomic operation behavior",
         "priority": "high",
-        "dependencies": [34],
+        "dependencies": [
+          34
+        ],
         "status": "done",
         "subtasks": []
       },
@@ -393,113 +469,184 @@
         "details": "TDD approach: Write tests first for MigrationManager for localStorage schema evolution. Test version detection, migration scripts, data backup before migration, and rollback capability. Test incremental and full migrations. Then implement the manager.",
         "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test migration execution, version detection, backup creation, rollback scenarios, and data integrity",
         "priority": "medium",
-        "dependencies": [35],
+        "dependencies": [
+          35
+        ],
         "status": "done",
         "subtasks": []
       },
       {
         "id": 37,
-        "title": "Setup React Web Application Infrastructure",
-        "description": "Initialize React web application with Vite, routing, and development tools",
-        "details": "Set up React 18.x with Vite 5.x, TypeScript, CSS Modules, React Router v6, React Testing Library, and development tools. Include hot reload, source maps, and build optimization. Configure for modern browsers with ES2020 target.",
-        "testStrategy": "Test application startup, hot reload, build process, routing functionality, and development tools integration",
+        "title": "Migrate Lovable Components to Presentation Web Package (TDD)",
+        "description": "Transfer and adapt Lovable UI components into the misc-poc presentation/web package using Test-Driven Development",
+        "details": "TDD approach: First write tests for component integration points with backend services. Copy MiscInput.tsx, RecordsList.tsx, TagCloud.tsx, and ui/ components from misc-by-lovable to packages/presentation/web/src/components. Set up Vite 5.x, React 18.x, TypeScript, and React Testing Library. Write tests for props interfaces and component contracts before implementation.",
+        "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test component rendering, prop types validation, event handlers, and integration points with use cases using React Testing Library",
         "priority": "high",
-        "dependencies": [36],
-        "status": "done",
-        "subtasks": []
+        "dependencies": [
+          36
+        ],
+        "status": "done"
       },
       {
         "id": 38,
-        "title": "Implement Application Context and Providers (TDD)",
-        "description": "Create React contexts for dependency injection and state management using TDD for logic",
-        "details": "TDD approach for business logic: Write tests for context logic, dependency injection patterns, and state management. Implement ApplicationContext for dependency injection, ConfigContext for application settings, and UIStateContext for interface state. Use React Context API with TypeScript support and performance optimization.",
-        "testStrategy": "TDD for logic components. Test context providers, dependency injection, state updates, and performance with context changes",
+        "title": "Implement Application Context Provider (TDD)",
+        "description": "Create React Context for dependency injection of use cases into UI components using TDD",
+        "details": "TDD approach: Write tests first for ApplicationContext that provides all use cases from ApplicationContainer. Test context initialization with mock repositories, use case availability in child components, and error handling for missing context. Implement ApplicationContextProvider wrapping ApplicationContainer from @misc-poc/application with LocalStorage repositories.",
+        "testStrategy": "TDD cycle: Red-Green-Refactor. Test context provider with mock children, verify all use cases accessible via useContext hook, test error boundaries for context failures",
         "priority": "high",
-        "dependencies": [37],
-        "status": "done",
-        "subtasks": []
+        "dependencies": [
+          37
+        ],
+        "status": "pending"
       },
       {
         "id": 39,
-        "title": "Implement SearchInput Component (TDD)",
-        "description": "Create universal search/input component with debouncing and keyboard handling using TDD",
-        "details": "TDD approach: First write tests using React Testing Library for SearchInput with 300ms debounce, keyboard shortcuts (Enter, Escape, Tab, Arrow keys), auto-completion integration, loading indicators, and accessibility support. Test ref forwarding and controlled/uncontrolled modes. Then implement the component.",
-        "testStrategy": "TDD cycle: Red-Green-Refactor. Test debouncing, keyboard interactions, auto-completion, accessibility, and integration with use cases",
+        "title": "Integrate MiscInput with CreateRecord and SearchRecords Use Cases (TDD)",
+        "description": "Connect MiscInput component to backend use cases for record creation and search using TDD",
+        "details": "TDD approach: First write integration tests for MiscInput with mocked use cases. Test debounced search (300ms), Enter key for record creation, Result<T,E> error handling. Replace localStorage calls with createRecord.execute() and searchRecords.execute(). Test loading states and error toasts. Implement proper TypeScript typing for DTOs.",
+        "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test debounce timing, use case invocation with correct parameters, success/error result handling, UI updates after operations",
         "priority": "high",
-        "dependencies": [38],
-        "status": "done",
-        "subtasks": []
+        "dependencies": [
+          38
+        ],
+        "status": "pending"
       },
       {
         "id": 40,
-        "title": "Implement RecordList and RecordItem Components (TDD)",
-        "description": "Create components for displaying search results as a list using TDD",
-        "details": "TDD approach: Write tests first for RecordList with virtualization for performance, RecordItem with actions (edit, delete), keyboard navigation, responsive design, and CSS Modules styling. Test selection state and bulk operations preparation. Then implement the components.",
-        "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test list rendering, virtualization, keyboard navigation, actions, and responsive behavior",
+        "title": "Connect RecordsList to UpdateRecord and DeleteRecord Use Cases (TDD)",
+        "description": "Integrate RecordsList component with backend CRUD operations using Test-Driven Development",
+        "details": "TDD approach: Write tests first for RecordsList interactions with UpdateRecord and DeleteRecord use cases. Mock use case responses with Result types. Test edit mode activation, content updates, deletion confirmation, and list refresh after operations. Replace direct localStorage manipulation with use case execution.",
+        "testStrategy": "TDD cycle: Red-Green-Refactor. Test click handlers for edit/delete, use case parameter passing, optimistic UI updates, error rollback, and state synchronization",
         "priority": "high",
-        "dependencies": [39],
-        "status": "done",
-        "subtasks": []
+        "dependencies": [
+          39
+        ],
+        "status": "pending"
       },
       {
         "id": 41,
-        "title": "Implement TagCloud Component (TDD)",
-        "description": "Create tag cloud component for visualizing tag frequency and navigation using TDD",
-        "details": "TDD approach: First write tests for TagCloud with frequency-based sizing, click interaction for search refinement, responsive layout, animation support, and accessibility. Test tag highlighting and hover effects. Then implement the component.",
-        "testStrategy": "TDD cycle: Red-Green-Refactor. Test tag rendering, sizing algorithm, click interactions, responsive layout, and accessibility",
+        "title": "Implement TagCloud Integration with SearchModeDetector (TDD)",
+        "description": "Connect TagCloud component to SearchModeDetector and TagCloudBuilder services using TDD",
+        "details": "TDD approach: First write tests for TagCloud receiving TagCloudItemDTO[] from TagCloudBuilder. Test tag size calculation (1-5 scale), click handler adding tags to search query, and mode switching logic from SearchModeDetector. Test frequency-based sizing and responsive layout. Implement tag interaction with SearchRecords use case.",
+        "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test tag rendering with different frequencies, click event propagation, search query building, and cloud/list mode detection",
         "priority": "high",
-        "dependencies": [40],
-        "status": "done",
-        "subtasks": []
+        "dependencies": [
+          40
+        ],
+        "status": "pending"
       },
       {
         "id": 42,
-        "title": "Implement AutoComplete Component (TDD)",
-        "description": "Create auto-completion dropdown for tag suggestions using TDD",
-        "details": "TDD approach: Write tests first for AutoComplete with fuzzy matching, keyboard navigation (Tab, Arrow keys), click selection, performance optimization for large suggestion lists, and integration with SearchInput. Test custom styling and positioning. Then implement the component.",
-        "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test suggestion filtering, keyboard navigation, selection behavior, performance, and positioning",
+        "title": "Add Tag Auto-completion with GetTagSuggestions Use Case (TDD)",
+        "description": "Implement tag suggestions dropdown using GetTagSuggestions use case with TDD approach",
+        "details": "TDD approach: Write tests first for AutoComplete component integration with GetTagSuggestions. Test prefix matching, suggestion ranking by frequency, keyboard navigation (Tab, Arrow keys), and click selection. Mock use case to return sorted suggestions. Test dropdown positioning and visibility toggling.",
+        "testStrategy": "TDD cycle: Red-Green-Refactor. Test suggestion fetching on input change, keyboard navigation through options, selection callbacks, and performance with large suggestion lists",
         "priority": "medium",
-        "dependencies": [41],
-        "status": "done",
-        "subtasks": []
+        "dependencies": [
+          41
+        ],
+        "status": "pending"
       },
       {
         "id": 43,
-        "title": "Implement Import/Export UI Components (TDD)",
-        "description": "Create user interface for data import and export operations using TDD",
-        "details": "TDD approach: First write tests for ImportExport components with file selection, progress indicators, warning dialogs for data replacement, drag-and-drop support, and error handling. Test export button with automatic filename generation. Then implement the components.",
-        "testStrategy": "TDD cycle: Red-Green-Refactor. Test file operations, progress display, warning dialogs, drag-and-drop functionality, and error handling",
+        "title": "Implement Import/Export UI with Data Use Cases (TDD)",
+        "description": "Create UI components for data import/export using ExportData and ImportData use cases with TDD",
+        "details": "TDD approach: First write tests for ImportExport component with file handling. Test ExportData execution generating JSON without UUIDs, file download trigger, import file validation, warning dialog for data replacement, and ImportData with complete data deletion. Test drag-and-drop, progress indicators, and error messages.",
+        "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test file operations, JSON validation, user confirmations, progress updates, and error handling for invalid formats",
         "priority": "high",
-        "dependencies": [42],
-        "status": "done",
-        "subtasks": []
+        "dependencies": [
+          42
+        ],
+        "status": "pending"
       },
       {
         "id": 44,
-        "title": "Integrate All Components and Implement Main User Flow",
-        "description": "Connect all components and implement the complete user interaction flow",
-        "details": "Integrate SearchInput, RecordList, TagCloud, and ImportExport components into main application flow. Implement search mode detection, create/edit/delete operations, keyboard shortcuts, and state management between components. Write integration tests for complete flows.",
-        "testStrategy": "Integration testing: Test complete user journeys, component integration, state synchronization, and keyboard workflow",
+        "title": "Create DTO Adapters and Type Mappings (TDD)",
+        "description": "Implement adapters for converting between Lovable types and backend DTOs using TDD",
+        "details": "TDD approach: Write comprehensive tests for type converters. Test LovableRecord to RecordDTO mapping, tag array to space-separated content conversion, date string to Date object parsing, and reverse conversions. Ensure type safety with TypeScript strict mode. Test edge cases with empty records and special characters.",
+        "testStrategy": "TDD cycle: Red-Green-Refactor. Test bidirectional conversions, data integrity preservation, null/undefined handling, and TypeScript compile-time type checking",
         "priority": "high",
-        "dependencies": [43],
-        "status": "done",
-        "subtasks": []
+        "dependencies": [
+          43
+        ],
+        "status": "pending"
       },
       {
         "id": 45,
-        "title": "Implement E2E Tests and Performance Optimization",
-        "description": "Create end-to-end tests and optimize application performance",
-        "details": "Implement E2E tests using Playwright or Cypress for main user scenarios following BDD approach. Performance optimization for large datasets, bundle size optimization, accessibility testing, and browser compatibility verification. Target <500KB gzipped bundle size.",
-        "testStrategy": "E2E testing with BDD scenarios. Test complete user workflows, performance benchmarks, accessibility compliance, and cross-browser compatibility",
+        "title": "Implement Global State Synchronization Hook (TDD)",
+        "description": "Create React hook for synchronizing UI state across components after CRUD operations using TDD",
+        "details": "TDD approach: First write tests for useRecordsSync hook managing global record state. Test automatic refresh after create/update/delete operations, optimistic updates with rollback on failure, and event-based synchronization between components. Use React Context for state distribution without prop drilling.",
+        "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test state updates propagation, consistency across components, race condition handling, and memory leak prevention",
+        "priority": "high",
+        "dependencies": [
+          44
+        ],
+        "status": "pending"
+      },
+      {
+        "id": 46,
+        "title": "Add Loading States and Error Handling UI (TDD)",
+        "description": "Implement user feedback for async operations and error states using TDD",
+        "details": "TDD approach: Write tests first for loading indicators and error toasts. Test spinner display during long operations (imports), toast notifications for Result.error cases, retry mechanisms for failed operations, and user-friendly error messages. Use shadcn-ui toast component from Lovable. Test accessibility of error messages.",
+        "testStrategy": "TDD cycle: Red-Green-Refactor. Test loading state transitions, error message formatting, toast auto-dismiss timing, and screen reader compatibility",
         "priority": "medium",
-        "dependencies": [44],
-        "status": "pending",
-        "subtasks": []
+        "dependencies": [
+          45
+        ],
+        "status": "pending"
+      },
+      {
+        "id": 47,
+        "title": "Implement Keyboard Shortcuts System (TDD)",
+        "description": "Add comprehensive keyboard navigation as specified in PRD using Test-Driven Development",
+        "details": "TDD approach: First write tests for keyboard event handlers. Test Enter for save/edit, Escape for field clearing, Tab for auto-completion, Arrow keys for result navigation, Delete for record removal. Implement global keyboard hook with proper event bubbling and preventDefault. Test focus management and accessibility.",
+        "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test all key combinations, focus trap in modals, keyboard-only navigation flow, and ARIA attributes",
+        "priority": "medium",
+        "dependencies": [
+          46
+        ],
+        "status": "pending"
+      },
+      {
+        "id": 48,
+        "title": "Optimize Performance for Large Datasets (TDD)",
+        "description": "Implement performance optimizations for handling 10,000+ records using TDD",
+        "details": "TDD approach: Write performance tests first with large datasets. Test virtual scrolling for RecordsList using react-window, React.memo for preventing unnecessary re-renders, debounced search optimization, and localStorage index performance. Measure and assert render times < 16ms and search response < 100ms.",
+        "testStrategy": "TDD cycle: Red-Green-Refactor. Performance tests with 10,000 records, FPS monitoring during scroll, search response time measurements, memory usage profiling",
+        "priority": "medium",
+        "dependencies": [
+          47
+        ],
+        "status": "pending"
+      },
+      {
+        "id": 49,
+        "title": "Create E2E Tests for Complete User Workflows (BDD)",
+        "description": "Implement end-to-end tests for all PRD user scenarios using Playwright with BDD approach",
+        "details": "BDD approach: Write Gherkin scenarios for all user stories from PRD. Test complete flows: record creation, search with tag cloud, editing, deletion, import/export, keyboard navigation. Set up Playwright with TypeScript support. Test cross-browser compatibility (Chrome, Firefox, Safari, Edge).",
+        "testStrategy": "BDD scenarios with Given-When-Then format. Test happy paths and error cases, measure Lighthouse scores > 90, verify accessibility compliance, and responsive design breakpoints",
+        "priority": "high",
+        "dependencies": [
+          48
+        ],
+        "status": "pending"
+      },
+      {
+        "id": 50,
+        "title": "Configure Production Build and Bundle Optimization",
+        "description": "Set up optimized production build pipeline with bundle size targets",
+        "details": "Configure Vite for production build with code splitting, tree shaking, and minification. Implement dynamic imports for route-based splitting. Target < 500KB gzipped bundle size as per PRD. Set up bundle analyzer, source maps for production debugging, and CDN-ready asset hashing.",
+        "testStrategy": "Test production build output, measure bundle sizes, verify all features work in production mode, test loading performance with slow 3G throttling",
+        "priority": "high",
+        "dependencies": [
+          49
+        ],
+        "status": "pending"
       }
     ],
     "metadata": {
       "created": "2025-09-01T19:04:18.307Z",
-      "updated": "2025-09-06T19:26:43.957Z",
+      "updated": "2025-09-10T05:06:07.368Z",
       "description": "Tasks for master context with TDD approach enforced throughout development as per PRD requirements"
     }
   }
