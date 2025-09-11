@@ -35,7 +35,7 @@ const IntegratedIndex = (): JSX.Element => {
     return (): void => clearTimeout(timer);
   }, [inputValue, setSearchQuery]);
 
-  // Determine display mode based on search state
+  // Determine display mode based on number of records and search state
   const showTagCloud = filteredRecords.length > 12;
   const showRecordsList = filteredRecords.length > 0 && filteredRecords.length <= 12;
   const showCreateState = inputValue.trim() && filteredRecords.length === 0;
@@ -118,19 +118,8 @@ const IntegratedIndex = (): JSX.Element => {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold mb-2">Records Manager</h1>
-          <p className="text-muted-foreground">
-            Integrated CRUD operations with UpdateRecord and DeleteRecord use cases
-          </p>
-          {isLoading && (
-            <p className="text-sm text-blue-600 mt-2">Loading...</p>
-          )}
-        </div>
-
         {/* Input Field */}
-        <div className="mb-4 w-full max-w-2xl mx-auto">
+        <div className="mb-4 w-full max-w-6xl mx-auto">
           <MiscInput
             ref={inputRef}
             value={inputValue}
@@ -179,36 +168,6 @@ const IntegratedIndex = (): JSX.Element => {
             />
           </div>
         )}
-
-        {showCreateState && (
-          <div className="results-area">
-            <div className="text-center py-16">
-              <div className="text-lg text-muted-foreground">No records found</div>
-              <div className="text-sm mt-2 text-muted-foreground/70">Press Enter to create a new record</div>
-            </div>
-          </div>
-        )}
-
-        {showEmptyState && !isLoading && (
-          <div className="results-area">
-            <div className="text-center py-16">
-              <div className="text-lg text-muted-foreground">No records yet</div>
-              <div className="text-sm mt-2 text-muted-foreground/70">Start by typing some tags above</div>
-            </div>
-          </div>
-        )}
-
-        {/* Instructions */}
-        <div className="mt-8 bg-muted p-4 rounded-lg max-w-4xl mx-auto">
-          <h3 className="font-semibold mb-2">Instructions:</h3>
-          <ul className="text-sm text-muted-foreground space-y-1">
-            <li>• <strong>Create:</strong> Type tags and press Enter to create a new record</li>
-            <li>• <strong>Search:</strong> Type tags to search and filter records</li>
-            <li>• <strong>Update:</strong> Click on a record to edit it, then press Enter to save</li>
-            <li>• <strong>Delete:</strong> Click the X button or use Delete/Backspace keys</li>
-            <li>• <strong>Navigate:</strong> Use arrow keys to navigate between elements</li>
-          </ul>
-        </div>
       </div>
     </div>
   );

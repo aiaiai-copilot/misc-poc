@@ -7,7 +7,16 @@ function App(): JSX.Element {
   return (
     <ApplicationContextProvider>
       <IntegratedIndex />
-      <Toaster richColors position="top-center" />
+      <Toaster 
+        position="bottom-left" 
+        toastOptions={{
+          style: {
+            background: '#374151',
+            color: '#ffffff',
+            border: '1px solid #4b5563'
+          }
+        }}
+      />
     </ApplicationContextProvider>
   )
 }

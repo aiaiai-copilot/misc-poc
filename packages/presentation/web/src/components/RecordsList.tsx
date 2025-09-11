@@ -106,9 +106,10 @@ export const RecordsList = forwardRef<RecordsListRef, RecordsListProps>(({ recor
           key={record.id}
           ref={el => itemRefs.current[index] = el}
           className={cn(
-            "record-item px-4 py-3 pr-12 cursor-pointer group relative border rounded focus:outline-none focus:ring-2 focus:ring-ring",
+            "record-item cursor-pointer group relative border rounded focus:outline-none focus:ring-2 focus:ring-ring",
             editingId === record.id && "bg-muted"
           )}
+          style={{ paddingLeft: '12px', paddingRight: '40px', paddingTop: '12px', paddingBottom: '12px' }}
           onClick={() => handleRecordClick(record)}
           onKeyDown={(e) => handleKeyDown(e, index)}
           tabIndex={-1}
