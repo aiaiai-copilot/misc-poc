@@ -82,6 +82,12 @@ export const TagCloud = forwardRef<TagCloudRef, TagCloudProps>(({ tagFrequencies
           const targetIndex = (row + 1) * gridCols + col;
           if (targetIndex < tagFrequencies.length) {
             buttonRefs.current[targetIndex]?.focus();
+          } else {
+            // If no element directly below, jump to first element in the last row
+            const firstIndexInLastRow = (totalRows - 1) * gridCols;
+            if (firstIndexInLastRow < tagFrequencies.length) {
+              buttonRefs.current[firstIndexInLastRow]?.focus();
+            }
           }
         }
         break;
