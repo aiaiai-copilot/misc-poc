@@ -15,7 +15,6 @@ const IntegratedIndex = (): JSX.Element => {
     createRecord,
     updateRecord,
     deleteRecord,
-    isLoading,
   } = useRecordsIntegrated();
 
   const [inputValue, setInputValue] = useState('');
@@ -38,8 +37,6 @@ const IntegratedIndex = (): JSX.Element => {
   // Determine display mode based on number of records and search state
   const showTagCloud = filteredRecords.length > 12;
   const showRecordsList = filteredRecords.length > 0 && filteredRecords.length <= 12;
-  const showCreateState = inputValue.trim() && filteredRecords.length === 0;
-  const showEmptyState = !inputValue.trim() && filteredRecords.length === 0;
 
   const handleSubmit = async (tags: string[]): Promise<void> => {
     try {
