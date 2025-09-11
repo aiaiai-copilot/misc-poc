@@ -100,7 +100,7 @@ export const RecordsList = forwardRef<RecordsListRef, RecordsListProps>(({ recor
   }
 
   return (
-    <div className="w-full max-w-4xl mx-auto space-y-2">
+    <div className="w-full max-w-6xl mx-auto space-y-2">
       {records.slice(0, 12).map((record, index) => (
         <div
           key={record.id}
