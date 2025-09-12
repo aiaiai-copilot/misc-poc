@@ -1,9 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRecordsIntegrated } from '../hooks/useRecordsIntegrated';
+import { useApplicationContext } from '../contexts/ApplicationContext';
 import { MiscInput } from '../components/MiscInput';
 import { RecordsList, type RecordsListRef } from '../components/RecordsList';
 import { TagCloud, type TagCloudRef } from '../components/TagCloud';
 import { Record } from '../types/Record';
+import { SearchModeDetector, DisplayMode } from '../../../../application/src/services/search-mode-detector';
+import { TagCloudBuilder } from '../../../../application/src/services/tag-cloud-builder';
+import { TagCloudItemDTO } from '../../../../application/src/dtos/tag-cloud-item-dto';
 import { toast } from 'sonner';
 
 const IntegratedIndex = (): JSX.Element => {
@@ -15,10 +19,21 @@ const IntegratedIndex = (): JSX.Element => {
     createRecord,
     updateRecord,
     deleteRecord,
+    performSearch,
   } = useRecordsIntegrated();
+
+  const { tagRepository, searchRecordsUseCase } = useApplicationContext();
 
   const [inputValue, setInputValue] = useState('');
   const [editingRecord, setEditingRecord] = useState<Record | null>(null);
+  const [tagCloudItems, setTagCloudItems] = useState<TagCloudItemDTO[]>([]);
+  const [displayMode, setDisplayMode] = useState<DisplayMode>(DisplayMode.LIST);
+
+  // Initialize SearchModeDetector and TagCloudBuilder
+  const searchModeDetector = useRef(new SearchModeDetector()).current;
+  const tagCloudBuilder = useRef(
+    tagRepository ? new TagCloudBuilder(tagRepository) : null
+  ).current;
   
   // Refs for navigation
   const inputRef = useRef<HTMLInputElement>(null);
@@ -34,9 +49,51 @@ const IntegratedIndex = (): JSX.Element => {
     return (): void => clearTimeout(timer);
   }, [inputValue, setSearchQuery]);
 
-  // Determine display mode based on number of records and search state
-  const showTagCloud = filteredRecords.length > 12;
-  const showRecordsList = filteredRecords.length > 0 && filteredRecords.length <= 12;
+  // Update display mode and TagCloud items based on search results
+  useEffect(() => {
+    const updateDisplayMode = async (): Promise<void> => {
+      if (!searchRecordsUseCase || !tagCloudBuilder) return;
+
+      try {
+        // Execute search to get current results
+        const searchResult = await searchRecordsUseCase.execute({
+          query: inputValue.trim(),
+          options: {
+            limit: 50,
+            offset: 0,
+            sortBy: 'createdAt',
+            sortOrder: 'desc',
+          },
+        });
+
+        if (searchResult.isOk()) {
+          const response = searchResult.unwrap();
+          
+          // Determine display mode based on result count
+          const mode = searchModeDetector.detectMode(response.searchResult);
+          setDisplayMode(mode);
+          
+          // If CLOUD mode, build TagCloud items
+          if (mode === DisplayMode.CLOUD) {
+            const items = await tagCloudBuilder.buildFromSearchResult(response.searchResult);
+            setTagCloudItems(items);
+          } else {
+            setTagCloudItems([]);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to update display mode:', error);
+        // Fallback to legacy mode detection
+        setDisplayMode(filteredRecords.length > 12 ? DisplayMode.CLOUD : DisplayMode.LIST);
+      }
+    };
+
+    updateDisplayMode();
+  }, [inputValue, filteredRecords.length, searchRecordsUseCase, tagCloudBuilder, searchModeDetector]);
+
+  // Determine display based on SearchModeDetector integration
+  const showTagCloud = displayMode === DisplayMode.CLOUD;
+  const showRecordsList = displayMode === DisplayMode.LIST && filteredRecords.length > 0;
 
   const handleSubmit = async (tags: string[]): Promise<void> => {
     try {
@@ -146,7 +203,10 @@ const IntegratedIndex = (): JSX.Element => {
           <div className="results-area">
             <TagCloud
               ref={tagCloudRef}
-              tagFrequencies={tagFrequencies}
+              {...(tagCloudItems.length > 0 
+                ? { tagCloudItems } 
+                : { tagFrequencies }
+              )}
               onTagClick={handleTagClick}
               onNavigateUp={handleNavigateToInput}
             />
