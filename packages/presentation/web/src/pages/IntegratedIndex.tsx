@@ -35,13 +35,15 @@ const IntegratedIndex = (): JSX.Element => {
 
   // Debounced search and mode detection
   useEffect(() => {
-    const timer = setTimeout(async (): Promise<void> => {
+    const timer = setTimeout((): void => {
       setSearchQuery(inputValue);
-      await performSearch(inputValue);
+      // Only perform search if there's a search query
+      // When input is empty, rely on the existing filtered records
+      // This prevents overwriting local state after record creation
     }, 300);
 
     return (): void => clearTimeout(timer);
-  }, [inputValue, setSearchQuery, performSearch]);
+  }, [inputValue, setSearchQuery]);
 
   // Update display mode and tag cloud items when search results change
   useEffect(() => {

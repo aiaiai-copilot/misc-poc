@@ -14,7 +14,7 @@ export class SearchModeDetector {
   private config: SearchModeDetectorConfig;
 
   private static readonly DEFAULT_CONFIG: SearchModeDetectorConfig = {
-    listToCloudThreshold: 20,
+    listToCloudThreshold: 12,
     cloudToListThreshold: 10,
   };
 

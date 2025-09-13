@@ -84,8 +84,8 @@ describe('SearchModeDetector', () => {
       expect(mode).toBe(DisplayMode.CLOUD);
     });
 
-    it('should return LIST mode when totalCount is exactly at threshold', () => {
-      const records: RecordDTO[] = Array.from({ length: 20 }, (_, i) => ({
+    it('should return LIST mode when totalCount is exactly at threshold (12)', () => {
+      const records: RecordDTO[] = Array.from({ length: 12 }, (_, i) => ({
         id: `record-${i}`,
         content: `Content ${i}`,
         tagIds: [`tag${i}`],
@@ -95,12 +95,31 @@ describe('SearchModeDetector', () => {
 
       const searchResult: SearchResultDTO = {
         records,
-        total: 20,
+        total: 12,
         hasMore: false,
       };
 
       const mode = detector.detectMode(searchResult);
       expect(mode).toBe(DisplayMode.LIST);
+    });
+
+    it('should return CLOUD mode when totalCount exceeds threshold (13+)', () => {
+      const records: RecordDTO[] = Array.from({ length: 13 }, (_, i) => ({
+        id: `record-${i}`,
+        content: `Content ${i}`,
+        tagIds: [`tag${i}`],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      }));
+
+      const searchResult: SearchResultDTO = {
+        records,
+        total: 13,
+        hasMore: false,
+      };
+
+      const mode = detector.detectMode(searchResult);
+      expect(mode).toBe(DisplayMode.CLOUD);
     });
 
     it('should use custom thresholds when provided', () => {
@@ -160,7 +179,7 @@ describe('SearchModeDetector', () => {
     it('should return current configuration', () => {
       const config = detector.getConfiguration();
       expect(config).toEqual({
-        listToCloudThreshold: 20,
+        listToCloudThreshold: 12,
         cloudToListThreshold: 10,
       });
     });
