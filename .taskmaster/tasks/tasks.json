@@ -536,27 +536,13 @@
         "status": "done"
       },
       {
-        "id": 42,
-        "title": "Add Tag Auto-completion with GetTagSuggestions Use Case (TDD)",
-        "description": "Implement tag suggestions dropdown using GetTagSuggestions use case with TDD approach",
-        "details": "TDD approach: Write tests first for AutoComplete component integration with GetTagSuggestions. Test prefix matching, suggestion ranking by frequency, keyboard navigation (Tab, Arrow keys), and click selection. Mock use case to return sorted suggestions. Test dropdown positioning and visibility toggling.",
-        "testStrategy": "TDD cycle: Red-Green-Refactor. Test suggestion fetching on input change, keyboard navigation through options, selection callbacks, and performance with large suggestion lists",
-        "priority": "medium",
-        "dependencies": [
-          41
-        ],
-        "status": "pending"
-      },
-      {
         "id": 43,
         "title": "Implement Import/Export UI with Data Use Cases (TDD)",
         "description": "Create UI components for data import/export using ExportData and ImportData use cases with TDD",
         "details": "TDD approach: First write tests for ImportExport component with file handling. Test ExportData execution generating JSON without UUIDs, file download trigger, import file validation, warning dialog for data replacement, and ImportData with complete data deletion. Test drag-and-drop, progress indicators, and error messages.",
         "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test file operations, JSON validation, user confirmations, progress updates, and error handling for invalid formats",
         "priority": "high",
-        "dependencies": [
-          42
-        ],
+        "dependencies": [],
         "status": "pending"
       },
       {
