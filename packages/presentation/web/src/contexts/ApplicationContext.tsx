@@ -9,7 +9,9 @@ import {
   DeleteRecordUseCase,
   GetTagSuggestionsUseCase,
   ExportDataUseCase,
-  ImportDataUseCase
+  ImportDataUseCase,
+  SearchModeDetector,
+  TagCloudBuilder
 } from '@misc-poc/application'
 import { 
   LocalStorageRecordRepository,
@@ -27,6 +29,8 @@ export interface ApplicationContextValue {
   getTagSuggestionsUseCase: GetTagSuggestionsUseCase | null
   exportDataUseCase: ExportDataUseCase | null
   importDataUseCase: ImportDataUseCase | null
+  searchModeDetector: SearchModeDetector | null
+  tagCloudBuilder: TagCloudBuilder | null
 }
 
 const ApplicationContext = createContext<ApplicationContextValue | null>(null)
@@ -43,7 +47,9 @@ export const ApplicationContextProvider: React.FC<ApplicationContextProviderProp
     deleteRecordUseCase: null,
     getTagSuggestionsUseCase: null,
     exportDataUseCase: null,
-    importDataUseCase: null
+    importDataUseCase: null,
+    searchModeDetector: null,
+    tagCloudBuilder: null
   })
 
   useEffect(() => {
@@ -143,7 +149,21 @@ export const ApplicationContextProvider: React.FC<ApplicationContextProviderProp
           ['recordRepository', 'tagRepository', 'unitOfWork']
         ))
 
-        // Resolve all use cases
+        // Register SearchModeDetector and TagCloudBuilder services
+        container.register('searchModeDetector', new DependencyDescriptor(
+          () => new SearchModeDetector(),
+          ServiceLifetime.SINGLETON
+        ))
+
+        container.register('tagCloudBuilder', new DependencyDescriptor(
+          (deps: Record<string, unknown>) => new TagCloudBuilder(
+            deps.tagRepository as LocalStorageTagRepository
+          ),
+          ServiceLifetime.SINGLETON,
+          ['tagRepository']
+        ))
+
+        // Resolve all use cases and services
         const createRecordResult = container.resolve<CreateRecordUseCase>('createRecordUseCase')
         const searchRecordsResult = container.resolve<SearchRecordsUseCase>('searchRecordsUseCase')
         const updateRecordResult = container.resolve<UpdateRecordUseCase>('updateRecordUseCase')
@@ -151,6 +171,8 @@ export const ApplicationContextProvider: React.FC<ApplicationContextProviderProp
         const getTagSuggestionsResult = container.resolve<GetTagSuggestionsUseCase>('getTagSuggestionsUseCase')
         const exportDataResult = container.resolve<ExportDataUseCase>('exportDataUseCase')
         const importDataResult = container.resolve<ImportDataUseCase>('importDataUseCase')
+        const searchModeDetectorResult = container.resolve<SearchModeDetector>('searchModeDetector')
+        const tagCloudBuilderResult = container.resolve<TagCloudBuilder>('tagCloudBuilder')
 
         if (createRecordResult.isOk() && 
             searchRecordsResult.isOk() && 
@@ -158,7 +180,9 @@ export const ApplicationContextProvider: React.FC<ApplicationContextProviderProp
             deleteRecordResult.isOk() && 
             getTagSuggestionsResult.isOk() && 
             exportDataResult.isOk() && 
-            importDataResult.isOk()) {
+            importDataResult.isOk() &&
+            searchModeDetectorResult.isOk() &&
+            tagCloudBuilderResult.isOk()) {
           
           setContextValue({
             createRecordUseCase: createRecordResult.unwrap(),
@@ -167,7 +191,9 @@ export const ApplicationContextProvider: React.FC<ApplicationContextProviderProp
             deleteRecordUseCase: deleteRecordResult.unwrap(),
             getTagSuggestionsUseCase: getTagSuggestionsResult.unwrap(),
             exportDataUseCase: exportDataResult.unwrap(),
-            importDataUseCase: importDataResult.unwrap()
+            importDataUseCase: importDataResult.unwrap(),
+            searchModeDetector: searchModeDetectorResult.unwrap(),
+            tagCloudBuilder: tagCloudBuilderResult.unwrap()
           })
           console.log('Application context initialized successfully')
         } else {

@@ -1,9 +1,11 @@
 import { TagFrequency } from '@/types/Record';
+import { TagCloudItemDTO } from '@misc-poc/application';
 import { cn } from '@/lib/utils';
 import { useRef, useEffect, KeyboardEvent, forwardRef, useImperativeHandle, useState } from 'react';
 
 interface TagCloudProps {
-  tagFrequencies: TagFrequency[];
+  tagFrequencies?: TagFrequency[];
+  tagCloudItems?: TagCloudItemDTO[];
   onTagClick: (tag: string) => void;
   onNavigateUp?: () => void;
 }
@@ -12,8 +14,18 @@ export interface TagCloudRef {
   focusFirst: () => void;
 }
 
-export const TagCloud = forwardRef<TagCloudRef, TagCloudProps>(({ tagFrequencies, onTagClick, onNavigateUp }, ref) => {
-  const maxCount = Math.max(...tagFrequencies.map(t => t.count));
+export const TagCloud = forwardRef<TagCloudRef, TagCloudProps>(({ tagFrequencies, tagCloudItems, onTagClick, onNavigateUp }, ref) => {
+  // Normalize data to common format
+  const normalizedItems = tagCloudItems || tagFrequencies?.map((tf, index) => ({
+    id: `${index}`,
+    normalizedValue: tf.tag,
+    displayValue: tf.tag,
+    usageCount: tf.count,
+    weight: 0,
+    fontSize: 'medium' as const
+  })) || [];
+
+  const maxCount = normalizedItems.length > 0 ? Math.max(...normalizedItems.map(item => item.usageCount)) : 0;
   const buttonRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const [gridCols, setGridCols] = useState(8);
 
@@ -50,7 +62,7 @@ export const TagCloud = forwardRef<TagCloudRef, TagCloudProps>(({ tagFrequencies
   const handleKeyDown = (e: KeyboardEvent<HTMLButtonElement>, index: number): void => {
     const row = Math.floor(index / gridCols);
     const col = index % gridCols;
-    const totalRows = Math.ceil(tagFrequencies.length / gridCols);
+    const totalRows = Math.ceil(normalizedItems.length / gridCols);
 
     switch (e.key) {
       case 'ArrowLeft':
@@ -61,7 +73,7 @@ export const TagCloud = forwardRef<TagCloudRef, TagCloudProps>(({ tagFrequencies
         break;
       case 'ArrowRight':
         e.preventDefault();
-        if (col < gridCols - 1 && index + 1 < tagFrequencies.length) {
+        if (col < gridCols - 1 && index + 1 < normalizedItems.length) {
           buttonRefs.current[index + 1]?.focus();
         }
         break;
@@ -69,7 +81,7 @@ export const TagCloud = forwardRef<TagCloudRef, TagCloudProps>(({ tagFrequencies
         e.preventDefault();
         if (row > 0) {
           const targetIndex = (row - 1) * gridCols + col;
-          if (targetIndex < tagFrequencies.length) {
+          if (targetIndex < normalizedItems.length) {
             buttonRefs.current[targetIndex]?.focus();
           }
         } else if (onNavigateUp) {
@@ -80,12 +92,12 @@ export const TagCloud = forwardRef<TagCloudRef, TagCloudProps>(({ tagFrequencies
         e.preventDefault();
         if (row < totalRows - 1) {
           const targetIndex = (row + 1) * gridCols + col;
-          if (targetIndex < tagFrequencies.length) {
+          if (targetIndex < normalizedItems.length) {
             buttonRefs.current[targetIndex]?.focus();
           } else {
             // If no element directly below, jump to first element in the last row
             const firstIndexInLastRow = (totalRows - 1) * gridCols;
-            if (firstIndexInLastRow < tagFrequencies.length) {
+            if (firstIndexInLastRow < normalizedItems.length) {
               buttonRefs.current[firstIndexInLastRow]?.focus();
             }
           }
@@ -94,7 +106,7 @@ export const TagCloud = forwardRef<TagCloudRef, TagCloudProps>(({ tagFrequencies
       case 'Enter':
       case ' ':
         e.preventDefault();
-        onTagClick(tagFrequencies[index].tag);
+        onTagClick(normalizedItems[index].normalizedValue);
         break;
       case 'Escape':
         e.preventDefault();
@@ -105,8 +117,25 @@ export const TagCloud = forwardRef<TagCloudRef, TagCloudProps>(({ tagFrequencies
     }
   };
   
-  const getTagSize = (count: number): string => {
-    const ratio = count / maxCount;
+  const getTagSize = (item: typeof normalizedItems[0]): string => {
+    // Use TagCloudItemDTO fontSize if available
+    if (tagCloudItems && item.fontSize) {
+      switch (item.fontSize) {
+        case 'xlarge':
+          return 'text-xl font-bold';
+        case 'large':
+          return 'text-lg font-semibold';
+        case 'medium':
+          return 'text-base font-medium';
+        case 'small':
+          return 'text-sm';
+        default:
+          return 'text-sm';
+      }
+    }
+    
+    // Fallback to frequency-based calculation
+    const ratio = maxCount > 0 ? item.usageCount / maxCount : 0;
     if (ratio >= 0.8) return 'text-lg font-bold';
     if (ratio >= 0.6) return 'text-base font-semibold';
     if (ratio >= 0.4) return 'text-sm font-medium';
@@ -114,7 +143,7 @@ export const TagCloud = forwardRef<TagCloudRef, TagCloudProps>(({ tagFrequencies
     return 'text-xs';
   };
 
-  if (tagFrequencies.length === 0) {
+  if (normalizedItems.length === 0) {
     return (
       <div className="text-center py-16">
         <div className="text-muted-foreground text-lg">No records found</div>
@@ -126,19 +155,19 @@ export const TagCloud = forwardRef<TagCloudRef, TagCloudProps>(({ tagFrequencies
   return (
     <div className="w-full max-w-6xl mx-auto">
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-2">
-        {tagFrequencies.slice(0, 50).map((item, index) => (
+        {normalizedItems.slice(0, 50).map((item, index) => (
           <button
-            key={item.tag}
+            key={item.id}
             ref={el => buttonRefs.current[index] = el}
             className={cn(
               "tag-cloud-item text-center",
-              getTagSize(item.count)
+              getTagSize(item)
             )}
-            onClick={() => onTagClick(item.tag)}
+            onClick={() => onTagClick(item.normalizedValue)}
             onKeyDown={(e) => handleKeyDown(e, index)}
             tabIndex={-1}
           >
-            {item.tag}
+            {item.displayValue}
           </button>
         ))}
       </div>

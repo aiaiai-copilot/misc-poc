@@ -85,7 +85,7 @@ I MUST:
 6. Implement the task
 7. Complete the full workflow above
 8. Report completion to user with PR link
-
+9. Always ask me if I want to test manually before committing.
 **NEVER ask user to do these steps manually - I handle ALL TaskMaster automation!**
 
 ## CRITICAL REMINDERS
