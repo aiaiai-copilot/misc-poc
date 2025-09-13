@@ -18,7 +18,6 @@ const IntegratedIndex = (): JSX.Element => {
     createRecord,
     updateRecord,
     deleteRecord,
-    performSearch,
   } = useRecordsIntegrated();
 
   const { searchModeDetector, tagCloudBuilder } = useApplicationContext();
