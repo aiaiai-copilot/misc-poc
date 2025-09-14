@@ -1,4 +1,4 @@
-import { renderHook, waitFor } from '@testing-library/react'
+import { renderHook, waitFor, act } from '@testing-library/react'
 import { vi, describe, it, expect, beforeEach, Mock } from 'vitest'
 import { useRecordsIntegrated } from '../useRecordsIntegrated'
 import { useApplicationContext } from '../../contexts/ApplicationContext'
@@ -113,9 +113,12 @@ describe('useRecordsIntegrated', () => {
         expect(result.current.isLoading).toBe(false)
       })
 
-      const success = await result.current.createRecord(['new', 'tag'])
+      let success: boolean
+      await act(async () => {
+        success = await result.current.createRecord(['new', 'tag'])
+      })
 
-      expect(success).toBe(true)
+      expect(success!).toBe(true)
       expect(mockCreateRecordUseCase.execute).toHaveBeenCalledWith({
         content: 'new tag'
       })
@@ -141,9 +144,12 @@ describe('useRecordsIntegrated', () => {
         expect(result.current.isLoading).toBe(false)
       })
 
-      const success = await result.current.createRecord(['duplicate', 'tag'])
+      let success: boolean
+      await act(async () => {
+        success = await result.current.createRecord(['duplicate', 'tag'])
+      })
 
-      expect(success).toBe(false)
+      expect(success!).toBe(false)
     })
   })
 
@@ -185,9 +191,12 @@ describe('useRecordsIntegrated', () => {
         expect(result.current.records).toHaveLength(1)
       })
 
-      const success = await result.current.updateRecord('record-1', ['updated', 'tags'])
+      let success: boolean
+      await act(async () => {
+        success = await result.current.updateRecord('record-1', ['updated', 'tags'])
+      })
 
-      expect(success).toBe(true)
+      expect(success!).toBe(true)
       expect(mockUpdateRecordUseCase.execute).toHaveBeenCalledWith({
         id: 'record-1',
         content: 'updated tags'
@@ -232,9 +241,12 @@ describe('useRecordsIntegrated', () => {
         expect(result.current.records).toHaveLength(1)
       })
 
-      const success = await result.current.deleteRecord('record-1')
+      let success: boolean
+      await act(async () => {
+        success = await result.current.deleteRecord('record-1')
+      })
 
-      expect(success).toBe(true)
+      expect(success!).toBe(true)
       expect(mockDeleteRecordUseCase.execute).toHaveBeenCalledWith({
         id: 'record-1'
       })
@@ -279,7 +291,9 @@ describe('useRecordsIntegrated', () => {
       })
 
       // Test filtering
-      result.current.setSearchQuery('javascript')
+      act(() => {
+        result.current.setSearchQuery('javascript')
+      })
 
       await waitFor(() => {
         expect(result.current.filteredRecords).toHaveLength(1)

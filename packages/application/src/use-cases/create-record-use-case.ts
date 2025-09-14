@@ -67,8 +67,9 @@ export class CreateRecordUseCase {
       // Parse tags from content
       const tagStrings = this.tagParser.parse(request.content);
 
-      // Process tags (find existing ones, create new ones)
+      // Process tags (find existing ones, prepare new ones for saving inside transaction)
       const tagIds = new Set<TagId>();
+      const newTagsToSave = new Map<string, any>(); // tagString -> Tag object
 
       for (const tagString of tagStrings) {
         // Try to find existing tag
@@ -81,14 +82,11 @@ export class CreateRecordUseCase {
         let tag = existingTagResult.unwrap();
 
         if (!tag) {
-          // Create new tag
+          // Prepare new tag for saving (but don't save yet - wait for transaction)
           try {
             const newTag = this.tagFactory.createFromString(tagString);
-            const saveTagResult = await this.tagRepository.save(newTag);
-            if (saveTagResult.isErr()) {
-              return Err(saveTagResult.unwrapErr());
-            }
-            tag = saveTagResult.unwrap();
+            newTagsToSave.set(tagString, newTag);
+            tagIds.add(newTag.id);
           } catch (error) {
             return Err(
               new DomainError(
@@ -97,9 +95,9 @@ export class CreateRecordUseCase {
               )
             );
           }
+        } else {
+          tagIds.add(tag.id);
         }
-
-        tagIds.add(tag.id);
       }
 
       // Create record content value object
@@ -135,15 +133,24 @@ export class CreateRecordUseCase {
         );
       }
 
-      // Begin transaction
+      // Begin transaction BEFORE any saves to ensure atomicity
       const beginResult = await this.unitOfWork.begin();
       if (beginResult.isErr()) {
         return Err(beginResult.unwrapErr());
       }
 
       try {
-        // Save record
-        const saveResult = await this.recordRepository.save(record);
+        // First, save any new tags inside the transaction
+        for (const [, newTag] of newTagsToSave) {
+          const saveTagResult = await this.unitOfWork.tags.save(newTag);
+          if (saveTagResult.isErr()) {
+            await this.unitOfWork.rollback();
+            return Err(saveTagResult.unwrapErr());
+          }
+        }
+
+        // Then save the record
+        const saveResult = await this.unitOfWork.records.save(record);
         if (saveResult.isErr()) {
           await this.unitOfWork.rollback();
           return Err(saveResult.unwrapErr());
