@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react'
-import { 
-  ApplicationContainer, 
-  DependencyDescriptor, 
+import {
+  ApplicationContainer,
+  DependencyDescriptor,
   ServiceLifetime,
   CreateRecordUseCase,
   SearchRecordsUseCase,
@@ -10,9 +10,11 @@ import {
   GetTagSuggestionsUseCase,
   ExportDataUseCase,
   ImportDataUseCase,
+  ImportValidator,
   SearchModeDetector,
   TagCloudBuilder
 } from '@misc-poc/application'
+import { TagFactory } from '@misc-poc/domain'
 import { 
   LocalStorageRecordRepository,
   LocalStorageTagRepository,
@@ -83,6 +85,17 @@ export const ApplicationContextProvider: React.FC<ApplicationContextProviderProp
           ServiceLifetime.SINGLETON
         ))
 
+        // Register services
+        container.register('importValidator', new DependencyDescriptor(
+          () => new ImportValidator(),
+          ServiceLifetime.SINGLETON
+        ))
+
+        container.register('tagFactory', new DependencyDescriptor(
+          () => new TagFactory(),
+          ServiceLifetime.SINGLETON
+        ))
+
         // Register use cases
         container.register('createRecordUseCase', new DependencyDescriptor(
           (deps: Record<string, unknown>) => new CreateRecordUseCase(
@@ -141,12 +154,12 @@ export const ApplicationContextProvider: React.FC<ApplicationContextProviderProp
 
         container.register('importDataUseCase', new DependencyDescriptor(
           (deps: Record<string, unknown>) => new ImportDataUseCase(
-            deps.recordRepository as LocalStorageRecordRepository,
-            deps.tagRepository as LocalStorageTagRepository,
-            deps.unitOfWork as LocalStorageUnitOfWork
+            deps.unitOfWork as LocalStorageUnitOfWork,
+            deps.importValidator as ImportValidator,
+            deps.tagFactory as TagFactory
           ),
           ServiceLifetime.SINGLETON,
-          ['recordRepository', 'tagRepository', 'unitOfWork']
+          ['unitOfWork', 'importValidator', 'tagFactory']
         ))
 
         // Register SearchModeDetector and TagCloudBuilder services
