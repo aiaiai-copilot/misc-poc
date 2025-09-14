@@ -26,8 +26,8 @@ const mockImportDataUseCase = {
 }
 
 // Mock the ApplicationContext to provide our mocked use cases
-vi.mock('../../contexts/ApplicationContext', () => ({
-  useApplicationContext: (): any => ({
+vi.mock('../../contexts/ApplicationContext', (): { useApplicationContext: () => ReturnType<typeof import('../../contexts/ApplicationContext').useApplicationContext> } => ({
+  useApplicationContext: () => ({
     exportDataUseCase: mockExportDataUseCase,
     importDataUseCase: mockImportDataUseCase,
     createRecordUseCase: null,

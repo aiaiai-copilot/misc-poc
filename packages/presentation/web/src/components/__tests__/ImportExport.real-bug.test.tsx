@@ -4,6 +4,21 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ImportExport } from '../ImportExport'
 import { ApplicationContextProvider } from '../../contexts/ApplicationContext'
 
+// Type for export data structure
+interface ExportData {
+  records: Array<{
+    id: string
+    content: string
+    tagIds: string[]
+    createdAt: string
+    updatedAt: string
+  }>
+  metadata: {
+    totalRecords: number
+    exportSource: string
+  }
+}
+
 // Test that reproduces the ACTUAL browser bug: localStorage has schema but records:{} is empty
 describe('ImportExport Real Browser Bug Reproduction', () => {
   beforeEach(() => {
@@ -44,7 +59,7 @@ describe('ImportExport Real Browser Bug Reproduction', () => {
     localStorage.setItem('misc-poc-storage', JSON.stringify(exactBrowserState))
 
     // Mock file download to capture export data
-    let capturedExportData: any = null
+    let capturedExportData: ExportData | null = null
 
     global.URL.createObjectURL = vi.fn(() => 'blob:test-url')
     global.URL.revokeObjectURL = vi.fn()
@@ -67,7 +82,7 @@ describe('ImportExport Real Browser Bug Reproduction', () => {
           }
         }
       }
-    } as any
+    } as typeof Blob
 
     render(
       <ApplicationContextProvider>
