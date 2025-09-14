@@ -1,5 +1,5 @@
 import { Result, RecordContent, TagId, Ok, Err } from '@misc-poc/shared';
-import { Record, TagFactory, TagParser, DomainError } from '@misc-poc/domain';
+import { Record, Tag, TagFactory, TagParser, DomainError } from '@misc-poc/domain';
 import { RecordRepository } from '../ports/record-repository';
 import { TagRepository } from '../ports/tag-repository';
 import { UnitOfWork } from '../ports/unit-of-work';
