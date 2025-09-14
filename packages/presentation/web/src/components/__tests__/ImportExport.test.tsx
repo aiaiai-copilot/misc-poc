@@ -50,6 +50,9 @@ Object.defineProperty(HTMLAnchorElement.prototype, 'click', {
   writable: true
 })
 
+// Mock window.alert
+global.alert = vi.fn()
+
 // Mock File.prototype.text method
 Object.defineProperty(File.prototype, 'text', {
   value: vi.fn().mockResolvedValue('{"records": []}'),
@@ -273,7 +276,18 @@ describe('ImportExport Component', () => {
       const fileInput = screen.getByLabelText(/select file/i)
       fireEvent.change(fileInput, { target: { files: [mockFile] } })
 
+      // Wait for validation to complete
+      await waitFor(() => {
+        expect(mockImportDataUseCase.validateOnly).toHaveBeenCalled()
+      })
+
       const importButton = screen.getByRole('button', { name: /import/i })
+
+      // Wait for import button to be enabled
+      await waitFor(() => {
+        expect(importButton).not.toBeDisabled()
+      })
+
       fireEvent.click(importButton)
 
       await waitFor(() => {
@@ -346,13 +360,14 @@ describe('ImportExport Component', () => {
     it('should provide visual feedback during drag operations', () => {
       render(<ImportExport />)
 
-      const dropZone = screen.getByText(/drag and drop your file here/i).closest('div')!
+      // Find the correct drop zone - the parent div with the drag event handlers
+      const dropZone = screen.getByText(/drag and drop your file here/i).closest('div')!.parentElement!
 
       fireEvent.dragEnter(dropZone)
-      expect(dropZone).toHaveClass(/drag-over/i)
+      expect(dropZone).toHaveClass('drag-over')
 
       fireEvent.dragLeave(dropZone)
-      expect(dropZone).not.toHaveClass(/drag-over/i)
+      expect(dropZone).not.toHaveClass('drag-over')
     })
   })
 
@@ -399,12 +414,24 @@ describe('ImportExport Component', () => {
       render(<ImportExport />)
 
       const fileInput = screen.getByLabelText(/select file/i)
-      const importButton = screen.getByRole('button', { name: /import/i })
 
       await act(async () => {
         fireEvent.change(fileInput, { target: { files: [mockFile] } })
-        fireEvent.click(importButton)
       })
+
+      // Wait for validation to complete
+      await waitFor(() => {
+        expect(mockImportDataUseCase.validateOnly).toHaveBeenCalled()
+      })
+
+      const importButton = screen.getByRole('button', { name: /import/i })
+
+      // Wait for import button to be enabled
+      await waitFor(() => {
+        expect(importButton).not.toBeDisabled()
+      })
+
+      fireEvent.click(importButton)
 
       // Should show loading state
       expect(screen.getByText(/importing/i)).toBeInTheDocument()
