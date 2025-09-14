@@ -149,7 +149,7 @@ export class ImportDataUseCase {
           id: record.id.toString(),
           content: record.content.toString(),
           tagIds: Array.from(record.tagIds).map((tagId) =>
-            tagId.toString()
+            (tagId as TagId).toString()
           ),
           createdAt: record.createdAt.toISOString(),
           updatedAt: record.updatedAt.toISOString(),

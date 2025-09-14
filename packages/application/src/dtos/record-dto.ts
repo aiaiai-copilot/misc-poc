@@ -1,4 +1,5 @@
 import { Record } from '@misc-poc/domain';
+import { TagId } from '@misc-poc/shared';
 
 export interface RecordDTO {
   readonly id: string;
@@ -19,7 +20,7 @@ export class RecordDTOMapper {
     return {
       id: record.id.toString(),
       content: record.content.toString(),
-      tagIds: Array.from(record.tagIds).map((tagId) => tagId.toString()),
+      tagIds: Array.from(record.tagIds).map((tagId) => (tagId as TagId).toString()),
       createdAt: record.createdAt.toISOString(),
       updatedAt: record.updatedAt.toISOString(),
     };

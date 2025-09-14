@@ -1,5 +1,5 @@
 import { Result, RecordContent, TagId, Ok, Err } from '@misc-poc/shared';
-import { Record, TagFactory, TagParser, DomainError } from '@misc-poc/domain';
+import { Record, Tag, TagFactory, TagParser, DomainError } from '@misc-poc/domain';
 import { RecordRepository } from '../ports/record-repository';
 import { TagRepository } from '../ports/tag-repository';
 import { UnitOfWork } from '../ports/unit-of-work';
@@ -69,7 +69,7 @@ export class CreateRecordUseCase {
 
       // Process tags (find existing ones, prepare new ones for saving inside transaction)
       const tagIds = new Set<TagId>();
-      const newTagsToSave = new Map<string, any>(); // tagString -> Tag object
+      const newTagsToSave = new Map<string, Tag>(); // tagString -> Tag object
 
       for (const tagString of tagStrings) {
         // Try to find existing tag
