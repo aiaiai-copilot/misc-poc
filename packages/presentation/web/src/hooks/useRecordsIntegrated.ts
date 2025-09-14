@@ -13,6 +13,7 @@ interface UseRecordsIntegratedReturn {
   updateRecord: (id: string, tags: string[]) => Promise<boolean>;
   deleteRecord: (id: string) => Promise<boolean>;
   performSearch: (query: string) => Promise<void>;
+  refreshRecords: () => Promise<void>;
   isLoading: boolean;
 }
 
@@ -43,43 +44,44 @@ export const useRecordsIntegrated = (): UseRecordsIntegratedReturn => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
+  // Extract record loading logic into a reusable function
+  const loadRecords = useCallback(async (): Promise<void> => {
+    if (!searchRecordsUseCase) return;
+
+    setIsLoading(true);
+    try {
+      const result = await searchRecordsUseCase.execute({
+        query: '',
+        options: {
+          limit: 50,
+          offset: 0,
+          sortBy: 'createdAt',
+          sortOrder: 'desc',
+        },
+      });
+
+      if (result.isOk()) {
+        const response = result.unwrap();
+        const mappedRecords = response.searchResult.records.map(recordDTO => ({
+          id: recordDTO.id,
+          tags: recordDTO.content.trim().split(/\s+/).filter(Boolean),
+          createdAt: new Date(recordDTO.createdAt),
+          updatedAt: new Date(recordDTO.updatedAt),
+        }));
+        const deduplicatedRecords = deduplicateRecordsByTagSet(mappedRecords);
+        setRecords(deduplicatedRecords);
+      }
+    } catch (error) {
+      console.error('Failed to load records:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [searchRecordsUseCase]);
+
   // Load initial records on mount
   useEffect(() => {
-    const loadInitialRecords = async (): Promise<void> => {
-      if (!searchRecordsUseCase) return;
-
-      setIsLoading(true);
-      try {
-        const result = await searchRecordsUseCase.execute({
-          query: '',
-          options: {
-            limit: 50,
-            offset: 0,
-            sortBy: 'createdAt',
-            sortOrder: 'desc',
-          },
-        });
-
-        if (result.isOk()) {
-          const response = result.unwrap();
-          const mappedRecords = response.searchResult.records.map(recordDTO => ({
-            id: recordDTO.id,
-            tags: recordDTO.content.trim().split(/\s+/).filter(Boolean),
-            createdAt: new Date(recordDTO.createdAt),
-            updatedAt: new Date(recordDTO.updatedAt),
-          }));
-          const deduplicatedRecords = deduplicateRecordsByTagSet(mappedRecords);
-          setRecords(deduplicatedRecords);
-        }
-      } catch (error) {
-        console.error('Failed to load initial records:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadInitialRecords();
-  }, [searchRecordsUseCase]);
+    loadRecords();
+  }, [loadRecords]);
 
   // Filter records based on search query, sorted by most recent first
   const filteredRecords = useMemo(() => {
@@ -277,6 +279,7 @@ export const useRecordsIntegrated = (): UseRecordsIntegratedReturn => {
     updateRecord,
     deleteRecord,
     performSearch,
+    refreshRecords: loadRecords,
     isLoading,
   };
 };
