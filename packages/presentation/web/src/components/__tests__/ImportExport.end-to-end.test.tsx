@@ -92,7 +92,7 @@ describe('ImportExport End-to-End Integration', () => {
     // Mock console.error to catch any silent failures
     const originalConsoleError = console.error
     const errorLogs: string[] = []
-    console.error = (...args: any[]) => {
+    console.error = (...args: unknown[]): void => {
       errorLogs.push(args.join(' '))
       originalConsoleError(...args)
     }

@@ -69,7 +69,7 @@ export class CreateRecordUseCase {
 
       // Process tags (find existing ones, prepare new ones for saving inside transaction)
       const tagIds = new Set<TagId>();
-      const newTagsToSave = new Map<string, any>(); // tagString -> Tag object
+      const newTagsToSave = new Map<string, Tag>(); // tagString -> Tag object
 
       for (const tagString of tagStrings) {
         // Try to find existing tag
