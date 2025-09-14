@@ -4,6 +4,21 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ImportExport } from '../ImportExport'
 import { ApplicationContextProvider } from '../../contexts/ApplicationContext'
 
+// Type for export data structure
+interface ExportData {
+  records: Array<{
+    id: string
+    content: string
+    tagIds: string[]
+    createdAt: string
+    updatedAt: string
+  }>
+  metadata: {
+    totalRecords: number
+    exportSource: string
+  }
+}
+
 // Integration test to reproduce the empty export bug
 describe('ImportExport Integration Bug Reproduction', () => {
   beforeEach(() => {
@@ -61,7 +76,7 @@ describe('ImportExport Integration Bug Reproduction', () => {
     localStorage.setItem('misc-poc-storage', JSON.stringify(mockStorageSchema))
 
     // Mock file download to capture the export data
-    let capturedExportData: any = null
+    let capturedExportData: ExportData | null = null
 
     global.URL.createObjectURL = vi.fn(() => 'blob:test-url')
     global.URL.revokeObjectURL = vi.fn()
@@ -79,13 +94,13 @@ describe('ImportExport Integration Bug Reproduction', () => {
         super(blobParts, options)
         if (blobParts && blobParts.length > 0) {
           try {
-            capturedExportData = JSON.parse(blobParts[0] as string)
+            capturedExportData = JSON.parse(blobParts[0] as string) as ExportData
           } catch (error) {
             console.error('Failed to parse export data:', error)
           }
         }
       }
-    } as any
+    } as typeof Blob
 
     render(
       <ApplicationContextProvider>
@@ -109,15 +124,15 @@ describe('ImportExport Integration Bug Reproduction', () => {
 
     // Verify the bug: export should contain records but returns empty array
     expect(capturedExportData).toBeDefined()
-    expect(capturedExportData.records).toBeDefined()
 
     // This test should FAIL initially, reproducing the bug
     console.log('Captured export data:', JSON.stringify(capturedExportData, null, 2))
 
     // The bug: records array is empty despite having data in localStorage
-    expect(capturedExportData.records.length).toBeGreaterThan(0) // This should fail, reproducing the bug
-    expect(capturedExportData.metadata.totalRecords).toBeGreaterThan(0)
-    expect(capturedExportData.metadata.exportSource).not.toBe('empty-export')
+    expect(capturedExportData).toBeTruthy()
+    expect(capturedExportData!.records.length).toBeGreaterThan(0) // This should fail, reproducing the bug
+    expect(capturedExportData!.metadata.totalRecords).toBeGreaterThan(0)
+    expect(capturedExportData!.metadata.exportSource).not.toBe('empty-export')
 
     // Cleanup
     global.Blob = originalBlob

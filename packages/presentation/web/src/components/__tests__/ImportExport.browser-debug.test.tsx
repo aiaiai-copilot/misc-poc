@@ -62,7 +62,7 @@ describe('ImportExport Browser Debug', () => {
     console.log('=== TESTING EXPORT WITH ACTUAL DATA ===')
 
     // Mock file download to capture the export data
-    let capturedExportData: any = null
+    let capturedExportData: unknown = null
 
     global.URL.createObjectURL = vi.fn(() => 'blob:test-url')
     global.URL.revokeObjectURL = vi.fn()
@@ -87,7 +87,7 @@ describe('ImportExport Browser Debug', () => {
           }
         }
       }
-    } as any
+    } as typeof Blob
 
     render(
       <ApplicationContextProvider>
@@ -109,7 +109,7 @@ describe('ImportExport Browser Debug', () => {
       expect(mockClick).toHaveBeenCalled()
     }, { timeout: 5000 })
 
-    console.log('Export completed, captured data:', capturedExportData)
+    console.log('Export completed, captured data:', capturedExportData as Record<string, unknown>)
 
     // Don't fail the test, just report what we found
     expect(capturedExportData).toBeDefined()

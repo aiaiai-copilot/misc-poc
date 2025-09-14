@@ -93,7 +93,7 @@ describe('ImportExport UUID Debug', () => {
     })
 
     // Now test export
-    let capturedExportData: any = null
+    let capturedExportData: ExportData | null = null
 
     global.URL.createObjectURL = vi.fn(() => 'blob:test-url')
     global.URL.revokeObjectURL = vi.fn()
@@ -115,7 +115,7 @@ describe('ImportExport UUID Debug', () => {
           }
         }
       }
-    } as any
+    } as typeof Blob
 
     render(
       <ApplicationContextProvider>

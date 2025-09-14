@@ -16,7 +16,7 @@ describe('ImportExport End-to-End Integration', () => {
     console.log('🧪 TESTING: Create record → Export record (end-to-end)')
 
     // Mock file download to capture export data
-    let capturedExportData: any = null
+    let capturedExportData: ExportData | null = null
 
     global.URL.createObjectURL = vi.fn(() => 'blob:test-url')
     global.URL.revokeObjectURL = vi.fn()
@@ -39,12 +39,12 @@ describe('ImportExport End-to-End Integration', () => {
           }
         }
       }
-    } as any
+    } as typeof Blob
 
-    const TestComponent = () => {
+    const TestComponent = (): React.ReactElement => {
       const [inputValue, setInputValue] = React.useState('')
 
-      const handleSubmit = async (tags: string[]) => {
+      const handleSubmit = async (tags: string[]): Promise<void> => {
         console.log('Creating record with tags:', tags)
         // Here we would normally call createRecord - but for this test we need to ensure it's integrated
         setInputValue('')
