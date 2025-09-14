@@ -63,6 +63,11 @@ describe('CreateRecordUseCase', () => {
       begin: jest.fn(),
       commit: jest.fn(),
       rollback: jest.fn().mockResolvedValue(Ok(undefined)),
+      execute: jest.fn(),
+      isActive: jest.fn(),
+      dispose: jest.fn(),
+      records: mockRecordRepository,
+      tags: mockTagRepository,
     };
 
     mockTagParser = {
@@ -328,6 +333,8 @@ describe('CreateRecordUseCase', () => {
         mockTagFactory.createFromString.mockReturnValue(newTag);
 
         mockTagRepository.findByNormalizedValue.mockResolvedValue(Ok(null));
+        mockRecordRepository.findByTagSet.mockResolvedValue(Ok([]));
+        mockUnitOfWork.begin.mockResolvedValue(Ok(undefined));
         mockTagRepository.save.mockResolvedValue(
           Err(new DomainError('REPOSITORY_ERROR', 'Tag creation failed'))
         );

@@ -1,5 +1,5 @@
 import React from 'react'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ImportExport } from '../ImportExport'
 import { Ok, Err } from '@misc-poc/shared'
@@ -399,10 +399,12 @@ describe('ImportExport Component', () => {
       render(<ImportExport />)
 
       const fileInput = screen.getByLabelText(/select file/i)
-      fireEvent.change(fileInput, { target: { files: [mockFile] } })
-
       const importButton = screen.getByRole('button', { name: /import/i })
-      fireEvent.click(importButton)
+
+      await act(async () => {
+        fireEvent.change(fileInput, { target: { files: [mockFile] } })
+        fireEvent.click(importButton)
+      })
 
       // Should show loading state
       expect(screen.getByText(/importing/i)).toBeInTheDocument()

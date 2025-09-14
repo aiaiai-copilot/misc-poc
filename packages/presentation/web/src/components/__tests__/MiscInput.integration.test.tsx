@@ -67,24 +67,26 @@ describe('MiscInputIntegrated - CreateRecord Integration', () => {
       const promise = new Promise((resolve) => {
         resolvePromise = resolve
       })
-      
+
       ;(mockCreateRecordUseCase.execute as Mock).mockReturnValue(promise)
 
       const user = userEvent.setup()
       render(<MiscInputIntegrated />)
-      
+
       const input = screen.getByRole('textbox')
-      await user.type(input, 'tag1 tag2')
-      await user.keyboard('{Enter}')
+      await act(async () => {
+        await user.type(input, 'tag1 tag2')
+        await user.keyboard('{Enter}')
+      })
 
       // Check loading state
       await waitFor(() => {
         expect(screen.getByRole('textbox')).toBeDisabled()
         expect(screen.getByText(/creating/i)).toBeInTheDocument()
       })
-      
+
       // Resolve the promise
-      act(() => {
+      await act(async () => {
         resolvePromise!(Ok({ record: { id: 'test' } }))
       })
     })
@@ -305,10 +307,12 @@ describe('MiscInputIntegrated - SearchRecords Integration', () => {
 
       const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
       render(<MiscInputIntegrated />)
-      
+
       const input = screen.getByRole('textbox')
-      await user.type(input, 'test')
-      
+      await act(async () => {
+        await user.type(input, 'test')
+      })
+
       act(() => {
         vi.advanceTimersByTime(300)
       })
@@ -316,8 +320,8 @@ describe('MiscInputIntegrated - SearchRecords Integration', () => {
       await waitFor(() => {
         expect(screen.getByText(/searching/i)).toBeInTheDocument()
       })
-      
-      act(() => {
+
+      await act(async () => {
         resolvePromise!(Ok({ searchResult: { records: [], totalCount: 0, hasMore: false } }))
       })
     })
