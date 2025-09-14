@@ -81,29 +81,29 @@ export class ImportDataUseCase {
         });
       });
 
-      // Step 2: Create automatic backup before data replacement
-      const backupResult = await this.createBackup();
-      if (backupResult.isErr()) {
-        return Err(backupResult.unwrapErr());
-      }
-
-      if (backupResult.unwrap()) {
-        warnings.push({
-          message: 'Automatic backup created before data replacement',
-          code: 'BACKUP_CREATED',
-          details: { timestamp: new Date().toISOString() },
-        });
-      }
-
-      // Step 3: Process import within transaction for rollback capability
+      // Step 2: Process import within transaction for rollback capability
       const importResult = await this.unitOfWork.execute(async (uow) => {
-        // Step 3a: Complete data replacement - delete all existing data
+        // Step 2a: Create automatic backup before data replacement (within transaction)
+        const backupResult = await this.createBackupWithinTransaction(uow);
+        if (backupResult.isErr()) {
+          return Err(backupResult.unwrapErr());
+        }
+
+        if (backupResult.unwrap()) {
+          warnings.push({
+            message: 'Automatic backup created before data replacement',
+            code: 'BACKUP_CREATED',
+            details: { timestamp: new Date().toISOString() },
+          });
+        }
+
+        // Step 2b: Complete data replacement - delete all existing data
         const deleteResult = await uow.records.deleteAll();
         if (deleteResult.isErr()) {
           return Err(deleteResult.unwrapErr());
         }
 
-        // Step 3b: Process records in batches for performance
+        // Step 2c: Process records in batches for performance
         const processResult = await this.processRecordsInBatches(
           exportData.records,
           this.DEFAULT_BATCH_SIZE
@@ -115,13 +115,13 @@ export class ImportDataUseCase {
 
         const { records, tags } = processResult.unwrap();
 
-        // Step 3c: Save tags first (for referential integrity)
+        // Step 2d: Save tags first (for referential integrity)
         const tagSaveResult = await uow.tags.saveBatch(tags);
         if (tagSaveResult.isErr()) {
           return Err(tagSaveResult.unwrapErr());
         }
 
-        // Step 3d: Save records
+        // Step 2e: Save records
         const recordSaveResult = await uow.records.saveBatch(records);
         if (recordSaveResult.isErr()) {
           return Err(recordSaveResult.unwrapErr());
@@ -143,7 +143,7 @@ export class ImportDataUseCase {
       };
       const endTime = new Date();
 
-      // Step 4: Create successful import result with statistics
+      // Step 3: Create successful import result with statistics
       const result = ImportResultDTOMapper.createWithWarnings(
         savedRecords.map((record: Record) => ({
           id: record.id.toString(),
@@ -197,10 +197,10 @@ export class ImportDataUseCase {
     }
   }
 
-  private async createBackup(): Promise<Result<boolean, DomainError>> {
+  private async createBackupWithinTransaction(uow: UnitOfWork): Promise<Result<boolean, DomainError>> {
     try {
       // Check if there's existing data to backup
-      const recordCountResult = await this.unitOfWork.records.count();
+      const recordCountResult = await uow.records.count();
       if (recordCountResult.isErr()) {
         return recordCountResult.map(() => false);
       }

@@ -1177,5 +1177,109 @@ describe('ImportDataUseCase', () => {
       // The test passes if no exceptions are thrown and proper error handling occurs
       expect(result.isOk() || result.isErr()).toBe(true);
     });
+
+    it('should handle backup creation within transaction correctly', async () => {
+      // Create a stricter mock that throws when repositories are accessed without an active transaction
+      // This test verifies that backup creation now happens within the transaction
+      class StrictMockUnitOfWork implements UnitOfWork {
+        private transactionActive = false;
+        private mockRecordRepo: MockRecordRepository;
+        private mockTagRepo: MockTagRepository;
+
+        constructor(recordRepo: MockRecordRepository, tagRepo: MockTagRepository) {
+          this.mockRecordRepo = recordRepo;
+          this.mockTagRepo = tagRepo;
+        }
+
+        get records(): RecordRepository {
+          if (!this.transactionActive) {
+            throw new Error('Transaction not active. Call begin() first.');
+          }
+          return this.mockRecordRepo;
+        }
+
+        get tags(): TagRepository {
+          if (!this.transactionActive) {
+            throw new Error('Transaction not active. Call begin() first.');
+          }
+          return this.mockTagRepo;
+        }
+
+        async begin(): Promise<Result<void, DomainError>> {
+          this.transactionActive = true;
+          return Ok(undefined);
+        }
+
+        async commit(): Promise<Result<void, DomainError>> {
+          this.transactionActive = false;
+          return Ok(undefined);
+        }
+
+        async rollback(): Promise<Result<void, DomainError>> {
+          this.transactionActive = false;
+          return Ok(undefined);
+        }
+
+        async execute<T>(
+          operation: (uow: UnitOfWork) => Promise<Result<T, DomainError>>
+        ): Promise<Result<T, DomainError>> {
+          const beginResult = await this.begin();
+          if (beginResult.isErr()) {
+            return beginResult as Result<T, DomainError>;
+          }
+
+          try {
+            const result = await operation(this);
+            if (result.isOk()) {
+              const commitResult = await this.commit();
+              if (commitResult.isErr()) {
+                await this.rollback();
+                return commitResult as Result<T, DomainError>;
+              }
+              return result;
+            } else {
+              await this.rollback();
+              return result;
+            }
+          } catch (error) {
+            await this.rollback();
+            throw error; // Re-throw the original error to reproduce the issue
+          }
+        }
+
+        isActive(): boolean {
+          return this.transactionActive;
+        }
+
+        async dispose(): Promise<void> {
+          this.transactionActive = false;
+        }
+      }
+
+      // Create strict unit of work that throws on repository access without transaction
+      const strictUnitOfWork = new StrictMockUnitOfWork(mockRecordRepository, mockTagRepository);
+      const strictUseCase = new ImportDataUseCase(
+        strictUnitOfWork,
+        mockImportValidator,
+        tagFactory
+      );
+
+      mockImportValidator.setValidationResult({
+        isValid: true,
+        errors: [],
+        warnings: [],
+        recordCount: 1,
+        version: '1.0',
+        migrationRequired: false,
+      });
+
+      // This should now succeed because backup creation is moved within the transaction
+      const result = await strictUseCase.execute(validImportData);
+
+      expect(result.isOk()).toBe(true);
+      if (result.isOk()) {
+        expect(result.value.success).toBe(true);
+      }
+    });
   });
 });

@@ -19,6 +19,7 @@ const IntegratedIndex = (): JSX.Element => {
     createRecord,
     updateRecord,
     deleteRecord,
+    refreshRecords,
   } = useRecordsIntegrated();
 
   const { searchModeDetector, tagCloudBuilder } = useApplicationContext();
@@ -202,7 +203,7 @@ const IntegratedIndex = (): JSX.Element => {
         {/* Import/Export Section */}
         {showImportExport && (
           <div className="mb-8 w-full max-w-6xl mx-auto">
-            <ImportExport />
+            <ImportExport onImportSuccess={refreshRecords} />
           </div>
         )}
 

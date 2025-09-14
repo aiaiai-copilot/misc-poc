@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils'
 
 interface ImportExportProps {
   className?: string
+  onImportSuccess?: () => Promise<void>
 }
 
 interface ImportValidation {
@@ -25,7 +26,7 @@ interface ImportValidation {
   }>
 }
 
-export const ImportExport: React.FC<ImportExportProps> = ({ className }) => {
+export const ImportExport: React.FC<ImportExportProps> = ({ className, onImportSuccess }) => {
   const { exportDataUseCase, importDataUseCase } = useApplicationContext()
 
   // Export state
@@ -204,6 +205,15 @@ export const ImportExport: React.FC<ImportExportProps> = ({ className }) => {
             fileInputRef.current.value = ''
           }
           alert('Import completed successfully!')
+
+          // Trigger refresh of records in the main UI
+          if (onImportSuccess) {
+            try {
+              await onImportSuccess()
+            } catch (error) {
+              console.error('Failed to refresh records after import:', error)
+            }
+          }
         } else {
           setImportError('Import failed')
         }
