@@ -1253,6 +1253,7 @@ __metadata:
     "@types/node": ^22.16.5
     "@types/react": ^18.3.23
     "@types/react-dom": ^18.3.7
+    "@types/react-window": ^1.8.8
     "@vitejs/plugin-react-swc": ^3.11.0
     autoprefixer: ^10.4.21
     class-variance-authority: ^0.7.1
@@ -1263,6 +1264,7 @@ __metadata:
     postcss: ^8.5.6
     react: ^18.3.1
     react-dom: ^18.3.1
+    react-window: ^2.1.0
     sonner: ^2.0.7
     tailwind-merge: ^2.6.0
     tailwindcss: ^3.4.17
@@ -1971,6 +1973,24 @@ __metadata:
   peerDependencies:
     "@types/react": ^18.0.0
   checksum: c8b63ec944d2a68992b4dba474003fe55ee1d949c4b9c8fe97eecb2290de23f76acfb670b2f7ceb46a5fc8e46808d1745369b03edda48a7a0cf730eff4c5d315
+  languageName: node
+  linkType: hard
+
+"@types/react-window@npm:^1.8.8":
+  version: 1.8.8
+  resolution: "@types/react-window@npm:1.8.8"
+  dependencies:
+    "@types/react": "*"
+  checksum: 253c9d6e0c942f34633edbddcbc369324403c42458ff004457c5bd5972961d8433a909c0cc1a89c918063d5eb85ecbdd774142af2555fae61f4ceb3ba9884b5a
+  languageName: node
+  linkType: hard
+
+"@types/react@npm:*":
+  version: 19.1.13
+  resolution: "@types/react@npm:19.1.13"
+  dependencies:
+    csstype: ^3.0.2
+  checksum: def174cf34e8450ea326d02e3b3a9378e51aaa71e6dd25e5f6750ddc5f3eda5099bf1b5c415cb911d91bec354b9ef25c99e55a1deedf483b93ed698da0e20ab4
   languageName: node
   linkType: hard
 
@@ -6099,6 +6119,16 @@ __metadata:
   version: 18.3.1
   resolution: "react-is@npm:18.3.1"
   checksum: e20fe84c86ff172fc8d898251b7cc2c43645d108bf96d0b8edf39b98f9a2cae97b40520ee7ed8ee0085ccc94736c4886294456033304151c3f94978cec03df21
+  languageName: node
+  linkType: hard
+
+"react-window@npm:^2.1.0":
+  version: 2.1.0
+  resolution: "react-window@npm:2.1.0"
+  peerDependencies:
+    react: ^18.0.0 || ^19.0.0
+    react-dom: ^18.0.0 || ^19.0.0
+  checksum: 444b6ffb45abe1341bb2badd8f6b517d40397f9ec8829a1b2096697fe9bba13130b00bdafd14cbab247dbc3d6272f1e7c3ee2906bb73f6bf3ec6798778051ad3
   languageName: node
   linkType: hard
 
