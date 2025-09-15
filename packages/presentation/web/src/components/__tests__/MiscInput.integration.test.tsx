@@ -253,7 +253,7 @@ describe('MiscInputIntegrated - SearchRecords Integration', () => {
         expect(mockSearchRecordsUseCase.execute).toHaveBeenCalledWith({
           query: 'test search',
           options: {
-            limit: 10,
+            limit: 50,
             offset: 0,
             sortBy: 'createdAt',
             sortOrder: 'desc',
@@ -270,17 +270,17 @@ describe('MiscInputIntegrated - SearchRecords Integration', () => {
       const input = screen.getByRole('textbox')
       await user.type(input, 'test')
       
-      // Advance by 200ms (not enough to trigger search)
+      // Advance by 100ms (not enough to trigger search with 150ms debounce)
       act(() => {
-        vi.advanceTimersByTime(200)
+        vi.advanceTimersByTime(100)
       })
-      
+
       // Type more
       await user.type(input, ' more')
-      
-      // Advance by 300ms
+
+      // Advance by 150ms (enough to trigger search)
       act(() => {
-        vi.advanceTimersByTime(300)
+        vi.advanceTimersByTime(150)
       })
       
       await waitFor(() => {
@@ -288,7 +288,7 @@ describe('MiscInputIntegrated - SearchRecords Integration', () => {
         expect(mockSearchRecordsUseCase.execute).toHaveBeenCalledWith({
           query: 'test more',
           options: {
-            limit: 10,
+            limit: 50,
             offset: 0,
             sortBy: 'createdAt',
             sortOrder: 'desc',
