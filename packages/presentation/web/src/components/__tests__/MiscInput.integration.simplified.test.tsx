@@ -61,7 +61,7 @@ describe('MiscInputIntegrated - Real Timer Integration', () => {
         expect(mockSearchRecordsUseCase.execute).toHaveBeenCalledWith({
           query: 'test search',
           options: {
-            limit: 10,
+            limit: 50,
             offset: 0,
             sortBy: 'createdAt',
             sortOrder: 'desc',
@@ -180,7 +180,7 @@ describe('MiscInputIntegrated - Real Timer Integration', () => {
         expect(mockSearchRecordsUseCase.execute).toHaveBeenCalledWith({
           query: 'tag1',
           options: {
-            limit: 10,
+            limit: 50,
             offset: 0,
             sortBy: 'createdAt',
             sortOrder: 'desc',
