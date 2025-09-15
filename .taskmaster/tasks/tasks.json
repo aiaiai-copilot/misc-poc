@@ -579,7 +579,63 @@
         "dependencies": [
           45
         ],
-        "status": "pending"
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Implement Toast Notification System (TDD)",
+            "description": "Add shadcn-ui toast component infrastructure, create toast hook for notifications, test toast display, auto-dismiss, accessibility using TDD approach with vitest",
+            "details": "",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 46
+          },
+          {
+            "id": 2,
+            "title": "Enhanced Loading UI Components (TDD)",
+            "description": "Create reusable spinner/loading components, add loading overlays for long operations, test loading state transitions and accessibility using TDD approach",
+            "details": "",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 46
+          },
+          {
+            "id": 3,
+            "title": "Error Toast Integration (TDD)",
+            "description": "Integrate Result.error cases with toast notifications, add user-friendly error message formatting, test error toast display and retry mechanisms using TDD",
+            "details": "",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 46
+          },
+          {
+            "id": 4,
+            "title": "Import/Export Loading & Error UX (TDD)",
+            "description": "Replace basic text with proper loading indicators, add progress feedback for file operations, enhance error handling with actionable messages using TDD",
+            "details": "",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 46
+          },
+          {
+            "id": 5,
+            "title": "Record Operations Loading States (TDD)",
+            "description": "Add loading states to record create/update/delete, show feedback during search operations, test loading states in record lists using TDD approach",
+            "details": "",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 46
+          },
+          {
+            "id": 6,
+            "title": "Accessibility & Screen Reader Support (TDD)",
+            "description": "Ensure all loading states are announced properly, add ARIA labels for error messages, test with screen readers using TDD approach",
+            "details": "",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 46
+          }
+        ]
       },
       {
         "id": 47,
@@ -632,7 +688,7 @@
     ],
     "metadata": {
       "created": "2025-09-01T19:04:18.307Z",
-      "updated": "2025-09-14T21:04:50.939Z",
+      "updated": "2025-09-15T07:01:32.523Z",
       "description": "Tasks for master context with TDD approach enforced throughout development as per PRD requirements"
     }
   }
