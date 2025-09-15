@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback, KeyboardEvent, forwardRef } from 'react';
+import { useState, useEffect, useRef, useCallback, KeyboardEvent, forwardRef, memo, useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import { X } from 'lucide-react';
 import { toast } from 'sonner';
@@ -12,7 +12,7 @@ interface MiscInputIntegratedProps {
   onRecordCreated?: () => void;
 }
 
-export const MiscInputIntegrated = forwardRef<HTMLInputElement, MiscInputIntegratedProps>(({
+const MiscInputIntegratedComponent = memo(forwardRef<HTMLInputElement, MiscInputIntegratedProps>(({
   className,
   placeholder = "Enter tags separated by spaces...",
   onSearchResults,
@@ -27,7 +27,23 @@ export const MiscInputIntegrated = forwardRef<HTMLInputElement, MiscInputIntegra
   const internalRef = useRef<HTMLInputElement>(null);
   const inputRef = ref || internalRef;
 
-  // Debounced search effect
+  // Memoized search request to prevent unnecessary re-creation
+  const searchRequest = useMemo(() => {
+    const trimmedValue = value.trim();
+    if (!trimmedValue) return null;
+
+    return {
+      query: trimmedValue,
+      options: {
+        limit: 50, // Increase limit for better performance caching
+        offset: 0,
+        sortBy: 'createdAt' as const,
+        sortOrder: 'desc' as const,
+      },
+    } as SearchRecordsRequest;
+  }, [value]);
+
+  // Optimized debounced search effect
   useEffect(() => {
     // Clear previous timeout
     if (searchTimeoutRef.current) {
@@ -39,29 +55,20 @@ export const MiscInputIntegrated = forwardRef<HTMLInputElement, MiscInputIntegra
       return;
     }
 
-    // Handle empty input - clear search results
-    if (!value.trim()) {
+    // Handle empty input - clear search results immediately
+    if (!searchRequest) {
       onSearchResults?.(null);
+      setIsSearching(false);
       return;
     }
 
-    // Set up debounced search
+    // Set up debounced search with reduced delay for better UX
     searchTimeoutRef.current = setTimeout(async () => {
       setIsSearching(true);
-      
-      try {
-        const request: SearchRecordsRequest = {
-          query: value.trim(),
-          options: {
-            limit: 10,
-            offset: 0,
-            sortBy: 'createdAt',
-            sortOrder: 'desc',
-          },
-        };
 
-        const result = await searchRecordsUseCase.execute(request);
-        
+      try {
+        const result = await searchRecordsUseCase.execute(searchRequest);
+
         if (result.isOk()) {
           onSearchResults?.(result.unwrap().searchResult);
         } else {
@@ -73,14 +80,14 @@ export const MiscInputIntegrated = forwardRef<HTMLInputElement, MiscInputIntegra
       } finally {
         setIsSearching(false);
       }
-    }, 300);
+    }, 150); // Reduced from 300ms to 150ms for faster response
 
     return (): void => {
       if (searchTimeoutRef.current) {
         clearTimeout(searchTimeoutRef.current);
       }
     };
-  }, [value, searchRecordsUseCase, onSearchResults]);
+  }, [searchRequest, searchRecordsUseCase, onSearchResults]);
 
   const handleCreateRecord = useCallback(async (content: string): Promise<void> => {
     if (!createRecordUseCase) {
@@ -200,6 +207,8 @@ export const MiscInputIntegrated = forwardRef<HTMLInputElement, MiscInputIntegra
       )}
     </div>
   );
-});
+}));
 
-MiscInputIntegrated.displayName = 'MiscInputIntegrated';
+MiscInputIntegratedComponent.displayName = 'MiscInputIntegrated';
+
+export const MiscInputIntegrated = MiscInputIntegratedComponent;

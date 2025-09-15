@@ -95,8 +95,8 @@ describe('RecordsList', () => {
     expect(mockProps.onDelete).toHaveBeenCalledWith('1')
   })
 
-  it('limits displayed records to 12', () => {
-    const manyRecords = Array.from({ length: 15 }, (_, i) => ({
+  it('limits displayed records to 50', () => {
+    const manyRecords = Array.from({ length: 60 }, (_, i) => ({
       id: i.toString(),
       tags: [`tag${i}`],
       createdAt: new Date(),
@@ -104,9 +104,9 @@ describe('RecordsList', () => {
     }))
 
     render(<RecordsList {...mockProps} records={manyRecords} />)
-    
+
     // Count the record items by finding elements with record-item class
     const recordItems = document.querySelectorAll('.record-item')
-    expect(recordItems).toHaveLength(12)
+    expect(recordItems).toHaveLength(50)
   })
 })
