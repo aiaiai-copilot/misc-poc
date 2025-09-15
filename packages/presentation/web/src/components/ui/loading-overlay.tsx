@@ -1,6 +1,7 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
 import { Spinner, SpinnerProps } from './spinner';
+import { LiveAnnouncer } from './live-announcer';
 
 export interface LoadingOverlayProps {
   loading: boolean;
@@ -10,6 +11,7 @@ export interface LoadingOverlayProps {
   className?: string;
   children?: React.ReactNode;
   spinnerSize?: SpinnerProps['size'];
+  announceChanges?: boolean;
 }
 
 const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
@@ -19,16 +21,20 @@ const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
   fullScreen = false,
   className,
   children,
-  spinnerSize = 'lg'
+  spinnerSize = 'lg',
+  announceChanges = false,
 }) => {
   if (!loading) {
     return children ? <>{children}</> : null;
   }
 
+  const announceMessage = message || 'Loading...';
+
   const overlayContent = (
     <div
       role="status"
-      aria-label={message || 'Loading...'}
+      aria-label={announceMessage}
+      aria-describedby={message ? 'loading-message' : undefined}
       className={cn(
         'flex flex-col items-center justify-center gap-3 z-50 pointer-events-auto',
         fullScreen ? 'fixed inset-0' : 'absolute inset-0',
@@ -38,10 +44,14 @@ const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
     >
       <Spinner size={spinnerSize} hideRole />
       {message && (
-        <div className="text-sm text-muted-foreground max-w-xs text-center">
+        <div
+          id="loading-message"
+          className="text-sm text-muted-foreground max-w-xs text-center"
+        >
           {message}
         </div>
       )}
+      {announceChanges && <LiveAnnouncer message={announceMessage} />}
     </div>
   );
 
