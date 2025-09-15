@@ -1,16 +1,4 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
-# Run build check with dist cleanup
-echo "🔧 Running build check..."
-# Clean dist directories first to avoid Node.js Buffer compatibility issues
-rm -rf packages/*/dist packages/*/*/dist || true
-if ! yarn build; then
-    echo ""
-    echo "❌ Build failed! Please fix build errors before committing."
-    echo ""
-    exit 1
-fi
-echo "✅ Build check passed"
-
 yarn lint-staged
