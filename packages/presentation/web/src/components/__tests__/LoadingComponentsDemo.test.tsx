@@ -9,12 +9,13 @@ import { useLoading } from '../../hooks/useLoading';
 
 // Demo component showcasing all loading components
 const LoadingComponentsDemo: React.FC = () => {
-  const { isLoading, isLoadingKey, startLoading, stopLoading, withLoading } = useLoading();
+  const { isLoading, isLoadingKey, startLoading, stopLoading, withLoading } =
+    useLoading();
   const [showOverlay, setShowOverlay] = React.useState(false);
 
-  const handleAsyncOperation = async () => {
+  const handleAsyncOperation = async (): Promise<void> => {
     await withLoading(
-      () => new Promise(resolve => setTimeout(resolve, 1000)),
+      () => new Promise((resolve) => setTimeout(resolve, 1000)),
       'demo',
       'Processing demo data...'
     );
@@ -42,9 +43,7 @@ const LoadingComponentsDemo: React.FC = () => {
           <button onClick={() => startLoading('save', 'Saving...')}>
             Start Loading
           </button>
-          <button onClick={() => stopLoading('save')}>
-            Stop Loading
-          </button>
+          <button onClick={() => stopLoading('save')}>Stop Loading</button>
           <p>Is Loading: {isLoading.toString()}</p>
           <p>Save Loading: {isLoadingKey('save').toString()}</p>
         </div>
@@ -78,10 +77,7 @@ const LoadingComponentsDemo: React.FC = () => {
       {/* Async operation demo */}
       <section>
         <h2>Async Operation</h2>
-        <button
-          onClick={handleAsyncOperation}
-          disabled={isLoadingKey('demo')}
-        >
+        <button onClick={handleAsyncOperation} disabled={isLoadingKey('demo')}>
           {isLoadingKey('demo') ? 'Processing...' : 'Start Async Operation'}
         </button>
       </section>
@@ -128,7 +124,9 @@ describe('Loading Components Integration Demo', () => {
     const user = userEvent.setup();
     render(<LoadingComponentsDemo />);
 
-    expect(screen.queryByText('Loading overlay demo...')).not.toBeInTheDocument();
+    expect(
+      screen.queryByText('Loading overlay demo...')
+    ).not.toBeInTheDocument();
 
     await user.click(screen.getByText('Toggle Overlay'));
 
@@ -146,9 +144,12 @@ describe('Loading Components Integration Demo', () => {
 
     expect(screen.getByText('Processing...')).toBeInTheDocument();
 
-    await waitFor(() => {
-      expect(screen.getByText('Start Async Operation')).toBeInTheDocument();
-    }, { timeout: 2000 });
+    await waitFor(
+      () => {
+        expect(screen.getByText('Start Async Operation')).toBeInTheDocument();
+      },
+      { timeout: 2000 }
+    );
   });
 
   it('should render skeleton placeholders with proper accessibility', () => {
