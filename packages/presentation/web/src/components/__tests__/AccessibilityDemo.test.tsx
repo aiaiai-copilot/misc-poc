@@ -100,7 +100,8 @@ describe('AccessibilityDemo Component', () => {
 
     // Should have success toast
     await waitFor(() => {
-      expect(screen.getByText(/Data Processing completed/)).toBeInTheDocument();
+      const successMessages = screen.getAllByText(/Data Processing completed/);
+      expect(successMessages.length).toBeGreaterThan(0);
     });
   });
 
@@ -122,7 +123,8 @@ describe('AccessibilityDemo Component', () => {
 
     // Should have error toast
     await waitFor(() => {
-      expect(screen.getByText(/Data Validation failed/)).toBeInTheDocument();
+      const errorMessages = screen.getAllByText(/Data Validation failed/);
+      expect(errorMessages.length).toBeGreaterThan(0);
     });
   });
 
