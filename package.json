@@ -36,9 +36,6 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.10.2",
-    "@cucumber/cucumber": "^12.2.0",
-    "@cucumber/gherkin": "^35.0.0",
-    "@cucumber/pretty-formatter": "^2.2.0",
     "@playwright/test": "^1.55.0",
     "@types/node": "^22.0.0",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
@@ -49,7 +46,6 @@
     "husky": "^9.0.0",
     "lint-staged": "^15.0.0",
     "playwright": "^1.55.0",
-    "playwright-bdd": "^8.4.1",
     "prettier": "^3.0.0",
     "remove-accents": "^0.5.0",
     "typescript": "^5.5.0"

@@ -41,3 +41,7 @@ build/
 
 # Test coverage
 coverage/
+
+# Playwright test results and reports
+test-results/
+playwright-report/

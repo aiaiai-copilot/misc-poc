@@ -108,7 +108,20 @@ export class MiscPage {
   }
 
   async clearInputWithEscape(): Promise<void> {
-    await this.page.keyboard.press('Escape');
+    // Press Escape multiple times to clear all tags (the component removes one tag per Escape)
+    let attempts = 0;
+    const maxAttempts = 10; // Safety limit
+
+    while (attempts < maxAttempts) {
+      const currentValue = await this.inputField.inputValue();
+      if (!currentValue.trim()) {
+        break; // Input is already clear
+      }
+
+      await this.page.keyboard.press('Escape');
+      await this.page.waitForTimeout(100); // Small delay for the state update
+      attempts++;
+    }
   }
 
   async tryTabCompletion(): Promise<void> {

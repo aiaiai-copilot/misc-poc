@@ -153,6 +153,7 @@ const RecordItemOptimized = memo<RecordItemOptimizedProps>(({
       onClick={handleRecordClick}
       onKeyDown={handleKeyDownLocal}
       tabIndex={-1}
+      data-testid="record-item"
     >
       <div className="flex items-center">
         <div className="flex-1">
@@ -241,7 +242,7 @@ const RecordsListComponent = memo(forwardRef<RecordsListRef, RecordsListProps>((
   const visibleRecords = useMemo(() => records.slice(0, maxDisplayItems), [records, maxDisplayItems]);
 
   return (
-    <div className="w-full max-w-6xl mx-auto space-y-2">
+    <div className="w-full max-w-6xl mx-auto space-y-2" data-testid="records-list">
       {visibleRecords.map((record, index) => (
         <RecordItemOptimized
           key={record.id}
