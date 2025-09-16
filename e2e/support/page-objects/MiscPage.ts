@@ -234,4 +234,13 @@ export class MiscPage {
     // With MinimalisticToolbar, import is automatic after file selection
     // No confirmation dialog needed
   }
+
+  // Additional utility methods for E2E tests
+  async typeInInput(text: string): Promise<void> {
+    await this.inputField.fill(text);
+  }
+
+  async clearInput(): Promise<void> {
+    await this.inputField.clear();
+  }
 }
