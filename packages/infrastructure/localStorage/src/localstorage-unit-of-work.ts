@@ -213,9 +213,12 @@ class WorkingStorageManager implements StorageManagerLike {
   }
 
   async save(schema: StorageSchemaV21): Promise<void> {
-    // Update working copy during transaction
-    this.workingSchema.records = schema.records;
-    this.workingSchema.tags = schema.tags;
-    this.workingSchema.indexes = schema.indexes;
+    // Update working copy during transaction with deep copy to ensure isolation
+    this.workingSchema.records = { ...schema.records };
+    this.workingSchema.tags = { ...schema.tags };
+    this.workingSchema.indexes = {
+      normalizedToTagId: { ...schema.indexes.normalizedToTagId },
+      tagToRecords: { ...schema.indexes.tagToRecords },
+    };
   }
 }
