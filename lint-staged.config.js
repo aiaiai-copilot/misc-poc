@@ -10,11 +10,11 @@ module.exports = {
       const hasSharedFiles = filenames.some(f => f.includes('packages/shared'));
 
       const commands = [];
-      if (hasWebFiles) commands.push('yarn workspace @misc-poc/presentation-web test --run');
-      if (hasDomainFiles) commands.push('yarn workspace @misc-poc/domain test --run');
-      if (hasApplicationFiles) commands.push('yarn workspace @misc-poc/application test --run');
-      if (hasInfrastructureFiles) commands.push('yarn workspace @misc-poc/infrastructure test --run');
-      if (hasSharedFiles) commands.push('yarn workspace @misc-poc/shared test --run');
+      if (hasWebFiles) commands.push('yarn workspace @misc-poc/presentation-web test');
+      if (hasDomainFiles) commands.push('yarn workspace @misc-poc/domain test');
+      if (hasApplicationFiles) commands.push('yarn workspace @misc-poc/application test');
+      if (hasInfrastructureFiles) commands.push('yarn workspace @misc-poc/infrastructure-localstorage test');
+      if (hasSharedFiles) commands.push('yarn workspace @misc-poc/shared test');
 
       return commands;
     }
