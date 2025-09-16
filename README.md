@@ -70,13 +70,14 @@ yarn test           # Теперь тесты должны работать
 ### Веб-приложение
 
 ```bash
-# Запустить веб-приложение (автоматически очищает + собирает + запускает preview сервер)
-yarn dev
+# Development сервер (быстрая перезагрузка, HMR)
+yarn workspace @misc-poc/presentation-web dev
+# → http://localhost:5173/
 
-# Альтернативная команда (без автоочистки)
-yarn web:start
-
-# Приложение будет доступно на http://localhost:4173/ (или следующий свободный порт)
+# Production preview (собранная версия для тестирования)
+yarn dev  # автоматически очищает + собирает + запускает preview
+yarn web:start  # альтернатива без автоочистки
+# → http://localhost:4173/
 
 # Только сборка веб-приложения
 yarn workspace @misc-poc/presentation-web build
@@ -87,8 +88,6 @@ yarn workspace @misc-poc/presentation-web preview
 # Тестирование веб-приложения
 yarn workspace @misc-poc/presentation-web test
 ```
-
-**Примечание**: Development сервер на порту 3000 недоступен из-за проблем совместимости с инструментами разработки. Используется production preview сервер на порту 4173, который предоставляет ту же функциональность.
 
 **⚠️ Node.js v22 совместимость**: Из-за изменений в Node.js v22 и Buffer API, Vite иногда не может правильно очистить папку `dist`. Команда `yarn dev` теперь автоматически очищает веб-пакет перед сборкой, чтобы избежать этой проблемы.
 
