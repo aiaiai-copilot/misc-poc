@@ -88,9 +88,9 @@ yarn workspace @misc-poc/presentation-web preview
 yarn workspace @misc-poc/presentation-web test
 ```
 
-**Примечание**: Development сервер на порту 3000 недоступен из-за проблем совместимости Node.js v22 с Yarn PnP. Используется production preview сервер на порту 4173, который предоставляет ту же функциональность.
+**Примечание**: Development сервер на порту 3000 недоступен из-за проблем совместимости с инструментами разработки. Используется production preview сервер на порту 4173, который предоставляет ту же функциональность.
 
-**⚠️ Node.js v22 + Yarn PnP совместимость**: Из-за изменений в Node.js v22 и Buffer API, Vite иногда не может правильно очистить папку `dist`. Команда `yarn dev` теперь автоматически очищает веб-пакет перед сборкой, чтобы избежать этой проблемы.
+**⚠️ Node.js v22 совместимость**: Из-за изменений в Node.js v22 и Buffer API, Vite иногда не может правильно очистить папку `dist`. Команда `yarn dev` теперь автоматически очищает веб-пакет перед сборкой, чтобы избежать этой проблемы.
 
 ### Тестирование
 
@@ -181,13 +181,14 @@ yarn workspace @misc-poc/infrastructure-localstorage test --coverage
 yarn workspace @misc-poc/presentation-cli test --coverage
 yarn workspace @misc-poc/presentation-web test --coverage
 
-# Линтинг конкретного пакета
-yarn workspace @misc-poc/shared lint  # ❌ PnP compatibility issue - use 'yarn lint' instead
-yarn workspace @misc-poc/domain lint  # ❌ PnP compatibility issue - use 'yarn lint' instead
-yarn workspace @misc-poc/application lint  # ❌ PnP compatibility issue - use 'yarn lint' instead
-yarn workspace @misc-poc/infrastructure-localstorage lint  # ❌ PnP compatibility issue - use 'yarn lint' instead
-yarn workspace @misc-poc/presentation-cli lint
-yarn workspace @misc-poc/presentation-web lint  # ❌ PnP compatibility issue - use 'yarn lint' instead
+# Линтинг конкретного пакета (eslint установлен на уровне root)
+yarn lint  # Линтинг всех пакетов - рекомендуется
+# Или для отдельных пакетов:
+yarn exec eslint packages/shared/src --ext .ts
+yarn exec eslint packages/domain/src --ext .ts
+yarn exec eslint packages/application/src --ext .ts
+yarn exec eslint packages/infrastructure/localStorage/src --ext .ts
+yarn exec eslint packages/presentation/web/src --ext .ts,.tsx
 
 # Проверка типов конкретного пакета
 yarn workspace @misc-poc/shared typecheck
