@@ -21,8 +21,38 @@ export class MiscPage {
   }
 
   async goto(): Promise<void> {
-    await this.page.goto('/');
-    await this.page.waitForLoadState('networkidle');
+    try {
+      console.log('Navigating to base URL...');
+      await this.page.goto('/', {
+        waitUntil: 'domcontentloaded',
+        timeout: 60000,
+      });
+      console.log('Page loaded, waiting for network idle...');
+      await this.page.waitForLoadState('networkidle', { timeout: 30000 });
+      console.log('Network idle achieved');
+
+      // Wait for the input field to be available
+      console.log('Waiting for input field to be available...');
+      await this.inputField.waitFor({ state: 'visible', timeout: 10000 });
+      console.log('Input field is visible');
+    } catch (error) {
+      console.error('Error during page navigation:', error);
+
+      // Debug: Check if page loaded at all
+      const url = this.page.url();
+      const title = await this.page.title().catch(() => 'Unable to get title');
+      console.log(`Current URL: ${url}`);
+      console.log(`Page title: ${title}`);
+
+      // Check if any elements are visible
+      const body = await this.page
+        .locator('body')
+        .isVisible()
+        .catch(() => false);
+      console.log(`Body visible: ${body}`);
+
+      throw error;
+    }
   }
 
   async clearLocalStorage(): Promise<void> {
