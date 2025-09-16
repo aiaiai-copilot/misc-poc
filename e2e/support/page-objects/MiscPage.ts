@@ -208,25 +208,39 @@ export class MiscPage {
     return await this.loadingIndicator.isVisible();
   }
 
-  // Import/Export functionality
+  // Import/Export functionality (MinimalisticToolbar)
   async accessImportExport(): Promise<void> {
-    // This might be in a settings menu or similar
-    const settingsButton = this.page.locator('[data-testid="settings-button"]');
-    await settingsButton.click();
+    // Toolbar is now integrated into the input field, no need to access separately
+    // The export/import buttons are always visible in the input area
   }
 
   async exportData(): Promise<void> {
-    const exportButton = this.page.locator('[data-testid="export-button"]');
+    // Export button is now in the minimalistic toolbar (download icon)
+    const exportButton = this.page.locator('button[title="Export data"]');
     await exportButton.click();
   }
 
   async importData(filePath: string): Promise<void> {
-    const importInput = this.page.locator('[data-testid="import-input"]');
+    // Click the import button (upload icon) to trigger file picker
+    const importButton = this.page.locator('button[title="Import data"]');
+    await importButton.click();
+
+    // The hidden file input should now be accessible
+    const importInput = this.page.locator('input[type="file"][accept=".json"]');
     await importInput.setInputFiles(filePath);
   }
 
   async confirmImport(): Promise<void> {
-    const confirmButton = this.page.locator('[data-testid="confirm-import"]');
-    await confirmButton.click();
+    // With MinimalisticToolbar, import is automatic after file selection
+    // No confirmation dialog needed
+  }
+
+  // Additional utility methods for E2E tests
+  async typeInInput(text: string): Promise<void> {
+    await this.inputField.fill(text);
+  }
+
+  async clearInput(): Promise<void> {
+    await this.inputField.clear();
   }
 }
