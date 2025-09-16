@@ -208,10 +208,10 @@ test.describe('Import/Export Functionality', () => {
       const importButton = miscPage.page.locator('button[title="Import data"]');
       await expect(importButton).toBeVisible();
 
-      // And it should have the correct styling (small, minimalistic)
-      await expect(importButton).toHaveClass(/w-8/);
-      await expect(importButton).toHaveClass(/h-8/);
-      await expect(importButton).toHaveClass(/border/);
+      // And it should have the correct styling (calculator-style minimalistic)
+      await expect(importButton).toHaveClass(/p-1/);
+      await expect(importButton).toHaveClass(/rounded-none/);
+      await expect(importButton).toHaveClass(/transition-colors/);
     });
   });
 

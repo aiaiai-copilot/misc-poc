@@ -47,8 +47,18 @@ describe('MinimalisticToolbar', () => {
       const exportButton = screen.getByTitle('Export data');
       const importButton = screen.getByTitle('Import data');
 
-      expect(exportButton).toHaveClass('w-8', 'h-8', 'border', 'rounded');
-      expect(importButton).toHaveClass('w-8', 'h-8', 'border', 'rounded');
+      expect(exportButton).toHaveClass(
+        'p-1',
+        'rounded-none',
+        'hover:bg-muted',
+        'transition-colors'
+      );
+      expect(importButton).toHaveClass(
+        'p-1',
+        'rounded-none',
+        'hover:bg-muted',
+        'transition-colors'
+      );
     });
   });
 
