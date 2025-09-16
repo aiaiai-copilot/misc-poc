@@ -232,8 +232,8 @@ describe('DeleteRecordUseCase', () => {
 
         mockRecordRepository.findById.mockResolvedValue(Ok(existingRecord));
         mockUnitOfWork.begin.mockResolvedValue(Ok(undefined));
-        mockRecordRepository.delete.mockResolvedValue(Ok(undefined));
-        mockTagRepository.findOrphaned.mockResolvedValue(Ok([]));
+        mockUnitOfWork.records.delete.mockResolvedValue(Ok(undefined));
+        mockUnitOfWork.tags.findOrphaned.mockResolvedValue(Ok([]));
         mockUnitOfWork.commit.mockResolvedValue(Ok(undefined));
 
         const result = await useCase.execute(request);
@@ -248,9 +248,11 @@ describe('DeleteRecordUseCase', () => {
           validRecordId
         );
         expect(mockUnitOfWork.begin).toHaveBeenCalled();
-        expect(mockRecordRepository.delete).toHaveBeenCalledWith(validRecordId);
-        expect(mockTagRepository.findOrphaned).toHaveBeenCalled();
-        expect(mockTagRepository.deleteBatch).not.toHaveBeenCalled();
+        expect(mockUnitOfWork.records.delete).toHaveBeenCalledWith(
+          validRecordId
+        );
+        expect(mockUnitOfWork.tags.findOrphaned).toHaveBeenCalled();
+        expect(mockUnitOfWork.tags.deleteBatch).not.toHaveBeenCalled();
         expect(mockUnitOfWork.commit).toHaveBeenCalled();
         expect(mockUnitOfWork.rollback).not.toHaveBeenCalled();
       });
@@ -261,9 +263,9 @@ describe('DeleteRecordUseCase', () => {
 
         mockRecordRepository.findById.mockResolvedValue(Ok(existingRecord));
         mockUnitOfWork.begin.mockResolvedValue(Ok(undefined));
-        mockRecordRepository.delete.mockResolvedValue(Ok(undefined));
-        mockTagRepository.findOrphaned.mockResolvedValue(Ok(orphanedTags));
-        mockTagRepository.deleteBatch.mockResolvedValue(Ok(undefined));
+        mockUnitOfWork.records.delete.mockResolvedValue(Ok(undefined));
+        mockUnitOfWork.tags.findOrphaned.mockResolvedValue(Ok(orphanedTags));
+        mockUnitOfWork.tags.deleteBatch.mockResolvedValue(Ok(undefined));
         mockUnitOfWork.commit.mockResolvedValue(Ok(undefined));
 
         const result = await useCase.execute(request);
@@ -278,9 +280,11 @@ describe('DeleteRecordUseCase', () => {
           validRecordId
         );
         expect(mockUnitOfWork.begin).toHaveBeenCalled();
-        expect(mockRecordRepository.delete).toHaveBeenCalledWith(validRecordId);
-        expect(mockTagRepository.findOrphaned).toHaveBeenCalled();
-        expect(mockTagRepository.deleteBatch).toHaveBeenCalledWith([
+        expect(mockUnitOfWork.records.delete).toHaveBeenCalledWith(
+          validRecordId
+        );
+        expect(mockUnitOfWork.tags.findOrphaned).toHaveBeenCalled();
+        expect(mockUnitOfWork.tags.deleteBatch).toHaveBeenCalledWith([
           tagId1,
           tagId2,
         ]);
@@ -318,14 +322,16 @@ describe('DeleteRecordUseCase', () => {
 
         mockRecordRepository.findById.mockResolvedValue(Ok(existingRecord));
         mockUnitOfWork.begin.mockResolvedValue(Ok(undefined));
-        mockRecordRepository.delete.mockResolvedValue(Err(deleteError));
+        mockUnitOfWork.records.delete.mockResolvedValue(Err(deleteError));
         mockUnitOfWork.rollback.mockResolvedValue(Ok(undefined));
 
         const result = await useCase.execute(request);
 
         expect(result.isErr()).toBe(true);
         expect(result.unwrapErr()).toBe(deleteError);
-        expect(mockRecordRepository.delete).toHaveBeenCalledWith(validRecordId);
+        expect(mockUnitOfWork.records.delete).toHaveBeenCalledWith(
+          validRecordId
+        );
         expect(mockUnitOfWork.rollback).toHaveBeenCalled();
         expect(mockUnitOfWork.commit).not.toHaveBeenCalled();
       });
@@ -339,8 +345,8 @@ describe('DeleteRecordUseCase', () => {
 
         mockRecordRepository.findById.mockResolvedValue(Ok(existingRecord));
         mockUnitOfWork.begin.mockResolvedValue(Ok(undefined));
-        mockRecordRepository.delete.mockResolvedValue(Ok(undefined));
-        mockTagRepository.findOrphaned.mockResolvedValue(
+        mockUnitOfWork.records.delete.mockResolvedValue(Ok(undefined));
+        mockUnitOfWork.tags.findOrphaned.mockResolvedValue(
           Err(orphanedTagsError)
         );
         mockUnitOfWork.rollback.mockResolvedValue(Ok(undefined));
@@ -349,9 +355,11 @@ describe('DeleteRecordUseCase', () => {
 
         expect(result.isErr()).toBe(true);
         expect(result.unwrapErr()).toBe(orphanedTagsError);
-        expect(mockRecordRepository.delete).toHaveBeenCalledWith(validRecordId);
-        expect(mockTagRepository.findOrphaned).toHaveBeenCalled();
-        expect(mockTagRepository.deleteBatch).not.toHaveBeenCalled();
+        expect(mockUnitOfWork.records.delete).toHaveBeenCalledWith(
+          validRecordId
+        );
+        expect(mockUnitOfWork.tags.findOrphaned).toHaveBeenCalled();
+        expect(mockUnitOfWork.tags.deleteBatch).not.toHaveBeenCalled();
         expect(mockUnitOfWork.rollback).toHaveBeenCalled();
         expect(mockUnitOfWork.commit).not.toHaveBeenCalled();
       });
@@ -366,18 +374,20 @@ describe('DeleteRecordUseCase', () => {
 
         mockRecordRepository.findById.mockResolvedValue(Ok(existingRecord));
         mockUnitOfWork.begin.mockResolvedValue(Ok(undefined));
-        mockRecordRepository.delete.mockResolvedValue(Ok(undefined));
-        mockTagRepository.findOrphaned.mockResolvedValue(Ok(orphanedTags));
-        mockTagRepository.deleteBatch.mockResolvedValue(Err(deleteTagsError));
+        mockUnitOfWork.records.delete.mockResolvedValue(Ok(undefined));
+        mockUnitOfWork.tags.findOrphaned.mockResolvedValue(Ok(orphanedTags));
+        mockUnitOfWork.tags.deleteBatch.mockResolvedValue(Err(deleteTagsError));
         mockUnitOfWork.rollback.mockResolvedValue(Ok(undefined));
 
         const result = await useCase.execute(request);
 
         expect(result.isErr()).toBe(true);
         expect(result.unwrapErr()).toBe(deleteTagsError);
-        expect(mockRecordRepository.delete).toHaveBeenCalledWith(validRecordId);
-        expect(mockTagRepository.findOrphaned).toHaveBeenCalled();
-        expect(mockTagRepository.deleteBatch).toHaveBeenCalledWith([
+        expect(mockUnitOfWork.records.delete).toHaveBeenCalledWith(
+          validRecordId
+        );
+        expect(mockUnitOfWork.tags.findOrphaned).toHaveBeenCalled();
+        expect(mockUnitOfWork.tags.deleteBatch).toHaveBeenCalledWith([
           tagId1,
           tagId2,
         ]);
@@ -394,8 +404,8 @@ describe('DeleteRecordUseCase', () => {
 
         mockRecordRepository.findById.mockResolvedValue(Ok(existingRecord));
         mockUnitOfWork.begin.mockResolvedValue(Ok(undefined));
-        mockRecordRepository.delete.mockResolvedValue(Ok(undefined));
-        mockTagRepository.findOrphaned.mockResolvedValue(Ok([]));
+        mockUnitOfWork.records.delete.mockResolvedValue(Ok(undefined));
+        mockUnitOfWork.tags.findOrphaned.mockResolvedValue(Ok([]));
         mockUnitOfWork.commit.mockResolvedValue(Err(commitError));
         mockUnitOfWork.rollback.mockResolvedValue(Ok(undefined));
 
@@ -403,8 +413,10 @@ describe('DeleteRecordUseCase', () => {
 
         expect(result.isErr()).toBe(true);
         expect(result.unwrapErr()).toBe(commitError);
-        expect(mockRecordRepository.delete).toHaveBeenCalledWith(validRecordId);
-        expect(mockTagRepository.findOrphaned).toHaveBeenCalled();
+        expect(mockUnitOfWork.records.delete).toHaveBeenCalledWith(
+          validRecordId
+        );
+        expect(mockUnitOfWork.tags.findOrphaned).toHaveBeenCalled();
         expect(mockUnitOfWork.commit).toHaveBeenCalled();
         expect(mockUnitOfWork.rollback).toHaveBeenCalled();
       });
@@ -415,7 +427,7 @@ describe('DeleteRecordUseCase', () => {
 
         mockRecordRepository.findById.mockResolvedValue(Ok(existingRecord));
         mockUnitOfWork.begin.mockResolvedValue(Ok(undefined));
-        mockRecordRepository.delete.mockRejectedValue(generalError);
+        mockUnitOfWork.records.delete.mockRejectedValue(generalError);
         mockUnitOfWork.rollback.mockResolvedValue(Ok(undefined));
 
         const result = await useCase.execute(request);
@@ -479,7 +491,7 @@ describe('DeleteRecordUseCase', () => {
         // First call finds the record, but when we try to delete it's already gone
         mockRecordRepository.findById.mockResolvedValue(Ok(existingRecord));
         mockUnitOfWork.begin.mockResolvedValue(Ok(undefined));
-        mockRecordRepository.delete.mockResolvedValue(
+        mockUnitOfWork.records.delete.mockResolvedValue(
           Err(new DomainError('RECORD_NOT_FOUND', 'Record not found'))
         );
         mockUnitOfWork.rollback.mockResolvedValue(Ok(undefined));
@@ -499,9 +511,9 @@ describe('DeleteRecordUseCase', () => {
 
         mockRecordRepository.findById.mockResolvedValue(Ok(existingRecord));
         mockUnitOfWork.begin.mockResolvedValue(Ok(undefined));
-        mockRecordRepository.delete.mockResolvedValue(Ok(undefined));
-        mockTagRepository.findOrphaned.mockResolvedValue(Ok(orphanedTags));
-        mockTagRepository.deleteBatch.mockResolvedValue(Ok(undefined));
+        mockUnitOfWork.records.delete.mockResolvedValue(Ok(undefined));
+        mockUnitOfWork.tags.findOrphaned.mockResolvedValue(Ok(orphanedTags));
+        mockUnitOfWork.tags.deleteBatch.mockResolvedValue(Ok(undefined));
         mockUnitOfWork.commit.mockResolvedValue(Ok(undefined));
 
         const result = await useCase.execute(request);
@@ -510,9 +522,11 @@ describe('DeleteRecordUseCase', () => {
 
         // Verify all operations were called within the transaction
         expect(mockUnitOfWork.begin).toHaveBeenCalled();
-        expect(mockRecordRepository.delete).toHaveBeenCalledWith(validRecordId);
-        expect(mockTagRepository.findOrphaned).toHaveBeenCalled();
-        expect(mockTagRepository.deleteBatch).toHaveBeenCalledWith([tagId1]);
+        expect(mockUnitOfWork.records.delete).toHaveBeenCalledWith(
+          validRecordId
+        );
+        expect(mockUnitOfWork.tags.findOrphaned).toHaveBeenCalled();
+        expect(mockUnitOfWork.tags.deleteBatch).toHaveBeenCalledWith([tagId1]);
         expect(mockUnitOfWork.commit).toHaveBeenCalled();
       });
     });
