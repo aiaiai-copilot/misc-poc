@@ -76,5 +76,8 @@ export default defineConfig({
       'yarn build:packages && yarn workspace @misc-poc/presentation-web build && yarn workspace @misc-poc/presentation-web preview',
     port: 4173,
     reuseExistingServer: !process.env.CI,
+    timeout: 120 * 1000, // 2 minutes timeout for build process
+    stdout: 'pipe', // Show build output for debugging
+    stderr: 'pipe',
   },
 });

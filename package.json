@@ -27,6 +27,7 @@
     "test:e2e:headed": "playwright test --headed",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:debug": "playwright test --debug",
+    "test:e2e:server": "yarn build:packages && yarn workspace @misc-poc/presentation-web build && yarn workspace @misc-poc/presentation-web preview",
     "dev": "yarn workspace @misc-poc/presentation-web clean && yarn build:packages && yarn workspace @misc-poc/presentation-web build && yarn workspace @misc-poc/presentation-web preview",
     "web:start": "yarn workspace @misc-poc/presentation-web build && yarn workspace @misc-poc/presentation-web preview",
     "clean": "yarn workspace @misc-poc/shared clean; yarn workspace @misc-poc/domain clean; yarn workspace @misc-poc/application clean; yarn workspace @misc-poc/infrastructure-localstorage clean; yarn workspace @misc-poc/presentation-cli clean; yarn workspace @misc-poc/presentation-web clean",
