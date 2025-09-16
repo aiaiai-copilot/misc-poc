@@ -45,3 +45,7 @@ coverage/
 # Playwright test results and reports
 test-results/
 playwright-report/
+
+# E2E test data files
+e2e/test-data/
+e2e/downloads/
