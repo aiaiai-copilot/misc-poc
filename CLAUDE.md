@@ -86,7 +86,7 @@ I MUST:
 7. Complete the full workflow above
 8. Report completion to user with PR link
 9. Always ask me if I want to test manually before committing.
-**NEVER ask user to do these steps manually - I handle ALL TaskMaster automation!**
+   **NEVER ask user to do these steps manually - I handle ALL TaskMaster automation!**
 
 ## CRITICAL REMINDERS
 
@@ -143,3 +143,62 @@ git pull origin main
 ```
 
 **Key Principle: Task work (including status updates) stays on task branch until task is fully complete and merged.**
+
+## E2E Test Requirements for UI/UX Changes
+
+When making ANY UI/UX changes, you MUST maintain end-to-end test coverage:
+
+### MANDATORY E2E Test Actions
+
+#### ✅ **When Adding New UI Components or Features:**
+
+1. **CREATE new E2E tests** in `e2e/` directory following naming convention `XX-feature-name.spec.ts`
+2. **UPDATE page objects** in `e2e/support/page-objects/` with new selectors and methods
+3. **TEST all user interactions**: clicks, keyboard navigation, form submissions
+4. **VERIFY accessibility**: keyboard navigation, ARIA labels, screen reader support
+5. **INCLUDE error scenarios**: invalid inputs, network failures, edge cases
+
+#### 📝 **When Modifying Existing UI:**
+
+1. **UPDATE affected E2E tests** to match new behavior/selectors
+2. **MODIFY page object methods** if selectors or interactions change
+3. **VERIFY backward compatibility** or update tests accordingly
+4. **TEST both old and new user flows** during transition periods
+
+#### ❌ **When Removing UI Features:**
+
+1. **REMOVE corresponding E2E tests** for deleted functionality
+2. **CLEAN UP page object methods** that are no longer needed
+3. **UPDATE test suites** that depend on removed features
+4. **VERIFY remaining tests still pass** after cleanup
+
+### E2E Test Coverage Checklist
+
+For EVERY UI change, ensure tests cover:
+
+- [ ] **Functionality**: Core feature works as expected
+- [ ] **User flows**: Complete user journeys from start to finish
+- [ ] **Error handling**: Graceful failure and recovery
+- [ ] **Accessibility**: Keyboard navigation, focus management, ARIA
+- [ ] **Cross-component integration**: How changes affect other UI parts
+- [ ] **Data integrity**: For features involving data (export/import, CRUD)
+
+### E2E Test Quality Standards
+
+- **Use semantic selectors**: Prefer `data-testid` over CSS classes
+- **Write descriptive test names**: Clear Given-When-Then structure
+- **Include multilingual content**: Match application's language usage
+- **Test real scenarios**: Use realistic data and user behaviors
+- **Maintain test independence**: Each test should run in isolation
+- **Clean up test data**: Always reset state between tests
+
+### Non-Negotiable Rules
+
+1. **NO UI changes without corresponding E2E test updates**
+2. **ALL E2E tests MUST pass before committing**
+3. **DOCUMENT test scenarios in commit messages**
+4. **REVIEW E2E test coverage for each PR**
+
+**Failure to maintain E2E tests will result in incomplete implementation.**
+
+Refer to `e2e/README.md` for detailed guidelines and examples.
