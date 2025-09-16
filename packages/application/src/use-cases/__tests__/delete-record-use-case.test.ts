@@ -1,26 +1,21 @@
 import {
   DeleteRecordUseCase,
   DeleteRecordRequest,
-  DeleteRecordResponse,
 } from '../delete-record-use-case';
 import { RecordRepository } from '../../ports/record-repository';
 import { TagRepository } from '../../ports/tag-repository';
 import { UnitOfWork } from '../../ports/unit-of-work';
-import {
-  Result,
-  RecordContent,
-  TagId,
-  RecordId,
-  Ok,
-  Err,
-} from '@misc-poc/shared';
+import { RecordContent, TagId, RecordId, Ok, Err } from '@misc-poc/shared';
 import { Record, Tag, DomainError } from '@misc-poc/domain';
 
 describe('DeleteRecordUseCase', () => {
   let useCase: DeleteRecordUseCase;
   let mockRecordRepository: jest.Mocked<RecordRepository>;
   let mockTagRepository: jest.Mocked<TagRepository>;
-  let mockUnitOfWork: jest.Mocked<UnitOfWork>;
+  let mockUnitOfWork: jest.Mocked<UnitOfWork> & {
+    records: jest.Mocked<RecordRepository>;
+    tags: jest.Mocked<TagRepository>;
+  };
 
   beforeEach(() => {
     mockRecordRepository = {
@@ -62,18 +57,21 @@ describe('DeleteRecordUseCase', () => {
       records: {
         ...mockRecordRepository,
         delete: jest.fn().mockResolvedValue(Ok(undefined)),
-      },
+      } as jest.Mocked<RecordRepository>,
       tags: {
         ...mockTagRepository,
         findOrphaned: jest.fn().mockResolvedValue(Ok([])),
         deleteBatch: jest.fn().mockResolvedValue(Ok(undefined)),
-      },
+      } as jest.Mocked<TagRepository>,
       begin: jest.fn().mockResolvedValue(Ok(undefined)),
       commit: jest.fn().mockResolvedValue(Ok(undefined)),
       rollback: jest.fn().mockResolvedValue(Ok(undefined)),
       execute: jest.fn(),
       isActive: jest.fn(),
       dispose: jest.fn(),
+    } as jest.Mocked<UnitOfWork> & {
+      records: jest.Mocked<RecordRepository>;
+      tags: jest.Mocked<TagRepository>;
     };
 
     useCase = new DeleteRecordUseCase(mockRecordRepository, mockUnitOfWork);
