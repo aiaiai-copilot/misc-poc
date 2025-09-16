@@ -23,6 +23,10 @@
     "test": "yarn workspace @misc-poc/shared test; yarn workspace @misc-poc/domain test; yarn workspace @misc-poc/application test --passWithNoTests; yarn workspace @misc-poc/infrastructure-localstorage test --passWithNoTests; yarn workspace @misc-poc/presentation-cli test --passWithNoTests; yarn workspace @misc-poc/presentation-web test --passWithNoTests --run",
     "test:strict": "yarn build:packages && yarn workspace @misc-poc/shared test && yarn workspace @misc-poc/domain test && yarn workspace @misc-poc/application test && yarn workspace @misc-poc/infrastructure-localstorage test && yarn workspace @misc-poc/presentation-cli test --passWithNoTests && yarn workspace @misc-poc/presentation-web test --run",
     "test:no-build": "yarn workspace @misc-poc/shared test; yarn workspace @misc-poc/domain test; yarn workspace @misc-poc/application test --passWithNoTests; yarn workspace @misc-poc/infrastructure-localstorage test --passWithNoTests; yarn workspace @misc-poc/presentation-cli test --passWithNoTests; yarn workspace @misc-poc/presentation-web test --passWithNoTests --run",
+    "test:e2e": "playwright test",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:debug": "playwright test --debug",
     "dev": "yarn workspace @misc-poc/presentation-web clean && yarn build:packages && yarn workspace @misc-poc/presentation-web build && yarn workspace @misc-poc/presentation-web preview",
     "web:start": "yarn workspace @misc-poc/presentation-web build && yarn workspace @misc-poc/presentation-web preview",
     "clean": "yarn workspace @misc-poc/shared clean; yarn workspace @misc-poc/domain clean; yarn workspace @misc-poc/application clean; yarn workspace @misc-poc/infrastructure-localstorage clean; yarn workspace @misc-poc/presentation-cli clean; yarn workspace @misc-poc/presentation-web clean",
@@ -32,6 +36,9 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.10.2",
+    "@cucumber/cucumber": "^12.2.0",
+    "@cucumber/gherkin": "^35.0.0",
+    "@cucumber/pretty-formatter": "^2.2.0",
     "@playwright/test": "^1.55.0",
     "@types/node": "^22.0.0",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
@@ -42,6 +49,7 @@
     "husky": "^9.0.0",
     "lint-staged": "^15.0.0",
     "playwright": "^1.55.0",
+    "playwright-bdd": "^8.4.1",
     "prettier": "^3.0.0",
     "remove-accents": "^0.5.0",
     "typescript": "^5.5.0"
