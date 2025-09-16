@@ -1,7 +1,6 @@
 import { Result, RecordId, Ok, Err } from '@misc-poc/shared';
 import { DomainError } from '@misc-poc/domain';
 import { RecordRepository } from '../ports/record-repository';
-import { TagRepository } from '../ports/tag-repository';
 import { UnitOfWork } from '../ports/unit-of-work';
 
 export interface DeleteRecordRequest {
@@ -15,26 +14,20 @@ export interface DeleteRecordResponse {
 
 export class DeleteRecordUseCase {
   private readonly recordRepository: RecordRepository;
-  private readonly tagRepository: TagRepository;
   private readonly unitOfWork: UnitOfWork;
 
   constructor(
     recordRepository: RecordRepository,
-    tagRepository: TagRepository,
     unitOfWork: UnitOfWork
   ) {
     if (recordRepository == null) {
       throw new Error('RecordRepository cannot be null or undefined');
-    }
-    if (tagRepository == null) {
-      throw new Error('TagRepository cannot be null or undefined');
     }
     if (unitOfWork == null) {
       throw new Error('UnitOfWork cannot be null or undefined');
     }
 
     this.recordRepository = recordRepository;
-    this.tagRepository = tagRepository;
     this.unitOfWork = unitOfWork;
   }
 

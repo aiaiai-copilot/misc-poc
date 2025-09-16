@@ -59,11 +59,18 @@ describe('DeleteRecordUseCase', () => {
     };
 
     mockUnitOfWork = {
-      records: mockRecordRepository,
-      tags: mockTagRepository,
-      begin: jest.fn(),
-      commit: jest.fn(),
-      rollback: jest.fn(),
+      records: {
+        ...mockRecordRepository,
+        delete: jest.fn().mockResolvedValue(Ok(undefined)),
+      },
+      tags: {
+        ...mockTagRepository,
+        findOrphaned: jest.fn().mockResolvedValue(Ok([])),
+        deleteBatch: jest.fn().mockResolvedValue(Ok(undefined)),
+      },
+      begin: jest.fn().mockResolvedValue(Ok(undefined)),
+      commit: jest.fn().mockResolvedValue(Ok(undefined)),
+      rollback: jest.fn().mockResolvedValue(Ok(undefined)),
       execute: jest.fn(),
       isActive: jest.fn(),
       dispose: jest.fn(),
@@ -71,7 +78,6 @@ describe('DeleteRecordUseCase', () => {
 
     useCase = new DeleteRecordUseCase(
       mockRecordRepository,
-      mockTagRepository,
       mockUnitOfWork
     );
   });
@@ -79,7 +85,7 @@ describe('DeleteRecordUseCase', () => {
   describe('constructor', () => {
     it('should throw error when RecordRepository is null', () => {
       expect(() => {
-        new DeleteRecordUseCase(null as any, mockTagRepository, mockUnitOfWork);
+        new DeleteRecordUseCase(null as any, mockUnitOfWork);
       }).toThrow('RecordRepository cannot be null or undefined');
     });
 
@@ -87,37 +93,15 @@ describe('DeleteRecordUseCase', () => {
       expect(() => {
         new DeleteRecordUseCase(
           undefined as any,
-          mockTagRepository,
           mockUnitOfWork
         );
       }).toThrow('RecordRepository cannot be null or undefined');
-    });
-
-    it('should throw error when TagRepository is null', () => {
-      expect(() => {
-        new DeleteRecordUseCase(
-          mockRecordRepository,
-          null as any,
-          mockUnitOfWork
-        );
-      }).toThrow('TagRepository cannot be null or undefined');
-    });
-
-    it('should throw error when TagRepository is undefined', () => {
-      expect(() => {
-        new DeleteRecordUseCase(
-          mockRecordRepository,
-          undefined as any,
-          mockUnitOfWork
-        );
-      }).toThrow('TagRepository cannot be null or undefined');
     });
 
     it('should throw error when UnitOfWork is null', () => {
       expect(() => {
         new DeleteRecordUseCase(
           mockRecordRepository,
-          mockTagRepository,
           null as any
         );
       }).toThrow('UnitOfWork cannot be null or undefined');
@@ -127,7 +111,6 @@ describe('DeleteRecordUseCase', () => {
       expect(() => {
         new DeleteRecordUseCase(
           mockRecordRepository,
-          mockTagRepository,
           undefined as any
         );
       }).toThrow('UnitOfWork cannot be null or undefined');

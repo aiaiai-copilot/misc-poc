@@ -128,11 +128,10 @@ export const ApplicationContextProvider: React.FC<ApplicationContextProviderProp
         container.register('deleteRecordUseCase', new DependencyDescriptor(
           (deps: Record<string, unknown>) => new DeleteRecordUseCase(
             deps.recordRepository as LocalStorageRecordRepository,
-            deps.tagRepository as LocalStorageTagRepository,
             deps.unitOfWork as LocalStorageUnitOfWork
           ),
           ServiceLifetime.SINGLETON,
-          ['recordRepository', 'tagRepository', 'unitOfWork']
+          ['recordRepository', 'unitOfWork']
         ))
 
         container.register('getTagSuggestionsUseCase', new DependencyDescriptor(
