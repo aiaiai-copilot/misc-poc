@@ -1,6 +1,7 @@
 import { KeyboardEvent, forwardRef } from 'react';
 import { cn } from '@/lib/utils';
 import { X } from 'lucide-react';
+import { MinimalisticToolbar } from './MinimalisticToolbar';
 
 interface MiscInputProps {
   value: string;
@@ -11,6 +12,7 @@ interface MiscInputProps {
   placeholder?: string;
   allTags: string[];
   className?: string;
+  onImportSuccess?: () => Promise<void>;
 }
 
 export const MiscInput = forwardRef<HTMLInputElement, MiscInputProps>(({
@@ -21,7 +23,8 @@ export const MiscInput = forwardRef<HTMLInputElement, MiscInputProps>(({
   onNavigateDown,
   placeholder = "Enter tags separated by spaces...",
   allTags: _allTags,
-  className
+  className,
+  onImportSuccess
 }, ref) => {
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>): void => {
@@ -73,27 +76,31 @@ export const MiscInput = forwardRef<HTMLInputElement, MiscInputProps>(({
   };
 
   return (
-    <div className={cn("relative w-full", className)}>
-      <input
-        ref={ref}
-        type="text"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        onKeyDown={handleKeyDown}
-        placeholder={placeholder}
-        className="calculator-input w-full text-center pr-10"
-        data-testid="main-input"
-        autoFocus
-      />
-      {value.trim() && (
-        <button
-          onClick={handleClear}
-          className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-muted transition-colors"
-          type="button"
-        >
-          <X size={16} className="text-muted-foreground hover:text-foreground" />
-        </button>
-      )}
+    <div className={cn("flex items-center gap-2 w-full", className)}>
+      <div className="relative flex-1">
+        <input
+          ref={ref}
+          type="text"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder={placeholder}
+          className="calculator-input w-full text-center pr-10"
+          data-testid="main-input"
+          autoFocus
+        />
+        {value.trim() && (
+          <button
+            onClick={handleClear}
+            className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-muted transition-colors"
+            type="button"
+            title="Clear input"
+          >
+            <X size={16} className="text-muted-foreground hover:text-foreground" />
+          </button>
+        )}
+      </div>
+      <MinimalisticToolbar onImportSuccess={onImportSuccess} />
     </div>
   );
 });

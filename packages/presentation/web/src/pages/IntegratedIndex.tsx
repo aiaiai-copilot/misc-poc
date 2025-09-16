@@ -4,7 +4,6 @@ import { useApplicationContext } from '../contexts/ApplicationContext';
 import { MiscInput } from '../components/MiscInput';
 import { RecordsList, type RecordsListRef } from '../components/RecordsList';
 import { TagCloud, type TagCloudRef } from '../components/TagCloud';
-import { ImportExport } from '../components/ImportExport';
 import { Record } from '../types/Record';
 import { DisplayMode } from '@misc-poc/application';
 import { TagCloudItemDTO } from '@misc-poc/application';
@@ -28,7 +27,6 @@ const IntegratedIndex = (): JSX.Element => {
   const [editingRecord, setEditingRecord] = useState<Record | null>(null);
   const [displayMode, setDisplayMode] = useState<DisplayMode>(DisplayMode.CLOUD);
   const [tagCloudItems, setTagCloudItems] = useState<TagCloudItemDTO[]>([]);
-  const [showImportExport, setShowImportExport] = useState(false);
   
   // Refs for navigation
   const inputRef = useRef<HTMLInputElement>(null);
@@ -178,6 +176,7 @@ const IntegratedIndex = (): JSX.Element => {
             allTags={allTags}
             placeholder={editingRecord ? "Edit tags..." : "Enter tags separated by spaces..."}
             className="w-full"
+            onImportSuccess={refreshRecords}
           />
           {editingRecord && (
             <div className="mt-2 text-sm text-muted-foreground">
@@ -192,22 +191,6 @@ const IntegratedIndex = (): JSX.Element => {
           )}
         </div>
 
-        {/* Import/Export Toggle */}
-        <div className="mb-4 w-full max-w-6xl mx-auto">
-          <button
-            onClick={() => setShowImportExport(!showImportExport)}
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
-          >
-            {showImportExport ? 'Hide' : 'Show'} Import/Export
-          </button>
-        </div>
-
-        {/* Import/Export Section */}
-        {showImportExport && (
-          <div className="mb-8 w-full max-w-6xl mx-auto">
-            <ImportExport onImportSuccess={refreshRecords} />
-          </div>
-        )}
 
         {/* Display based on state */}
         {showTagCloud && (
