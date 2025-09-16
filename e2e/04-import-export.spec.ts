@@ -90,17 +90,18 @@ test.describe('Import/Export Functionality', () => {
       // Verify record structure
       const firstRecord = exportedData.records[0];
       expect(firstRecord).toHaveProperty('id');
-      expect(firstRecord).toHaveProperty('tags');
+      expect(firstRecord).toHaveProperty('tagIds');
       expect(firstRecord).toHaveProperty('createdAt');
       expect(firstRecord).toHaveProperty('updatedAt');
+      expect(firstRecord).toHaveProperty('content');
 
       // Verify tag content
-      const allTags = exportedData.records.flatMap(
-        (record: { tags: string[] }) => record.tags
+      const allTagIds = exportedData.records.flatMap(
+        (record: { tagIds: string[] }) => record.tagIds
       );
-      expect(allTags).toContain('проект');
-      expect(allTags).toContain('покупки');
-      expect(allTags).toContain('идея');
+      expect(allTagIds).toContain('проект');
+      expect(allTagIds).toContain('покупки');
+      expect(allTagIds).toContain('идея');
     });
 
     test('should export button be accessible via keyboard', async ({
@@ -136,13 +137,15 @@ test.describe('Import/Export Functionality', () => {
         records: [
           {
             id: 'test-1',
-            tags: ['импорт', 'тест', 'данные'],
+            content: 'импорт тест данные',
+            tagIds: ['импорт', 'тест', 'данные'],
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           },
           {
             id: 'test-2',
-            tags: ['второй', 'записать', 'проверка'],
+            content: 'второй записать проверка',
+            tagIds: ['второй', 'записать', 'проверка'],
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           },
