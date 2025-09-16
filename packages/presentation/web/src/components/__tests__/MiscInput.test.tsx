@@ -79,19 +79,25 @@ describe('MiscInput', () => {
   });
 
   it('shows clear button when input has value', () => {
-    renderWithProvider(<MiscInput {...mockProps} value="test" />);
-    // Now there are multiple buttons (clear + toolbar buttons), so we need to be more specific
+    renderWithProvider(
+      <MiscInput {...mockProps} value="test" toolbar={<div>toolbar</div>} />
+    );
+    // Clear button only appears when there's a toolbar and input has value
     expect(screen.getByTitle('Clear input')).toBeInTheDocument();
   });
 
   it('hides clear button when input is empty', () => {
-    renderWithProvider(<MiscInput {...mockProps} value="" />);
+    renderWithProvider(
+      <MiscInput {...mockProps} value="" toolbar={<div>toolbar</div>} />
+    );
     expect(screen.queryByTitle('Clear input')).not.toBeInTheDocument();
   });
 
   it('clears input when clear button is clicked', async () => {
     const user = userEvent.setup();
-    renderWithProvider(<MiscInput {...mockProps} value="test" />);
+    renderWithProvider(
+      <MiscInput {...mockProps} value="test" toolbar={<div>toolbar</div>} />
+    );
 
     const clearButton = screen.getByTitle('Clear input');
     await user.click(clearButton);

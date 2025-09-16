@@ -1,7 +1,6 @@
 import { KeyboardEvent, forwardRef } from 'react';
 import { cn } from '@/lib/utils';
 import { X } from 'lucide-react';
-import { MinimalisticToolbar } from './MinimalisticToolbar';
 
 interface MiscInputProps {
   value: string;
@@ -12,7 +11,7 @@ interface MiscInputProps {
   placeholder?: string;
   allTags: string[];
   className?: string;
-  onImportSuccess?: () => Promise<void>;
+  toolbar?: React.ReactNode;
 }
 
 export const MiscInput = forwardRef<HTMLInputElement, MiscInputProps>(
@@ -26,7 +25,7 @@ export const MiscInput = forwardRef<HTMLInputElement, MiscInputProps>(
       placeholder = 'Enter tags separated by spaces...',
       allTags: _allTags,
       className,
-      onImportSuccess,
+      toolbar,
     },
     ref
   ) => {
@@ -79,32 +78,42 @@ export const MiscInput = forwardRef<HTMLInputElement, MiscInputProps>(
     };
 
     return (
-      <div className={cn('relative w-full', className)}>
-        <input
-          ref={ref}
-          type="text"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder={placeholder}
-          className="calculator-input w-full text-center pr-20"
-          data-testid="main-input"
-          autoFocus
-        />
-        <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
-          <MinimalisticToolbar onImportSuccess={onImportSuccess} />
-          {value.trim() && (
-            <button
-              onClick={handleClear}
-              className="p-1 rounded-full hover:bg-muted transition-colors"
-              type="button"
-              title="Clear input"
+      <div
+        className={cn(
+          'relative w-full border-8 border-l-16 rounded-md bg-background shadow-inner overflow-hidden',
+          className
+        )}
+        style={{ borderColor: '#A9A9A9' }}
+      >
+        <div className="flex items-stretch">
+          <input
+            ref={ref}
+            type="text"
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder={placeholder}
+            className="calculator-input h-full flex-1 text-center border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0"
+            data-testid="main-input"
+            autoFocus
+          />
+          {toolbar && (
+            <div
+              className="flex items-center gap-1 px-2"
+              style={{ backgroundColor: '#A9A9A9', minHeight: '100%' }}
             >
-              <X
-                size={16}
-                className="text-muted-foreground hover:text-foreground"
-              />
-            </button>
+              {value.trim() && (
+                <button
+                  onClick={handleClear}
+                  className="p-1 rounded-none hover:bg-muted transition-colors"
+                  type="button"
+                  title="Clear input"
+                >
+                  <X size={16} className="text-gray-900 hover:text-gray-700" />
+                </button>
+              )}
+              {toolbar}
+            </div>
           )}
         </div>
       </div>
