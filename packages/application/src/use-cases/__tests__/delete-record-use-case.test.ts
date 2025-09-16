@@ -76,10 +76,7 @@ describe('DeleteRecordUseCase', () => {
       dispose: jest.fn(),
     };
 
-    useCase = new DeleteRecordUseCase(
-      mockRecordRepository,
-      mockUnitOfWork
-    );
+    useCase = new DeleteRecordUseCase(mockRecordRepository, mockUnitOfWork);
   });
 
   describe('constructor', () => {
@@ -91,28 +88,19 @@ describe('DeleteRecordUseCase', () => {
 
     it('should throw error when RecordRepository is undefined', () => {
       expect(() => {
-        new DeleteRecordUseCase(
-          undefined as any,
-          mockUnitOfWork
-        );
+        new DeleteRecordUseCase(undefined as any, mockUnitOfWork);
       }).toThrow('RecordRepository cannot be null or undefined');
     });
 
     it('should throw error when UnitOfWork is null', () => {
       expect(() => {
-        new DeleteRecordUseCase(
-          mockRecordRepository,
-          null as any
-        );
+        new DeleteRecordUseCase(mockRecordRepository, null as any);
       }).toThrow('UnitOfWork cannot be null or undefined');
     });
 
     it('should throw error when UnitOfWork is undefined', () => {
       expect(() => {
-        new DeleteRecordUseCase(
-          mockRecordRepository,
-          undefined as any
-        );
+        new DeleteRecordUseCase(mockRecordRepository, undefined as any);
       }).toThrow('UnitOfWork cannot be null or undefined');
     });
 

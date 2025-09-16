@@ -16,10 +16,7 @@ export class DeleteRecordUseCase {
   private readonly recordRepository: RecordRepository;
   private readonly unitOfWork: UnitOfWork;
 
-  constructor(
-    recordRepository: RecordRepository,
-    unitOfWork: UnitOfWork
-  ) {
+  constructor(recordRepository: RecordRepository, unitOfWork: UnitOfWork) {
     if (recordRepository == null) {
       throw new Error('RecordRepository cannot be null or undefined');
     }
