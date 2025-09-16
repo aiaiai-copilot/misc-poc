@@ -82,6 +82,7 @@ export const MiscInput = forwardRef<HTMLInputElement, MiscInputProps>(({
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
         className="calculator-input w-full text-center pr-10"
+        data-testid="main-input"
         autoFocus
       />
       {value.trim() && (

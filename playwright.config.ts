@@ -1,10 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
-import { defineBddConfig } from 'playwright-bdd';
 
-const testDir = defineBddConfig({
-  features: 'e2e/features/**/*.feature',
-  steps: 'e2e/steps/**/*.ts',
-});
+// Use standard test directory (BDD converted to regular Playwright tests)
+const testDir = './e2e';
 
 /**
  * @see https://playwright.dev/docs/test-configuration
@@ -76,7 +73,7 @@ export default defineConfig({
   /* Run your local dev server before starting the tests */
   webServer: {
     command:
-      'yarn workspace @misc-poc/presentation-web build && yarn workspace @misc-poc/presentation-web preview',
+      'yarn build:packages && yarn workspace @misc-poc/presentation-web build && yarn workspace @misc-poc/presentation-web preview',
     port: 4173,
     reuseExistingServer: !process.env.CI,
   },

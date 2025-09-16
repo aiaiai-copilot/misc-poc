@@ -86,6 +86,8 @@ const IntegratedIndex = (): JSX.Element => {
   // Determine what to show
   const showTagCloud = displayMode === DisplayMode.CLOUD;
   const showRecordsList = displayMode === DisplayMode.LIST && filteredRecords.length > 0;
+  const hasSearch = inputValue.trim().length > 0;
+  const showNoResults = hasSearch && filteredRecords.length === 0 && displayMode === DisplayMode.LIST;
 
   const handleSubmit = async (tags: string[]): Promise<void> => {
     try {
@@ -230,6 +232,15 @@ const IntegratedIndex = (): JSX.Element => {
               onNavigateUp={handleNavigateToInput}
               searchQuery={inputValue}
             />
+          </div>
+        )}
+
+        {showNoResults && (
+          <div className="w-full max-w-6xl mx-auto mt-8 text-center" data-testid="no-results">
+            <p className="text-muted-foreground">No records found for "{inputValue.trim()}"</p>
+            <p className="text-sm text-muted-foreground mt-2">
+              Press Enter to create a new record with these tags.
+            </p>
           </div>
         )}
       </div>
