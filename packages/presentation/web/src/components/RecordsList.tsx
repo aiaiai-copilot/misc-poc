@@ -90,7 +90,7 @@ const RecordItem = memo<RecordItemProps>(({ index, style, data }) => {
       <div
         ref={(el) => (itemRefs.current[index] = el)}
         className={cn(
-          'record-item cursor-pointer group relative border rounded focus:outline-none focus:ring-2 focus:ring-ring mx-2 mb-2',
+          'record-item cursor-pointer group relative border rounded focus:outline-none focus:ring-2 focus:ring-ring bg-background mx-2 mb-2',
           editingId === record.id && 'bg-muted'
         )}
         style={{
@@ -179,7 +179,7 @@ const RecordItemOptimized = memo<RecordItemOptimizedProps>(
       <div
         ref={itemRef}
         className={cn(
-          'record-item cursor-pointer group relative border rounded focus:outline-none focus:ring-2 focus:ring-ring',
+          'record-item cursor-pointer group relative border rounded focus:outline-none focus:ring-2 focus:ring-ring bg-background',
           isEditing && 'bg-muted'
         )}
         style={{
@@ -282,7 +282,10 @@ const RecordsListComponent = memo(
             className="w-full max-w-4xl mx-auto border-8 border-l-16 rounded-md bg-background shadow-inner overflow-hidden"
             style={{ borderColor: '#A9A9A9' }}
           >
-            <div className="text-center py-16">
+            <div
+              className="text-center py-16"
+              style={{ backgroundColor: '#DCDCDC' }}
+            >
               <div className="text-muted-foreground text-lg">
                 No records found
               </div>
@@ -307,7 +310,7 @@ const RecordsListComponent = memo(
           style={{ borderColor: '#A9A9A9' }}
           data-testid="records-list"
         >
-          <div className="space-y-2 p-4">
+          <div className="space-y-2 p-4" style={{ backgroundColor: '#DCDCDC' }}>
             {visibleRecords.map((record, index) => (
               <RecordItemOptimized
                 key={record.id}

@@ -165,10 +165,20 @@ export const TagCloud = forwardRef<TagCloudRef, TagCloudProps>(
 
     if (normalizedItems.length === 0) {
       return (
-        <div className="text-center py-16">
-          <div className="text-muted-foreground text-lg">No records found</div>
-          <div className="text-muted-foreground text-sm mt-2">
-            Press Enter to create
+        <div
+          className="w-full max-w-4xl mx-auto border-8 border-l-16 rounded-md bg-background shadow-inner overflow-hidden"
+          style={{ borderColor: '#A9A9A9' }}
+        >
+          <div
+            className="text-center py-16"
+            style={{ backgroundColor: '#DCDCDC' }}
+          >
+            <div className="text-muted-foreground text-lg">
+              No records found
+            </div>
+            <div className="text-muted-foreground text-sm mt-2">
+              Press Enter to create
+            </div>
           </div>
         </div>
       );
@@ -180,7 +190,7 @@ export const TagCloud = forwardRef<TagCloudRef, TagCloudProps>(
         style={{ borderColor: '#A9A9A9' }}
         data-testid="tag-cloud"
       >
-        <div className="p-4">
+        <div className="p-4" style={{ backgroundColor: '#DCDCDC' }}>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-2">
             {normalizedItems.slice(0, 50).map((item, index) => (
               <button
