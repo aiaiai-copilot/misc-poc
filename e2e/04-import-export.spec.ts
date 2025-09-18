@@ -226,6 +226,36 @@ test.describe('Import/Export Functionality', () => {
   });
 
   test.describe('Export/Import Round Trip', () => {
+    test('should save exported file to downloads directory', async ({
+      page,
+    }) => {
+      // Given I create a test record
+      await miscPage.createRecord('тест экспорт файл');
+
+      // When I export the data
+      const [download] = await Promise.all([
+        page.waitForEvent('download'),
+        miscPage.exportData(),
+      ]);
+
+      const exportFilePath = path.join(
+        downloadPath,
+        download.suggestedFilename()
+      );
+      await download.saveAs(exportFilePath);
+
+      // Then the file should exist at the expected path
+      // This test reproduces the ENOENT error from the round trip test
+      try {
+        const fileStats = await fs.stat(exportFilePath);
+        expect(fileStats.isFile()).toBe(true);
+      } catch (error) {
+        throw new Error(
+          `Expected file at ${exportFilePath} but got error: ${error}`
+        );
+      }
+    });
+
     test('should maintain data integrity through export/import cycle', async ({
       page,
     }) => {
@@ -251,11 +281,51 @@ test.describe('Import/Export Functionality', () => {
         miscPage.exportData(),
       ]);
 
+      // Verify download completed successfully
+      expect(download.suggestedFilename()).toMatch(
+        /misc-export-\d{4}-\d{2}-\d{2}\.json$/
+      );
+
       const exportFilePath = path.join(
         downloadPath,
         download.suggestedFilename()
       );
+
+      // Save the download and wait for completion
       await download.saveAs(exportFilePath);
+
+      // Wait for download to finish completely
+      await download.failure(); // This will resolve when download is either successful or failed
+
+      // Retry mechanism for file verification with exponential backoff
+      let fileExists = false;
+      let attempts = 0;
+      const maxAttempts = 5;
+
+      while (!fileExists && attempts < maxAttempts) {
+        attempts++;
+        const waitTime = 100 * Math.pow(2, attempts - 1); // 100ms, 200ms, 400ms, 800ms, 1600ms
+        await miscPage.page.waitForTimeout(waitTime);
+
+        try {
+          const fileStats = await fs.stat(exportFilePath);
+          if (fileStats.isFile() && fileStats.size > 0) {
+            // Also verify we can read the content
+            const content = await fs.readFile(exportFilePath, 'utf8');
+            const parsedContent = JSON.parse(content);
+            expect(parsedContent).toHaveProperty('records');
+            expect(parsedContent.records).toHaveLength(originalRecords.length);
+            fileExists = true;
+          }
+        } catch (error) {
+          if (attempts === maxAttempts) {
+            throw new Error(
+              `Export file was not saved correctly at ${exportFilePath} after ${maxAttempts} attempts: ${error}`
+            );
+          }
+          // Continue retrying
+        }
+      }
 
       // Clear existing data
       await miscPage.clearLocalStorage();
@@ -264,6 +334,15 @@ test.describe('Import/Export Functionality', () => {
       // Verify data is cleared
       const clearedCount = await miscPage.getRecordCount();
       expect(clearedCount).toBe(0);
+
+      // Verify file still exists before import (defensive check)
+      try {
+        await fs.access(exportFilePath);
+      } catch (error) {
+        throw new Error(
+          `Export file no longer exists at ${exportFilePath} before import: ${error}`
+        );
+      }
 
       // And import the exported data
       await miscPage.importData(exportFilePath);
