@@ -10,11 +10,12 @@ module.exports = {
       const hasSharedFiles = filenames.some(f => f.includes('packages/shared'));
 
       const commands = [];
-      if (hasWebFiles) commands.push('yarn workspace @misc-poc/presentation-web test');
-      if (hasDomainFiles) commands.push('yarn workspace @misc-poc/domain test');
-      if (hasApplicationFiles) commands.push('yarn workspace @misc-poc/application test');
-      if (hasInfrastructureFiles) commands.push('yarn workspace @misc-poc/infrastructure-localstorage test');
-      if (hasSharedFiles) commands.push('yarn workspace @misc-poc/shared test');
+      // Add timeout wrapper for test commands (3 minutes) and ensure they run once
+      if (hasWebFiles) commands.push('timeout 180 yarn workspace @misc-poc/presentation-web test --run');
+      if (hasDomainFiles) commands.push('timeout 180 yarn workspace @misc-poc/domain test --run');
+      if (hasApplicationFiles) commands.push('timeout 180 yarn workspace @misc-poc/application test --run');
+      if (hasInfrastructureFiles) commands.push('timeout 180 yarn workspace @misc-poc/infrastructure-localstorage test --run');
+      if (hasSharedFiles) commands.push('timeout 180 yarn workspace @misc-poc/shared test --run');
 
       return commands;
     }

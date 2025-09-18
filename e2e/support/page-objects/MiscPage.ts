@@ -215,15 +215,23 @@ export class MiscPage {
   }
 
   async exportData(): Promise<void> {
-    // Export button is now in the minimalistic toolbar (download icon)
-    const exportButton = this.page.locator('button[title="Export data"]');
-    await exportButton.click();
+    // Click the hamburger menu button first
+    const menuButton = this.page.locator('button[title="Menu"]');
+    await menuButton.click();
+
+    // Then click the Export menu item
+    const exportItem = this.page.locator('text=Export');
+    await exportItem.click();
   }
 
   async importData(filePath: string): Promise<void> {
-    // Click the import button (upload icon) to trigger file picker
-    const importButton = this.page.locator('button[title="Import data"]');
-    await importButton.click();
+    // Click the hamburger menu button first
+    const menuButton = this.page.locator('button[title="Menu"]');
+    await menuButton.click();
+
+    // Then click the Import menu item to trigger file picker
+    const importItem = this.page.locator('text=Import');
+    await importItem.click();
 
     // The hidden file input should now be accessible
     const importInput = this.page.locator('input[type="file"][accept=".json"]');

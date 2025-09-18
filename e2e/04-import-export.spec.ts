@@ -110,18 +110,21 @@ test.describe('Import/Export Functionality', () => {
       // Given the page is loaded
       await expect(miscPage.inputField).toBeVisible();
 
-      // When I navigate to the export button via keyboard
+      // When I navigate to the menu button via keyboard
       await miscPage.inputField.focus();
-      await page.keyboard.press('Tab'); // Should focus export button
+      await page.keyboard.press('Tab'); // Should focus menu button
 
-      // Then the export button should be focused
-      const exportButton = page.locator('button[title="Export data"]');
-      await expect(exportButton).toBeFocused();
+      // Then the menu button should be focused
+      const menuButton = page.locator('button[title="Menu"]');
+      await expect(menuButton).toBeFocused();
 
-      // And I can activate it with Enter key
+      // And I can activate it with Enter key to open the menu
+      await page.keyboard.press('Enter');
+
+      // Then click Export option and wait for download
       const [download] = await Promise.all([
         page.waitForEvent('download'),
-        page.keyboard.press('Enter'),
+        page.locator('text=Export').click(),
       ]);
 
       expect(download.suggestedFilename()).toMatch(
@@ -183,35 +186,42 @@ test.describe('Import/Export Functionality', () => {
       // Given the page is loaded
       await expect(miscPage.inputField).toBeVisible();
 
-      // When I navigate to the import button via keyboard
+      // When I navigate to the menu button via keyboard
       await miscPage.inputField.focus();
-      await page.keyboard.press('Tab'); // Export button
-      await page.keyboard.press('Tab'); // Import button
+      await page.keyboard.press('Tab'); // Menu button
 
-      // Then the import button should be focused
-      const importButton = page.locator('button[title="Import data"]');
-      await expect(importButton).toBeFocused();
+      // Then the menu button should be focused
+      const menuButton = page.locator('button[title="Menu"]');
+      await expect(menuButton).toBeFocused();
 
-      // And I can activate it with Space key (should open file picker)
+      // And I can activate it with Space key to open the menu
       await page.keyboard.press(' ');
+
+      // Then click Import option
+      await page.locator('text=Import').click();
 
       // The file input should now be available (though hidden)
       const fileInput = page.locator('input[type="file"][accept=".json"]');
       await expect(fileInput).toBeAttached();
     });
 
-    test('should show import button in minimalistic toolbar', async () => {
+    test('should show hamburger menu in minimalistic toolbar', async () => {
       // Given the page is loaded
       await expect(miscPage.inputField).toBeVisible();
 
-      // Then the import button should be visible in the toolbar
-      const importButton = miscPage.page.locator('button[title="Import data"]');
-      await expect(importButton).toBeVisible();
+      // Then the hamburger menu button should be visible in the toolbar
+      const menuButton = miscPage.page.locator('button[title="Menu"]');
+      await expect(menuButton).toBeVisible();
 
       // And it should have the correct styling (calculator-style minimalistic)
-      await expect(importButton).toHaveClass(/p-1/);
-      await expect(importButton).toHaveClass(/rounded-none/);
-      await expect(importButton).toHaveClass(/transition-colors/);
+      await expect(menuButton).toHaveClass(/p-1/);
+      await expect(menuButton).toHaveClass(/rounded-none/);
+      await expect(menuButton).toHaveClass(/transition-colors/);
+
+      // When clicked, it should show the dropdown menu with Export and Import options
+      await menuButton.click();
+      await expect(miscPage.page.locator('text=Export')).toBeVisible();
+      await expect(miscPage.page.locator('text=Import')).toBeVisible();
     });
   });
 

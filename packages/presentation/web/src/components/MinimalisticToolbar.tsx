@@ -1,6 +1,12 @@
 import React, { useCallback, useRef, useState } from 'react';
 import { useApplicationContext } from '../contexts/ApplicationContext';
-import { Download, Upload } from 'lucide-react';
+import { Menu } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 interface MinimalisticToolbarProps {
   className?: string;
@@ -90,29 +96,32 @@ export const MinimalisticToolbar: React.FC<MinimalisticToolbarProps> = ({
 
   return (
     <>
-      {/* Export Button */}
-      <button
-        onClick={handleExport}
-        disabled={isExporting || !exportDataUseCase}
-        className="p-1 rounded-none hover:bg-muted transition-colors"
-        type="button"
-        title="Export data"
-        aria-label="Export data"
-      >
-        <Download size={16} className="text-gray-900 hover:text-gray-700" />
-      </button>
-
-      {/* Import Button */}
-      <button
-        onClick={() => fileInputRef.current?.click()}
-        disabled={isImporting || !importDataUseCase}
-        className="p-1 rounded-none hover:bg-muted transition-colors"
-        type="button"
-        title="Import data"
-        aria-label="Import data"
-      >
-        <Upload size={16} className="text-gray-900 hover:text-gray-700" />
-      </button>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button
+            className="p-1 rounded-none hover:bg-muted transition-colors"
+            type="button"
+            title="Menu"
+            aria-label="Menu"
+          >
+            <Menu size={16} className="text-gray-900 hover:text-gray-700" />
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem
+            onClick={handleExport}
+            disabled={isExporting || !exportDataUseCase}
+          >
+            Export
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isImporting || !importDataUseCase}
+          >
+            Import
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
 
       {/* Hidden File Input */}
       <input
