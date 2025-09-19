@@ -14,11 +14,11 @@ MISC is a minimalist information management system based on a single principle: 
 
 Existing note-taking systems force users to think about structure instead of content:
 
-  - Which folder to save to?
-  - Which document type to choose?
-  - Which fields to fill?
-  - How to name it correctly?
-    This is cognitive load that interferes with the main thing - rapid information capture.
+- Which folder to save to?
+- Which document type to choose?
+- Which fields to fill?
+- How to name it correctly?
+  This is cognitive load that interferes with the main thing - rapid information capture.
 
 ### 1.3. Solution
 
@@ -48,8 +48,8 @@ Typing "birthday" - see a list of birthdays you need.
 3.  **Speed priority**: Instant thought capture.
 4.  **Transparency**: User always understands how the system works.
 5.  **No structure - there is freedom**:
-      - User decides how to interpret their records.
-      - Word order is preserved for natural readability.
+    - User decides how to interpret their records.
+    - Word order is preserved for natural readability.
 6.  **Speed over formality**: Instant thought capture without unnecessary actions.
 7.  **Universality through simplicity**: One mechanism for all information types.
 
@@ -61,27 +61,27 @@ MISC is not just a note-taking application. It's an information management philo
 
 ### 2.1 Current State (Prototype)
 
-  - Local storage-based single-user application
-  - Clean Architecture implementation (Domain, Application, Infrastructure, Presentation)
-  - TypeScript monorepo with yarn workspaces
-  - Comprehensive test coverage (Domain >95%, Use Cases >90%)
-  - Working web interface with instant search and tag management
+- Local storage-based single-user application
+- Clean Architecture implementation (Domain, Application, Infrastructure, Presentation)
+- TypeScript monorepo with yarn workspaces
+- Comprehensive test coverage (Domain >95%, Use Cases >90%)
+- Working web interface with instant search and tag management
 
 ### 2.2 MVP Goals
 
-  - Transform into multi-user server application
-  - Maintain existing simplicity and user experience
-  - Enable data persistence and backup
-  - Provide secure isolated user spaces
-  - Support up to 100 concurrent users
+- Transform into multi-user server application
+- Maintain existing simplicity and user experience
+- Enable data persistence and backup
+- Provide secure isolated user spaces
+- Support up to 100 concurrent users
 
 ### 2.3 Key Constraints
 
-  - Preserve all existing business logic
-  - Maintain Clean Architecture principles
-  - **Strict Test-Driven Development (TDD) approach**
-  - Keep the same minimal UI philosophy
-  - Ensure backward compatibility for data migration
+- Preserve all existing business logic
+- Maintain Clean Architecture principles
+- **Strict Test-Driven Development (TDD) approach**
+- Keep the same minimal UI philosophy
+- Ensure backward compatibility for data migration
 
 ### 2.4 TDD Methodology Requirements
 
@@ -93,11 +93,11 @@ MISC is not just a note-taking application. It's an information management philo
 
 **TDD Rules for MVP:**
 
-  - No production code without failing test
-  - Tests define contracts and specifications
-  - Test coverage enforced in CI/CD pipeline
-  - Code reviews must verify test-first approach
-  - Each PR must show tests committed before implementation
+- No production code without failing test
+- Tests define contracts and specifications
+- Test coverage enforced in CI/CD pipeline
+- Code reviews must verify test-first approach
+- Each PR must show tests committed before implementation
 
 **Test Priority Order:**
 
@@ -167,12 +167,12 @@ services:
   nginx:
     image: nginx:alpine
     ports:
-      - "80:80"
-      - "443:443"
+      - '80:80'
+      - '443:443'
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf
       - ./ssl:/etc/nginx/ssl
-  
+
   api:
     build: ./packages/backend
     environment:
@@ -181,7 +181,7 @@ services:
       - GOOGLE_OAUTH_CLIENT_SECRET=${GOOGLE_OAUTH_CLIENT_SECRET}
     depends_on:
       - postgres
-  
+
   postgres:
     image: postgres:15-alpine
     environment:
@@ -214,7 +214,7 @@ describe('Authentication Contract', () => {
     it('should generate JWT tokens after successful authentication');
     it('should set secure httpOnly cookies for session management');
   });
-  
+
   describe('Session Validation', () => {
     it('should validate active JWT token');
     it('should reject expired JWT token');
@@ -222,21 +222,22 @@ describe('Authentication Contract', () => {
     it('should validate token signature');
     it('should extract user context from valid token');
   });
-  
+
   describe('Session Revocation', () => {
     it('should invalidate active session');
     it('should clear session cookies');
     it('should reject operations with revoked token');
   });
-})
+});
 ```
 
 #### 4.1.2 Session Management
 
-  - JWT tokens with 7-day expiration
-  - Refresh token rotation
-  - Secure httpOnly cookies
-  - CORS configuration for SPA
+- Access Token: 15 minutes (for security)
+- Refresh Token: 7 days (for user convenience)
+- Refresh token rotation
+- Secure httpOnly cookies
+- CORS configuration for SPA
 
 ### 4.2 Data Model
 
@@ -264,7 +265,7 @@ CREATE TABLE records (
   normalized_tags TEXT[] NOT NULL, -- for search
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  
+
   -- Ensure unique content per user
   UNIQUE(user_id, normalized_tags)
 );
@@ -291,9 +292,9 @@ CREATE TABLE user_settings (
 
 **Migration Tool: TypeORM**
 
-  - Used exclusively for schema migrations
-  - No Active Record or Data Mapper patterns
-  - Clean separation from domain entities
+- Used exclusively for schema migrations
+- No Active Record or Data Mapper patterns
+- Clean separation from domain entities
 
 **Migration Structure:**
 
@@ -314,21 +315,21 @@ describe('Database Migration Contract', () => {
     it('should prevent duplicate migration execution');
     it('should validate migration checksums');
   });
-  
+
   describe('Migration Rollback', () => {
     it('should support down migrations for rollback');
     it('should rollback in reverse chronological order');
     it('should restore previous schema state');
     it('should handle data preservation during rollback');
   });
-  
+
   describe('Migration Safety', () => {
     it('should use transactions for each migration');
     it('should validate schema after migration');
     it('should create backup before destructive migrations');
     it('should test migrations in CI pipeline');
   });
-})
+});
 ```
 
 **Migration Files Structure:**
@@ -399,7 +400,7 @@ describe('Data Migration Contract', () => {
     it('should enforce maximum import size limit');
     it('should maintain tag order from original records');
   });
-  
+
   describe('Export to JSON', () => {
     it('should export all user records');
     it('should include version identifier');
@@ -410,7 +411,7 @@ describe('Data Migration Contract', () => {
     it('should generate valid JSON format');
     it('should handle large datasets (10k+ records)');
   });
-})
+});
 ```
 
 ### 4.3 REST API Specification
@@ -478,7 +479,7 @@ paths:
                       $ref: '#/components/schemas/Record'
                   total:
                     type: integer
-    
+
     post:
       summary: Create new record
       security:
@@ -491,7 +492,7 @@ paths:
               properties:
                 content:
                   type: string
-                  example: "meeting project alpha 15:00"
+                  example: 'meeting project alpha 15:00'
       responses:
         201:
           description: Record created
@@ -523,7 +524,7 @@ paths:
       responses:
         200:
           description: Record updated
-          
+
     delete:
       summary: Delete record
       security:
@@ -633,7 +634,7 @@ describe('Records API Contract', () => {
     it('should require authentication with 401 for anonymous');
     it('should handle special characters in search query');
   });
-  
+
   describe('PUT /api/records/:id', () => {
     it('should update existing record content');
     it('should recalculate tags from new content');
@@ -645,7 +646,7 @@ describe('Records API Contract', () => {
     it('should handle duplicate check for updated tags');
     it('should require authentication with 401 for anonymous');
   });
-  
+
   describe('DELETE /api/records/:id', () => {
     it('should delete existing record');
     it('should return 204 on successful deletion');
@@ -653,7 +654,7 @@ describe('Records API Contract', () => {
     it('should return 404 for other user record');
     it('should require authentication with 401 for anonymous');
   });
-  
+
   describe('GET /api/tags', () => {
     it('should return tag frequency statistics');
     it('should include only user own tags');
@@ -662,7 +663,7 @@ describe('Records API Contract', () => {
     it('should handle tags with special characters');
     it('should require authentication with 401 for anonymous');
   });
-  
+
   describe('GET /api/export', () => {
     it('should export all user records in JSON format');
     it('should include version identifier in export');
@@ -672,7 +673,7 @@ describe('Records API Contract', () => {
     it('should include normalization settings');
     it('should require authentication with 401 for anonymous');
   });
-  
+
   describe('POST /api/import', () => {
     it('should import valid JSON data');
     it('should return import statistics (imported/skipped/errors)');
@@ -685,7 +686,7 @@ describe('Records API Contract', () => {
     it('should require authentication with 401 for anonymous');
     it('should isolate imported data per user');
   });
-})
+});
 ```
 
 ### 4.4 Business Logic Migration
@@ -694,16 +695,16 @@ describe('Records API Contract', () => {
 
 The existing domain entities must remain unchanged to preserve business logic:
 
-  - Record entity with tag extraction
-  - Tag normalization services
-  - Content validation rules
-  - Tag order preservation logic
+- Record entity with tag extraction
+- Tag normalization services
+- Content validation rules
+- Tag order preservation logic
 
 New domain entities for MVP:
 
-  - User aggregate root
-  - User settings value object
-  - Authentication context
+- User aggregate root
+- User settings value object
+- Authentication context
 
 #### 4.4.2 Repository Contracts
 
@@ -719,7 +720,7 @@ describe('Record Repository Contract', () => {
     it('should maintain tag order from domain entity');
     it('should handle concurrent saves safely');
   });
-  
+
   describe('findByTags', () => {
     it('should find records matching all specified tags (AND logic)');
     it('should return empty array when no matches');
@@ -728,27 +729,27 @@ describe('Record Repository Contract', () => {
     it('should preserve domain entity structure');
     it('should order by creation date descending');
   });
-  
+
   describe('findById', () => {
     it('should return record by ID for owner');
     it('should return null for non-existent record');
     it('should return null for other user record');
     it('should reconstruct complete domain entity');
   });
-  
+
   describe('delete', () => {
     it('should remove record from storage');
     it('should only delete user-owned records');
     it('should handle non-existent record gracefully');
   });
-  
+
   describe('getTagStatistics', () => {
     it('should count frequency for each unique tag');
     it('should include only user tags');
     it('should use normalized tags for counting');
     it('should order by frequency descending');
   });
-})
+});
 
 describe('User Repository Contract', () => {
   describe('findByGoogleId', () => {
@@ -756,20 +757,20 @@ describe('User Repository Contract', () => {
     it('should return null for non-existent user');
     it('should include user settings');
   });
-  
+
   describe('create', () => {
     it('should create new user with Google profile');
     it('should initialize default settings');
     it('should handle duplicate email gracefully');
     it('should set creation timestamp');
   });
-  
+
   describe('updateSettings', () => {
     it('should persist user preference changes');
     it('should validate setting constraints');
     it('should update modification timestamp');
   });
-})
+});
 ```
 
 ### 4.5 Frontend Adaptation
@@ -789,7 +790,7 @@ describe('API Client Contract', () => {
     it('should refresh tokens automatically');
     it('should clear tokens on logout');
   });
-  
+
   describe('Record Operations', () => {
     it('should search records with query string');
     it('should create new record from content');
@@ -799,7 +800,7 @@ describe('API Client Contract', () => {
     it('should retry failed requests with exponential backoff');
     it('should show loading states during operations');
   });
-  
+
   describe('Data Migration', () => {
     it('should export all user data to JSON');
     it('should import data from JSON file');
@@ -807,7 +808,7 @@ describe('API Client Contract', () => {
     it('should handle import errors');
     it('should validate file format before import');
   });
-  
+
   describe('Error Handling', () => {
     it('should display user-friendly error messages');
     it('should redirect to login on 401');
@@ -815,7 +816,7 @@ describe('API Client Contract', () => {
     it('should handle rate limit errors');
     it('should log errors for debugging');
   });
-})
+});
 ```
 
 #### 4.5.2 State Management Adaptation
@@ -831,7 +832,7 @@ describe('Frontend State Management Contract', () => {
     it('should clear state on logout');
     it('should handle authentication errors');
   });
-  
+
   describe('Records State', () => {
     it('should manage records list');
     it('should track loading states');
@@ -840,7 +841,7 @@ describe('Frontend State Management Contract', () => {
     it('should cache search results');
     it('should invalidate cache on mutations');
   });
-  
+
   describe('UI State', () => {
     it('should manage search query');
     it('should track selected record');
@@ -848,7 +849,7 @@ describe('Frontend State Management Contract', () => {
     it('should manage error notifications');
     it('should control loading indicators');
   });
-})
+});
 ```
 
 ## 5. Non-Functional Requirements
@@ -883,18 +884,18 @@ Authentication:
   Token Type: JWT
   Token Storage: httpOnly secure cookies
   Session Duration: 7 days
-  
+
 Transport Security:
   Protocol: HTTPS only
   SSL/TLS: Let's Encrypt certificates
   HSTS: Enabled
-  
+
 Data Protection:
   Input Validation: All user inputs sanitized
   SQL Injection: Parameterized queries only
   XSS Prevention: Content Security Policy
   CORS: Restricted to application domain
-  
+
 Rate Limiting:
   Authentication: 5 attempts per minute
   API Calls: 100 requests per minute per user
@@ -906,13 +907,13 @@ Rate Limiting:
 Availability:
   Uptime Target: 99% (for MVP)
   Planned Maintenance: < 1 hour monthly
-  
+
 Data Durability:
   Database Backups: Daily automated
   Backup Retention: 30 days
   Recovery Time Objective: < 4 hours
   Recovery Point Objective: < 24 hours
-  
+
 Error Handling:
   Graceful Degradation: Cached data on API failure
   Error Logging: Structured logs with context
@@ -926,7 +927,7 @@ Current Limitations (MVP):
   Users: 100 concurrent
   Records per User: 10,000
   Database Size: 10GB
-  
+
 Future Scaling Path:
   Database: Read replicas for search
   Caching: Redis for session and search cache
@@ -943,12 +944,12 @@ Unit Tests:
   Domain Layer: > 95%
   Use Cases: > 90%
   API Routes: > 85%
-  
+
 Integration Tests:
   Database Operations: > 90%
   Authentication Flow: > 95%
   API Endpoints: > 90%
-  
+
 E2E Tests:
   Critical User Journeys: 100%
   Authentication: 100%
@@ -972,7 +973,7 @@ describe('E2E: Authentication Flow', () => {
   it('should logout and clear session');
   it('should prevent access to protected routes when not authenticated');
   it('should redirect to originally requested page after login');
-})
+});
 ```
 
 #### 6.2.2 Data Isolation Test Suite
@@ -988,7 +989,7 @@ describe('Data Isolation Contract', () => {
   it('should prevent cross-user record updates');
   it('should prevent cross-user record deletion');
   it('should separate export data per user');
-})
+});
 ```
 
 #### 6.2.3 Migration Test Suite
@@ -1006,7 +1007,7 @@ describe('Data Migration Contract', () => {
   it('should skip malformed records with error reporting');
   it('should prevent data loss during failed imports');
   it('should support partial import recovery');
-})
+});
 ```
 
 #### 6.2.4 Performance Test Suite
@@ -1022,14 +1023,14 @@ describe('Performance Contract', () => {
     it('should calculate tag statistics in less than 500ms');
     it('should export 10k records in less than 5 seconds');
   });
-  
+
   describe('Concurrent Load', () => {
     it('should handle 100 concurrent users');
     it('should process 50 requests per second');
     it('should maintain response times under load');
     it('should not leak memory under sustained load');
   });
-})
+});
 ```
 
 #### 6.2.5 Security Test Suite
@@ -1044,7 +1045,7 @@ describe('Security Contract', () => {
     it('should enforce token expiration');
     it('should use secure httpOnly cookies');
   });
-  
+
   describe('Input Validation', () => {
     it('should sanitize user input to prevent XSS');
     it('should use parameterized queries to prevent SQL injection');
@@ -1052,14 +1053,14 @@ describe('Security Contract', () => {
     it('should enforce maximum payload sizes');
     it('should reject malformed JSON');
   });
-  
+
   describe('Transport Security', () => {
     it('should enforce HTTPS for all endpoints');
     it('should set appropriate security headers');
     it('should implement CORS correctly');
     it('should prevent clickjacking with X-Frame-Options');
   });
-})
+});
 ```
 
 ## 7. Development Phases
@@ -1089,8 +1090,8 @@ Deliverables:
   - Domain entities with 95%+ test coverage
   - CI pipeline enforcing test-first development
 
-Test Coverage Target: 
-  - Domain: >95%
+Test Coverage Target:
+  - Domain: >95
   - Migrations: 100%
 ```
 
@@ -1121,7 +1122,7 @@ Deliverables:
   - User session management
 
 Test Coverage Target:
-  - Auth flow: >95%
+  - Auth flow: >95
   - All tests written before implementation
 ```
 
@@ -1152,8 +1153,8 @@ Deliverables:
   - API documentation from tests
 
 Test Coverage Target:
-  - API routes: >85%
-  - Repository: >90%
+  - API routes: >85
+  - Repository: >90
   - Tests must exist before code
 ```
 
@@ -1185,8 +1186,8 @@ Deliverables:
   - Async state management
 
 Test Coverage Target:
-  - API client: >90%
-  - Components: >80%
+  - API client: >90
+  - Components: >80
   - All features test-driven
 ```
 
@@ -1218,7 +1219,7 @@ Deliverables:
   - Progress feedback tested
 
 Test Coverage Target:
-  - Migration: >95%
+  - Migration: >95
   - Every scenario test-driven
 ```
 
@@ -1259,26 +1260,22 @@ Test Coverage Target:
 ### 8.1 Functional Criteria
 
 ```yaml
-Authentication:
-  ✓ Users can sign in with Google
+Authentication: ✓ Users can sign in with Google
   ✓ Sessions persist across browser refreshes
   ✓ Users can sign out
   ✓ Unauthorized access is prevented
 
-Data Management:
-  ✓ All CRUD operations work correctly
+Data Management: ✓ All CRUD operations work correctly
   ✓ Search returns accurate results
   ✓ Tag normalization works as specified
   ✓ Data isolation is enforced
 
-Migration:
-  ✓ V1.0 data imports successfully
+Migration: ✓ V1.0 data imports successfully
   ✓ Export format is compatible
   ✓ No data loss during migration
   ✓ Duplicates are handled correctly
 
-Performance:
-  ✓ Search responds in <200ms
+Performance: ✓ Search responds in <200ms
   ✓ Page load time <2s
   ✓ No memory leaks
   ✓ Handles 100 concurrent users
@@ -1287,26 +1284,22 @@ Performance:
 ### 8.2 Technical Criteria
 
 ```yaml
-Architecture:
-  ✓ Clean Architecture maintained
+Architecture: ✓ Clean Architecture maintained
   ✓ Domain logic unchanged
   ✓ Dependency injection used
   ✓ Repository pattern implemented
 
-Testing:
-  ✓ Test coverage meets targets
+Testing: ✓ Test coverage meets targets
   ✓ All tests pass in CI
   ✓ E2E tests cover critical paths
   ✓ Contract tests validate APIs
 
-Security:
-  ✓ HTTPS enforced
+Security: ✓ HTTPS enforced
   ✓ Authentication required
   ✓ Input validation complete
   ✓ SQL injection prevented
 
-Deployment:
-  ✓ Docker Compose works
+Deployment: ✓ Docker Compose works
   ✓ Single command deployment
   ✓ Rollback capability
   ✓ Backup/restore tested
@@ -1316,9 +1309,9 @@ Deployment:
 
 ### 9.1 Technical Risks
 
-| Risk | Probability | Impact | Mitigation Strategy |
-|------|-------------|--------|-------------------|
-| Migration data loss | Low | High | Comprehensive testing, backup before migration, rollback plan |
-| OAuth service outage | Low | High | Graceful error handling, status page, alternative auth in future |
-| Database performance degradation | Medium | Medium | Indexing strategy, query optimization, monitoring |
-| Token security breach | Low | Critical | Secure token storage, rotation
+| Risk                             | Probability | Impact   | Mitigation Strategy                                              |
+| -------------------------------- | ----------- | -------- | ---------------------------------------------------------------- |
+| Migration data loss              | Low         | High     | Comprehensive testing, backup before migration, rollback plan    |
+| OAuth service outage             | Low         | High     | Graceful error handling, status page, alternative auth in future |
+| Database performance degradation | Medium      | Medium   | Indexing strategy, query optimization, monitoring                |
+| Token security breach            | Low         | Critical | Secure token storage, rotation                                   |

@@ -1,0 +1,933 @@
+openapi: 3.0.3
+info:
+  title: MISC API
+  description: |
+    RESTful API for MISC (MindSection) - a minimalist information management system 
+    where everything is tags. This API provides multi-user support with Google OAuth 
+    authentication and PostgreSQL storage.
+  version: 2.0.0
+  contact:
+    name: MISC Development Team
+    url: https://github.com/aiaiai-copilot/misc-poc
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:3000
+    description: Local development server
+  - url: https://api.misc.example.com
+    description: Production server
+
+tags:
+  - name: Authentication
+    description: Google OAuth authentication endpoints
+  - name: Records
+    description: CRUD operations for records
+  - name: Tags
+    description: Tag statistics and suggestions
+  - name: Import/Export
+    description: Data migration endpoints
+  - name: User
+    description: User profile and settings
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token obtained from Google OAuth flow
+    
+  schemas:
+    Error:
+      type: object
+      required:
+        - error
+        - message
+        - timestamp
+      properties:
+        error:
+          type: string
+          example: "VALIDATION_ERROR"
+        message:
+          type: string
+          example: "Invalid request parameters"
+        details:
+          type: object
+          additionalProperties: true
+        timestamp:
+          type: string
+          format: date-time
+          example: "2025-01-01T10:00:00Z"
+
+    User:
+      type: object
+      required:
+        - id
+        - email
+        - googleId
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "123e4567-e89b-12d3-a456-426614174000"
+        email:
+          type: string
+          format: email
+          example: "user@example.com"
+        googleId:
+          type: string
+          example: "1234567890"
+        displayName:
+          type: string
+          example: "John Doe"
+        avatarUrl:
+          type: string
+          format: uri
+          example: "https://lh3.googleusercontent.com/..."
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        lastLoginAt:
+          type: string
+          format: date-time
+
+    UserSettings:
+      type: object
+      properties:
+        caseSensitive:
+          type: boolean
+          default: false
+          description: Whether tag matching is case-sensitive
+        removeAccents:
+          type: boolean
+          default: true
+          description: Whether to remove accents for normalization
+        maxTagLength:
+          type: integer
+          default: 100
+          minimum: 10
+          maximum: 500
+        maxTagsPerRecord:
+          type: integer
+          default: 50
+          minimum: 5
+          maximum: 100
+        uiLanguage:
+          type: string
+          default: "en"
+          enum: ["en", "es", "fr", "de", "ru", "zh", "ja"]
+
+    Record:
+      type: object
+      required:
+        - id
+        - content
+        - tags
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "456e7890-e89b-12d3-a456-426614174000"
+        content:
+          type: string
+          example: "meeting project alpha 15:00 tomorrow office"
+          description: Original user input preserving tag order
+        tags:
+          type: array
+          items:
+            type: string
+          example: ["meeting", "project", "alpha", "15:00", "tomorrow", "office"]
+          description: Tags as entered by user (preserving order)
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    RecordInput:
+      type: object
+      required:
+        - content
+      properties:
+        content:
+          type: string
+          minLength: 1
+          maxLength: 5000
+          example: "meeting project alpha 15:00 tomorrow office"
+          description: Space-separated tags
+
+    SearchResult:
+      type: object
+      required:
+        - records
+        - total
+        - limit
+        - offset
+        - displayMode
+      properties:
+        records:
+          type: array
+          items:
+            $ref: '#/components/schemas/Record'
+        total:
+          type: integer
+          example: 42
+          description: Total number of matching records
+        limit:
+          type: integer
+          example: 100
+        offset:
+          type: integer
+          example: 0
+        displayMode:
+          type: string
+          enum: ["list", "cloud"]
+          description: Recommended display mode based on result count
+
+    TagStatistic:
+      type: object
+      required:
+        - tag
+        - count
+        - frequency
+      properties:
+        tag:
+          type: string
+          example: "meeting"
+        count:
+          type: integer
+          example: 15
+          description: Number of records containing this tag
+        frequency:
+          type: number
+          format: float
+          example: 0.25
+          description: Relative frequency (0-1)
+
+    TagSuggestion:
+      type: object
+      required:
+        - tag
+        - score
+      properties:
+        tag:
+          type: string
+          example: "meeting"
+        score:
+          type: number
+          format: float
+          example: 0.95
+          description: Relevance score (0-1)
+
+    ExportData:
+      type: object
+      required:
+        - version
+        - records
+        - metadata
+      properties:
+        version:
+          type: string
+          example: "2.0"
+          description: Export format version
+        records:
+          type: array
+          items:
+            type: object
+            properties:
+              content:
+                type: string
+              createdAt:
+                type: string
+                format: date-time
+              updatedAt:
+                type: string
+                format: date-time
+        metadata:
+          type: object
+          properties:
+            exportedAt:
+              type: string
+              format: date-time
+            recordCount:
+              type: integer
+            normalizationRules:
+              type: object
+              properties:
+                caseSensitive:
+                  type: boolean
+                removeAccents:
+                  type: boolean
+
+    ImportResult:
+      type: object
+      required:
+        - imported
+        - skipped
+        - failed
+        - total
+      properties:
+        imported:
+          type: integer
+          example: 95
+          description: Successfully imported records
+        skipped:
+          type: integer
+          example: 3
+          description: Duplicate records skipped
+        failed:
+          type: integer
+          example: 2
+          description: Records that failed validation
+        total:
+          type: integer
+          example: 100
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              line:
+                type: integer
+              content:
+                type: string
+              reason:
+                type: string
+
+    AuthRequest:
+      type: object
+      required:
+        - token
+      properties:
+        token:
+          type: string
+          description: Google OAuth ID token
+
+    AuthResponse:
+      type: object
+      required:
+        - user
+        - token
+        - expiresIn
+      properties:
+        user:
+          $ref: '#/components/schemas/User'
+        token:
+          type: string
+          description: JWT access token
+        refreshToken:
+          type: string
+          description: JWT refresh token
+        expiresIn:
+          type: integer
+          example: 604800
+          description: Token expiration time in seconds
+
+  responses:
+    UnauthorizedError:
+      description: Authentication information is missing or invalid
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "UNAUTHORIZED"
+            message: "Invalid or expired token"
+            timestamp: "2025-01-01T10:00:00Z"
+
+    NotFoundError:
+      description: The requested resource was not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "NOT_FOUND"
+            message: "Record not found"
+            timestamp: "2025-01-01T10:00:00Z"
+
+    ValidationError:
+      description: Request validation failed
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "VALIDATION_ERROR"
+            message: "Content cannot be empty"
+            details:
+              field: "content"
+              constraint: "minLength"
+            timestamp: "2025-01-01T10:00:00Z"
+
+    ConflictError:
+      description: Conflict with existing resource
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "DUPLICATE_RECORD"
+            message: "A record with these tags already exists"
+            timestamp: "2025-01-01T10:00:00Z"
+
+    RateLimitError:
+      description: Too many requests
+      headers:
+        X-RateLimit-Limit:
+          schema:
+            type: integer
+          example: 100
+        X-RateLimit-Remaining:
+          schema:
+            type: integer
+          example: 0
+        X-RateLimit-Reset:
+          schema:
+            type: integer
+          example: 1609459200
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "RATE_LIMIT_EXCEEDED"
+            message: "Too many requests, please try again later"
+            timestamp: "2025-01-01T10:00:00Z"
+
+paths:
+  # Authentication endpoints
+  /auth/google:
+    post:
+      tags:
+        - Authentication
+      summary: Authenticate with Google OAuth
+      description: Exchange Google ID token for JWT access token
+      operationId: authenticateGoogle
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthRequest'
+      responses:
+        '200':
+          description: Authentication successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          description: Invalid Google token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/refresh:
+    post:
+      tags:
+        - Authentication
+      summary: Refresh access token
+      description: Use refresh token to get new access token
+      operationId: refreshToken
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - refreshToken
+              properties:
+                refreshToken:
+                  type: string
+      responses:
+        '200':
+          description: Token refreshed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                  expiresIn:
+                    type: integer
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /auth/logout:
+    post:
+      tags:
+        - Authentication
+      summary: Logout user
+      description: Invalidate current session
+      operationId: logout
+      security:
+        - bearerAuth: []
+      responses:
+        '204':
+          description: Logout successful
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  # User endpoints
+  /api/user/profile:
+    get:
+      tags:
+        - User
+      summary: Get current user profile
+      operationId: getUserProfile
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: User profile retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /api/user/settings:
+    get:
+      tags:
+        - User
+      summary: Get user settings
+      operationId: getUserSettings
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Settings retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserSettings'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+    
+    put:
+      tags:
+        - User
+      summary: Update user settings
+      operationId: updateUserSettings
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserSettings'
+      responses:
+        '200':
+          description: Settings updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserSettings'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  # Records endpoints
+  /api/records:
+    get:
+      tags:
+        - Records
+      summary: Search records
+      description: |
+        Search records by tags with AND logic. Returns all user's records if no query provided.
+        Results are ordered by creation date (newest first).
+      operationId: searchRecords
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: q
+          in: query
+          description: Space-separated tags to search (AND logic)
+          schema:
+            type: string
+            example: "meeting project"
+        - name: limit
+          in: query
+          description: Maximum number of records to return
+          schema:
+            type: integer
+            default: 100
+            minimum: 1
+            maximum: 500
+        - name: offset
+          in: query
+          description: Number of records to skip
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResult'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '429':
+          $ref: '#/components/responses/RateLimitError'
+
+    post:
+      tags:
+        - Records
+      summary: Create new record
+      description: |
+        Create a new record from space-separated tags. 
+        Duplicates (same tag set) are rejected with 409 status.
+        Tags are normalized according to user settings.
+      operationId: createRecord
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecordInput'
+      responses:
+        '201':
+          description: Record created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Record'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '409':
+          $ref: '#/components/responses/ConflictError'
+        '429':
+          $ref: '#/components/responses/RateLimitError'
+
+  /api/records/{id}:
+    get:
+      tags:
+        - Records
+      summary: Get record by ID
+      operationId: getRecord
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Record UUID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Record retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Record'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+    put:
+      tags:
+        - Records
+      summary: Update record
+      description: |
+        Replace record content with new tags.
+        Tags are re-extracted and normalized.
+        Duplicate check is performed (excluding current record).
+      operationId: updateRecord
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Record UUID
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecordInput'
+      responses:
+        '200':
+          description: Record updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Record'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '409':
+          $ref: '#/components/responses/ConflictError'
+
+    delete:
+      tags:
+        - Records
+      summary: Delete record
+      operationId: deleteRecord
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Record UUID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Record deleted successfully
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  # Tag endpoints
+  /api/tags:
+    get:
+      tags:
+        - Tags
+      summary: Get tag statistics
+      description: |
+        Returns tag frequency statistics for the current user.
+        Used for tag cloud visualization.
+        Ordered by frequency (descending).
+      operationId: getTagStatistics
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: limit
+          in: query
+          description: Maximum number of tags to return
+          schema:
+            type: integer
+            default: 100
+            minimum: 1
+            maximum: 500
+      responses:
+        '200':
+          description: Tag statistics retrieved
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TagStatistic'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /api/tags/suggest:
+    get:
+      tags:
+        - Tags
+      summary: Get tag suggestions
+      description: |
+        Returns tag suggestions for auto-completion.
+        Based on prefix matching and usage frequency.
+      operationId: getTagSuggestions
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: prefix
+          in: query
+          required: true
+          description: Tag prefix for suggestions
+          schema:
+            type: string
+            minLength: 1
+            example: "mee"
+        - name: limit
+          in: query
+          description: Maximum suggestions to return
+          schema:
+            type: integer
+            default: 10
+            minimum: 1
+            maximum: 20
+      responses:
+        '200':
+          description: Suggestions retrieved
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TagSuggestion'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  # Import/Export endpoints
+  /api/export:
+    get:
+      tags:
+        - Import/Export
+      summary: Export all user data
+      description: |
+        Export all user's records in JSON format.
+        Does not include internal UUIDs for portability.
+        Includes version info and normalization settings.
+      operationId: exportData
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: format
+          in: query
+          description: Export format
+          schema:
+            type: string
+            enum: ["json"]
+            default: "json"
+      responses:
+        '200':
+          description: Export data generated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExportData'
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+          headers:
+            Content-Disposition:
+              schema:
+                type: string
+              example: "attachment; filename=misc-export-2025-01-01.json"
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /api/import:
+    post:
+      tags:
+        - Import/Export
+      summary: Import data
+      description: |
+        Import records from JSON export.
+        Supports v1.0 (prototype) and v2.0 formats.
+        Skips duplicates and reports statistics.
+        Maximum file size: 10MB.
+      operationId: importData
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExportData'
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Import completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImportResult'
+        '400':
+          description: Invalid file format or size
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '413':
+          description: File too large
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # Health check
+  /health:
+    get:
+      tags:
+        - System
+      summary: Health check
+      description: Check API and database connectivity
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "healthy"
+                  timestamp:
+                    type: string
+                    format: date-time
+                  database:
+                    type: string
+                    example: "connected"
+                  version:
+                    type: string
+                    example: "2.0.0"
+        '503':
+          description: Service unhealthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "unhealthy"
+                  timestamp:
+                    type: string
+                    format: date-time
+                  database:
+                    type: string
+                    example: "disconnected"
+
+# Security requirements for all endpoints (except public ones)
+security:
+  - bearerAuth: []
