@@ -1,0 +1,25 @@
+# Migration from Prototype to MVP
+
+## What Changed
+- localStorage → PostgreSQL
+- Single-user → Multi-user with OAuth
+- Local app → Server-based with REST API
+- No auth → Google OAuth + JWT
+
+## What Remains
+- Domain entities and business logic
+- Clean Architecture principles
+- UI components and interactions
+- Tag normalization rules
+
+## Migration Path for Users
+1. Export data from prototype (JSON)
+2. Create account in MVP
+3. Import JSON file
+4. All records migrated with timestamps
+
+## Technical Migration
+- Repository interfaces unchanged
+- Use cases enhanced with user context
+- Frontend adapted for async operations
+- New backend package added to monorepo
