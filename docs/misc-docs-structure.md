@@ -11,7 +11,7 @@ misc-poc/
 │   │   ├── getting-started.md    # Setup instructions
 │   │   ├── contributing.md       # Contribution guidelines
 │   │   └── testing-strategy.md   # TDD approach and requirements
-│   │
+│   │   
 │   ├── architecture/              # Architecture documentation
 │   │   ├── README.md             # Architecture overview with diagrams
 │   │   ├── clean-architecture.md # Clean Architecture principles
@@ -22,44 +22,47 @@ misc-poc/
 │   │   └── frontend/             # Frontend-specific
 │   │       ├── components.md    # Component architecture
 │   │       └── state-management.md # State and data flow
-│   │
+│   │   
 │   ├── api/                      # API documentation
 │   │   ├── openapi.yaml         # OpenAPI 3.0 specification
 │   │   ├── postman/             # Postman collections
 │   │   └── examples/            # Request/response examples
-│   │
+│   │   
 │   ├── deployment/              # Deployment documentation
 │   │   ├── docker-setup.md     # Docker configuration
 │   │   ├── ssl-setup.md        # Let's Encrypt setup
 │   │   └── production.md       # Production deployment guide
-│   │
+│   │   
 │   ├── taskmaster/              # TaskMaster AI documents (source of truth)
 │   │   ├── README.md           # How to work with TaskMaster
 │   │   ├── prd-prototype.txt   # Archived PRD for prototype
-│   │   └── prd-mvp.md          # Current PRD for MVP
-│   │
+│   │   └── prd-mvp.md        # Current PRD for MVP
+│   │   
 │   └── archive/                # Historical documentation
 │       └── prototype/          # Prototype-era documents
 │           ├── adr/           # Architectural decisions
 │           ├── requirements/   # Original requirements
 │           └── vision-ru.md   # Original vision
 │
-└── .taskmaster/                # TaskMaster working directory
-    ├── docs/
-    │   ├── prd.txt           # Active PRD (copy of prd-mvp.md)
-    │   └── migration-notes.txt # Migration from prototype to MVP
-    ├── tasks/
-    │   ├── tasks.json        # Current MVP tasks
-    │   └── archive/
-    │       └── tasks-prototype.json # Completed prototype tasks
-    └── templates/            # TaskMaster templates
-
+├── .taskmaster/                # TaskMaster working directory
+│   ├── docs/                  
+│   │   ├── prd.txt           # Active PRD (copy of prd-mvp.md)
+│   │   └── migration-notes.txt # Migration from prototype to MVP
+│   ├── tasks/                 
+│   │   ├── tasks.json        # Current MVP tasks
+│   │   └── archive/          
+│   │       └── tasks-prototype.json # Completed prototype tasks
+│   └── templates/            # TaskMaster templates
+│
+└── scripts/                   # Utility scripts
+    └── docs/                 
+        ├── sync-check.js     # Verify docs consistency with PRD
+        └── generate-toc.js   # Generate table of contents
 ```
 
 ## Migration Steps
 
 ### Step 1: Create new directory structure
-
 ```bash
 # Create main documentation directories
 mkdir -p docs/{development,architecture,api,deployment,taskmaster,archive}
@@ -67,10 +70,10 @@ mkdir -p docs/architecture/{backend,frontend}
 mkdir -p docs/api/{postman,examples}
 mkdir -p docs/archive/prototype
 mkdir -p .taskmaster/tasks/archive
+mkdir -p scripts/docs
 ```
 
 ### Step 2: Move existing documents
-
 ```bash
 # Archive prototype documentation
 mv docs/adr docs/archive/prototype/
@@ -89,101 +92,142 @@ cp docs/taskmaster/prd-mvp.md .taskmaster/docs/prd.txt
 ```
 
 ### Step 3: Create navigation README
-
 ```markdown
 # docs/README.md
 
 # MISC Documentation
 
 ## For Developers
-
 - [Project Overview](./development/overview.md) - Start here!
 - [Getting Started](./development/getting-started.md)
 - [Architecture](./architecture/README.md)
 - [API Documentation](./api/openapi.yaml)
 
 ## For TaskMaster AI
-
 - [Current PRD (MVP)](./taskmaster/prd-mvp.md)
 - [Working with TaskMaster](./taskmaster/README.md)
 
 ## Historical Documents
-
 - [Prototype Documentation](./archive/prototype/)
 - [Prototype PRD](./taskmaster/prd-prototype.txt)
 ```
 
 ### Step 4: Create migration notes
-
 ```markdown
 # .taskmaster/docs/migration-notes.txt
 
 # Migration from Prototype to MVP
 
 ## What Changed
-
 - localStorage → PostgreSQL
 - Single-user → Multi-user with OAuth
 - Local app → Server-based with REST API
 - No auth → Google OAuth + JWT
 
 ## What Remains
-
 - Domain entities and business logic
 - Clean Architecture principles
 - UI components and interactions
 - Tag normalization rules
 
 ## Migration Path for Users
-
 1. Export data from prototype (JSON)
 2. Create account in MVP
 3. Import JSON file
 4. All records migrated with timestamps
 
 ## Technical Migration
-
 - Repository interfaces unchanged
 - Use cases enhanced with user context
 - Frontend adapted for async operations
 - New backend package added to monorepo
 ```
 
+### Step 5: Create consistency check script
+```javascript
+// scripts/docs/sync-check.js
+
+const fs = require('fs');
+const path = require('path');
+
+// Check that human docs align with PRD
+function checkConsistency() {
+  const prdPath = path.join(__dirname, '../../docs/taskmaster/prd-mvp.md');
+  const overviewPath = path.join(__dirname, '../../docs/development/overview.md');
+  
+  const prd = fs.readFileSync(prdPath, 'utf8');
+  const overview = fs.readFileSync(overviewPath, 'utf8');
+  
+  // Extract key metrics from PRD
+  const prdMetrics = {
+    authTime: prd.match(/Authentication:\s*<\s*(\d+)s/)?.[1],
+    searchTime: prd.match(/Search.*:\s*<\s*(\d+)ms/)?.[1],
+    coverage: prd.match(/Domain Layer:\s*>\s*(\d+)%/)?.[1]
+  };
+  
+  // Check if overview contains same metrics
+  const issues = [];
+  
+  if (!overview.includes(prdMetrics.authTime)) {
+    issues.push(`Auth time mismatch: PRD says ${prdMetrics.authTime}s`);
+  }
+  
+  if (!overview.includes(prdMetrics.searchTime)) {
+    issues.push(`Search time mismatch: PRD says ${prdMetrics.searchTime}ms`);
+  }
+  
+  if (issues.length > 0) {
+    console.error('⚠️  Documentation inconsistencies found:');
+    issues.forEach(issue => console.error(`  - ${issue}`));
+    process.exit(1);
+  } else {
+    console.log('✅ Documentation is consistent with PRD');
+  }
+}
+
+checkConsistency();
+```
+
+### Step 6: Update package.json scripts
+```json
+{
+  "scripts": {
+    "docs:check": "node scripts/docs/sync-check.js",
+    "docs:toc": "node scripts/docs/generate-toc.js"
+  }
+}
+```
+
 ## Benefits of This Structure
 
 ### 1. **Clear Separation of Concerns**
-
 - `docs/` - Human-readable documentation
 - `.taskmaster/` - TaskMaster working files
 - `archive/` - Historical preservation
 
 ### 2. **No Contradictions**
-
 - Single source of truth: `prd-mvp.md`
 - Other docs derived from PRD
 - Automated consistency checks
 
 ### 3. **Developer-Friendly**
-
 - Clear navigation in `docs/README.md`
 - Quick start in `overview.md`
 - Examples and diagrams in subdirectories
 
 ### 4. **TaskMaster-Compatible**
-
 - PRD remains in `.taskmaster/docs/`
 - Clean separation of concerns
 - Migration notes for context
 
 ### 5. **Version Control Friendly**
-
 - Clear history preservation
 - Atomic commits for reorganization
 - Easy to track changes
 
 ## Next Steps
 
-1. **Execute migration steps 1-4**
+1. **Execute migration steps 1-6**
 2. **Create missing documents:**
    - `getting-started.md`
    - `architecture/README.md`
