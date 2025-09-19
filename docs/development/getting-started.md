@@ -6,14 +6,14 @@ Before starting, ensure you have the following installed:
 
 ### Required Software
 
-| Software | Version | Check Command | Installation Guide |
-|----------|---------|---------------|-------------------|
-| Node.js | 22.18.0 | `node -v` | [nodejs.org](https://nodejs.org/) or use [nvm](https://github.com/nvm-sh/nvm) |
-| Yarn | 3.6.4 | `yarn -v` | `corepack enable && corepack prepare yarn@3.6.4 --activate` |
-| Docker | 20.10+ | `docker -v` | [docker.com](https://docs.docker.com/get-docker/) |
-| Docker Compose | 2.0+ | `docker compose version` | Included with Docker Desktop |
-| Git | 2.30+ | `git --version` | [git-scm.com](https://git-scm.com/) |
-| PostgreSQL client | 15+ | `psql --version` | Optional, for database debugging |
+| Software          | Version | Check Command            | Installation Guide                                                            |
+| ----------------- | ------- | ------------------------ | ----------------------------------------------------------------------------- |
+| Node.js           | 22.18.0 | `node -v`                | [nodejs.org](https://nodejs.org/) or use [nvm](https://github.com/nvm-sh/nvm) |
+| Yarn              | 3.6.4   | `yarn -v`                | `corepack enable && corepack prepare yarn@3.6.4 --activate`                   |
+| Docker            | 20.10+  | `docker -v`              | [docker.com](https://docs.docker.com/get-docker/)                             |
+| Docker Compose    | 2.0+    | `docker compose version` | Included with Docker Desktop                                                  |
+| Git               | 2.30+   | `git --version`          | [git-scm.com](https://git-scm.com/)                                           |
+| PostgreSQL client | 15+     | `psql --version`         | Optional, for database debugging                                              |
 
 ### Google OAuth Setup
 
@@ -104,6 +104,7 @@ yarn workspace @misc-poc/presentation-web dev
 - API Health: http://localhost:3000/health
 
 You should see:
+
 - Frontend: MISC interface with input field
 - Health endpoint: `{"status":"healthy","database":"connected"}`
 
@@ -199,11 +200,11 @@ services:
       POSTGRES_PASSWORD: misc_password
       POSTGRES_DB: misc
     ports:
-      - "5432:5432"
+      - '5432:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U misc"]
+      test: ['CMD-SHELL', 'pg_isready -U misc']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -213,7 +214,7 @@ services:
       context: .
       dockerfile: packages/backend/Dockerfile
     ports:
-      - "3000:3000"
+      - '3000:3000'
     environment:
       DATABASE_URL: postgresql://misc:misc_password@postgres:5432/misc
       GOOGLE_OAUTH_CLIENT_ID: ${GOOGLE_OAUTH_CLIENT_ID}
@@ -231,7 +232,7 @@ services:
       context: .
       dockerfile: packages/presentation/web/Dockerfile
     ports:
-      - "5173:5173"
+      - '5173:5173'
     environment:
       VITE_API_URL: http://localhost:3000
     volumes:
@@ -377,10 +378,10 @@ Install recommended extensions for best development experience:
 ```javascript
 // In browser console or via API
 const testRecords = [
-  "meeting project alpha tomorrow 15:00",
-  "todo buy groceries milk bread eggs",
-  "password github token ghp_xxxxxxxxxxxx",
-  "birthday john march 15 1990"
+  'meeting project alpha tomorrow 15:00',
+  'todo buy groceries milk bread eggs',
+  'password github token ghp_xxxxxxxxxxxx',
+  'birthday john march 15 1990',
 ];
 
 // Records will be created via UI
@@ -492,9 +493,9 @@ yarn test:e2e:debug                            # E2E debug mode
 
 - **Documentation**: Check `/docs` folder
 - **Issues**: [GitHub Issues](https://github.com/aiaiai-copilot/misc-poc/issues)
-- **TaskMaster**: Review `.taskmaster/docs/prd-mvp.txt` for requirements
+- **TaskMaster**: Review `.taskmaster/docs/prd.txt` for requirements
 - **Tests**: Look at existing tests for usage examples
 
 ---
 
-*Ready to build the MVP! Remember: Test-Driven Development is mandatory - write tests first!*
+_Ready to build the MVP! Remember: Test-Driven Development is mandatory - write tests first!_

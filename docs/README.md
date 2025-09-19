@@ -9,7 +9,7 @@
 
 ## For TaskMaster AI
 
-- [Current PRD (MVP)](./taskmaster/prd-mvp.txt)
+- [Current PRD (MVP)](./taskmaster/prd-mvp.md)
 - [Working with TaskMaster](./taskmaster/README.md)
 
 ## Historical Documents

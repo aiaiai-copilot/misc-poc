@@ -36,7 +36,7 @@ misc-poc/
 │   ├── taskmaster/              # TaskMaster AI documents (source of truth)
 │   │   ├── README.md           # How to work with TaskMaster
 │   │   ├── prd-prototype.txt   # Archived PRD for prototype
-│   │   └── prd-mvp.txt        # Current PRD for MVP
+│   │   └── prd-mvp.md          # Current PRD for MVP
 │   │
 │   └── archive/                # Historical documentation
 │       └── prototype/          # Prototype-era documents
@@ -46,7 +46,7 @@ misc-poc/
 │
 └── .taskmaster/                # TaskMaster working directory
     ├── docs/
-    │   ├── prd.txt           # Active PRD (copy of prd-mvp.txt)
+    │   ├── prd.txt           # Active PRD (copy of prd-mvp.md)
     │   └── migration-notes.txt # Migration from prototype to MVP
     ├── tasks/
     │   ├── tasks.json        # Current MVP tasks
@@ -79,13 +79,13 @@ mv docs/development/vision-ru.md docs/archive/prototype/
 
 # Move TaskMaster PRDs
 cp .taskmaster/docs/prd.txt docs/taskmaster/prd-prototype.txt
-cp prd.txt docs/taskmaster/prd-mvp.txt  # Your new PRD
+cp prd.txt docs/taskmaster/prd-mvp.md  # Your new PRD
 
 # Archive prototype tasks
 cp .taskmaster/tasks/tasks.json .taskmaster/tasks/archive/tasks-prototype.json
 
 # Keep active PRD for TaskMaster
-cp docs/taskmaster/prd-mvp.txt .taskmaster/docs/prd.txt
+cp docs/taskmaster/prd-mvp.md .taskmaster/docs/prd.txt
 ```
 
 ### Step 3: Create navigation README
@@ -104,7 +104,7 @@ cp docs/taskmaster/prd-mvp.txt .taskmaster/docs/prd.txt
 
 ## For TaskMaster AI
 
-- [Current PRD (MVP)](./taskmaster/prd-mvp.txt)
+- [Current PRD (MVP)](./taskmaster/prd-mvp.md)
 - [Working with TaskMaster](./taskmaster/README.md)
 
 ## Historical Documents
@@ -159,7 +159,7 @@ cp docs/taskmaster/prd-mvp.txt .taskmaster/docs/prd.txt
 
 ### 2. **No Contradictions**
 
-- Single source of truth: `prd-mvp.txt`
+- Single source of truth: `prd-mvp.md`
 - Other docs derived from PRD
 - Automated consistency checks
 

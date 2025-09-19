@@ -2,36 +2,33 @@
 
 ## Executive Summary
 
-MISC is a minimalist information management system based on a single principle: everything is tags. Each record represents a set of words (tags) separated by spaces. The system eliminates the barrier between thought and recording, offering instant capture and search of information without traditional data organization structures.
+This document defines requirements for transitioning MISC from a local storage prototype to a server-based multi-user MVP. The core philosophy of radical simplicity remains unchanged - everything is tags. The MVP adds user authentication, data persistence in PostgreSQL, and RESTful API while maintaining the minimal interface and instant information capture that defines MISC.
 
-In a world overloaded with complex information organization systems, MISC offers a radical alternative. We remove forms, fields, folders, document types - leaving only the essence: words and connections between them.
+## 1. Product Vision and Philosophy
 
----
+### 1.1. Philosophy
 
-# PART 1: PRODUCT VISION AND PHILOSOPHY
+MISC is a minimalist information management system based on a single principle: everything is tags. Each record is simply a set of words separated by spaces. Each word is simultaneously both content and a way to find that content. The system eliminates the barrier between thought and recording, offering instant capture and search of information without traditional data organization structures. In a world overloaded with complex information organization systems, MISC offers a radical alternative. We remove forms, fields, folders, document types - leaving only the essence: words and connections between them.
 
-## Philosophy
-
-Each record is simply a set of words separated by spaces. Each word is simultaneously both content and a way to find that content.
-
-## Key Problem
+### 1.2. Key Problem
 
 Existing note-taking systems force users to think about structure instead of content:
-- Which folder to save to?
-- Which document type to choose?
-- Which fields to fill?
-- How to name it correctly?
 
-This is cognitive load that interferes with the main thing - rapid information capture.
+  - Which folder to save to?
+  - Which document type to choose?
+  - Which fields to fill?
+  - How to name it correctly?
+    This is cognitive load that interferes with the main thing - rapid information capture.
 
-## Solution
+### 1.3. Solution
 
 MISC eliminates the barrier between thought and recording:
 
-1. **Recording**: Simply enter words separated by spaces
-2. **Search**: Enter any words from the record - find everything that contains them
+1.  **Recording**: Simply enter words separated by spaces
+2.  **Search**: Enter any words from the record - find everything that contains them
 
 Usage example:
+
 ```
 peter ivanov phone 89151234455 birthday march 15
 github password qwerty123 igor@gmail.com
@@ -44,1297 +41,1284 @@ Typing "peter phone" - find Peter's contact.
 Typing "password" - see all saved passwords.
 Typing "birthday" - see a list of birthdays you need.
 
-## Target Audience
+### 1.4. Key Product Principles
 
-### Primary
-- **Information workers**: Those who constantly work with diverse information
-- **Minimalists**: Admirers of simple and elegant solutions
-- **Advanced users**: Those tired of traditional systems' limitations
+1.  **Radical simplicity**: One mechanism for all types of information.
+2.  **Zero entry barrier**: Requires no learning.
+3.  **Speed priority**: Instant thought capture.
+4.  **Transparency**: User always understands how the system works.
+5.  **No structure - there is freedom**:
+      - User decides how to interpret their records.
+      - Word order is preserved for natural readability.
+6.  **Speed over formality**: Instant thought capture without unnecessary actions.
+7.  **Universality through simplicity**: One mechanism for all information types.
 
-### Secondary
-- **Regular users**: Looking for a simple alternative to complex applications
-- **Developers**: For quick technical notes and snippets
-- **Students and researchers**: For capturing scattered facts and ideas
+### 1.5. Manifesto
 
-## Key Product Principles
+MISC is not just a note-taking application. It's an information management philosophy where the absence of rigidity becomes an advantage. We believe the best interface is minimalist, and the best system is one that doesn't need to be learned.
 
-1. **Radical simplicity**: One mechanism for all types of information
-2. **Zero entry barrier**: Requires no learning
-3. **Speed priority**: Instant thought capture
-4. **Transparency**: User always understands how the system works
-5. **No structure - there is freedom**: 
-   - User decides how to interpret their records
-   - Word order is preserved for natural readability
-6. **Speed over formality**: Instant thought capture without unnecessary actions
-7. **Universality through simplicity**: One mechanism for all information types
+## 2. Project Context
 
-## Manifesto
+### 2.1 Current State (Prototype)
 
-MISC is not just a note-taking application. It's an information management philosophy where the absence of rigidity becomes an advantage. Where less truly means more.
+  - Local storage-based single-user application
+  - Clean Architecture implementation (Domain, Application, Infrastructure, Presentation)
+  - TypeScript monorepo with yarn workspaces
+  - Comprehensive test coverage (Domain >95%, Use Cases >90%)
+  - Working web interface with instant search and tag management
 
-We believe the best interface is minimalist, and the best system is one that doesn't need to be learned.
+### 2.2 MVP Goals
 
----
+  - Transform into multi-user server application
+  - Maintain existing simplicity and user experience
+  - Enable data persistence and backup
+  - Provide secure isolated user spaces
+  - Support up to 100 concurrent users
 
-# PART 2: ARCHITECTURE AND TECHNICAL PRINCIPLES
+### 2.3 Key Constraints
 
-## Architectural Principles
+  - Preserve all existing business logic
+  - Maintain Clean Architecture principles
+  - **Strict Test-Driven Development (TDD) approach**
+  - Keep the same minimal UI philosophy
+  - Ensure backward compatibility for data migration
 
-- **Clean Architecture**: Business logic independence from implementation details
-- **Domain-First**: Domain model is developed first and doesn't depend on UI or DB
-- **Test-Driven Development**: Development through testing from day one
-- **Dependency Inversion**: Dependencies are directed towards the center (to domain)
-- **SOLID principles**: Each component has a single responsibility
-- **YAGNI for prototype**: Don't implement what's not needed now
-- **Preparation for evolution**: Data structure ready for future changes
+### 2.4 TDD Methodology Requirements
 
-## Architecture Layers
+**Mandatory TDD Process:**
 
-| Layer | Responsibility | Depends on | Testing |
-|-------|----------------|------------|---------|
-| Domain | Business logic, rules | Nothing | >95% coverage |
-| Application | Orchestration, use cases | Domain | >90% coverage |
-| Infrastructure | Storage, external services | Domain (through interfaces) | Integration tests |
-| Presentation | UI, input processing | Application | Component + E2E tests |
+1.  **Red Phase**: Write failing test first (contract specification)
+2.  **Green Phase**: Write minimal code to pass the test
+3.  **Refactor Phase**: Improve code while keeping tests green
 
-## Technology Stack
+**TDD Rules for MVP:**
 
-- **Monorepo**: yarn workspaces for package management
-- **Language**: TypeScript for all layers
-- **Node.js**: v22.18.0 (specified in .nvmrc)
-- **Frontend framework**: React (presentation layer details)
-- **CLI framework**: Ink (React for terminal)
-- **Bundler**: Vite for web, esbuild for CLI
-- **Testing**: Jest/Vitest for unit tests, Testing Library for components
+  - No production code without failing test
+  - Tests define contracts and specifications
+  - Test coverage enforced in CI/CD pipeline
+  - Code reviews must verify test-first approach
+  - Each PR must show tests committed before implementation
 
----
+**Test Priority Order:**
 
-# PART 3: FUNCTIONAL REQUIREMENTS
+1.  Domain logic tests (define business rules)
+2.  API contract tests (define interfaces)
+3.  Integration tests (define system behavior)
+4.  E2E tests (define user workflows)
 
-## Core Functionality
+## 3. Technical Architecture
 
-### Record Management
+### 3.1 Technology Stack
 
-- **Record creation**: Input a set of tags separated by spaces
-- **Record search**: Search by any combination of tags (AND logic)
-- **Record editing**: Complete replacement of record content
-- **Record deletion**: Permanent deletion
-- **Record uniqueness**: Record = unique set of tags (order doesn't matter for identification)
-- **Tag order preservation**: When displaying records, tags are shown in the order user entered them
+```yaml
+Backend:
+  Runtime: Node.js 22.x
+  Language: TypeScript 5.x
+  Framework: Express/Fastify
+  Database: PostgreSQL 15+
+  Migrations: TypeORM (migrations only)
+  Validation: Joi/Zod
+  Authentication: Passport.js with Google OAuth
 
-### Working with Tags
+Infrastructure:
+  Container: Docker & Docker Compose
+  Reverse Proxy: Nginx
+  Environment: Self-hosted
+  SSL: Let's Encrypt
 
-- **Tag definition**: Any sequence of characters without spaces
-- **Tag restrictions**: 
-  - Forbidden JSON service characters: `{}[]:,"\`
-  - Support for all other Unicode characters
-  - Automatic lowercase conversion (configurable)
-  - Optional diacritic removal (configurable)
-- **Tag normalization**:
-  - Lowercase conversion for search
-  - Diacritic removal (é→e, ñ→n) for improved search (optional)
-  - Example: "Café" and "cafe" will be found by the same query
-- **Auto-completion**: Suggestions based on existing tags
-- **Usage statistics**: Counting tag usage frequency
-- **Tag order in records**: 
-  - Tag input order is preserved for each record
-  - When editing, user can change tag order
-  - Order matters for readability but doesn't affect record uniqueness
+Development:
+  Testing: Jest/Vitest
+  API Testing: Supertest
+  E2E Testing: Playwright
+  Code Quality: ESLint, Prettier
+  Documentation: OpenAPI 3.0
+```
 
-### Search Interface
+### 3.2 System Architecture
 
-- **Incremental search**: Results update as you type
-- **Tag cloud**: Displayed when results don't fit on screen
-  - Tag size proportional to usage frequency
-  - Clicking a tag adds it to search query
-- **Record list**: Displayed when results fit on screen
-  - Sorted by creation date (newest first)
-  - Display full record content (when possible)
+```
+┌─────────────────┐     ┌──────────────────┐
+│   Web Client    │────▶│    Nginx         │
+│   (React SPA)   │     │  (Reverse Proxy)  │
+└─────────────────┘     └──────────────────┘
+                               │
+                               ▼
+                    ┌──────────────────────┐
+                    │   REST API Server    │
+                    │  (Node.js/Express)   │
+                    └──────────────────────┘
+                               │
+                    ┌──────────────────────┐
+                    │   Business Logic     │
+                    │  (Domain + Use Cases) │
+                    └──────────────────────┘
+                               │
+                    ┌──────────────────────┐
+                    │    PostgreSQL        │
+                    │    (Data Store)      │
+                    └──────────────────────┘
+```
 
-### Export/Import
+### 3.3 Deployment Architecture
 
-#### Functionality
-- **Export all data**: In JSON format with versioning
-- **Import data**: Complete replacement of existing data (clear + load)
-- **Format versioning**: For compatibility assurance
-- **Format simplicity**: Only user data, no internal identifiers
+```yaml
+version: '3.8'
+services:
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./ssl:/etc/nginx/ssl
+  
+  api:
+    build: ./packages/backend
+    environment:
+      - DATABASE_URL=postgresql://user:pass@postgres:5432/misc
+      - GOOGLE_OAUTH_CLIENT_ID=${GOOGLE_OAUTH_CLIENT_ID}
+      - GOOGLE_OAUTH_CLIENT_SECRET=${GOOGLE_OAUTH_CLIENT_SECRET}
+    depends_on:
+      - postgres
+  
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=misc
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=misc
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
 
-#### Data Format
+volumes:
+  postgres_data:
+```
+
+## 4. Functional Requirements
+
+### 4.1 User Authentication & Authorization
+
+#### 4.1.1 Authentication Flow
+
+**Contract Test Specification:**
+
+```typescript
+describe('Authentication Contract', () => {
+  describe('Google OAuth Flow', () => {
+    it('should create new user on first Google login');
+    it('should return existing user on subsequent login');
+    it('should reject invalid Google token with appropriate error');
+    it('should handle Google OAuth service unavailability');
+    it('should extract user email and profile from Google token');
+    it('should generate JWT tokens after successful authentication');
+    it('should set secure httpOnly cookies for session management');
+  });
+  
+  describe('Session Validation', () => {
+    it('should validate active JWT token');
+    it('should reject expired JWT token');
+    it('should reject malformed JWT token');
+    it('should validate token signature');
+    it('should extract user context from valid token');
+  });
+  
+  describe('Session Revocation', () => {
+    it('should invalidate active session');
+    it('should clear session cookies');
+    it('should reject operations with revoked token');
+  });
+})
+```
+
+#### 4.1.2 Session Management
+
+  - JWT tokens with 7-day expiration
+  - Refresh token rotation
+  - Secure httpOnly cookies
+  - CORS configuration for SPA
+
+### 4.2 Data Model
+
+#### 4.2.1 Database Schema
+
+```sql
+-- Users table
+CREATE TABLE users (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  email VARCHAR(255) UNIQUE NOT NULL,
+  google_id VARCHAR(255) UNIQUE NOT NULL,
+  display_name VARCHAR(255),
+  avatar_url TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  last_login_at TIMESTAMP WITH TIME ZONE
+);
+
+-- Records table
+CREATE TABLE records (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  content TEXT NOT NULL,
+  tags TEXT[] NOT NULL,
+  normalized_tags TEXT[] NOT NULL, -- for search
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  
+  -- Ensure unique content per user
+  UNIQUE(user_id, normalized_tags)
+);
+
+-- Indexes for performance
+CREATE INDEX idx_records_user_id ON records(user_id);
+CREATE GIN INDEX idx_records_normalized_tags ON records USING GIN(normalized_tags);
+CREATE INDEX idx_records_created_at ON records(created_at DESC);
+
+-- User settings table
+CREATE TABLE user_settings (
+  user_id UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+  case_sensitive BOOLEAN DEFAULT FALSE,
+  remove_accents BOOLEAN DEFAULT TRUE,
+  max_tag_length INTEGER DEFAULT 100,
+  max_tags_per_record INTEGER DEFAULT 50,
+  ui_language VARCHAR(10) DEFAULT 'en',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+```
+
+#### 4.2.2 Database Migration Strategy
+
+**Migration Tool: TypeORM**
+
+  - Used exclusively for schema migrations
+  - No Active Record or Data Mapper patterns
+  - Clean separation from domain entities
+
+**Migration Structure:**
+
+```typescript
+// Migration naming convention: {timestamp}-{description}.ts
+// Example: 1704067200000-CreateUserTable.ts
+```
+
+**Contract Test Specification:**
+
+```typescript
+describe('Database Migration Contract', () => {
+  describe('Migration Execution', () => {
+    it('should run all pending migrations on startup');
+    it('should track applied migrations in migrations table');
+    it('should execute migrations in chronological order');
+    it('should rollback on migration failure');
+    it('should prevent duplicate migration execution');
+    it('should validate migration checksums');
+  });
+  
+  describe('Migration Rollback', () => {
+    it('should support down migrations for rollback');
+    it('should rollback in reverse chronological order');
+    it('should restore previous schema state');
+    it('should handle data preservation during rollback');
+  });
+  
+  describe('Migration Safety', () => {
+    it('should use transactions for each migration');
+    it('should validate schema after migration');
+    it('should create backup before destructive migrations');
+    it('should test migrations in CI pipeline');
+  });
+})
+```
+
+**Migration Files Structure:**
+
+```
+packages/backend/src/migrations/
+├── 1704067200000-CreateUserTable.ts
+├── 1704067200001-CreateRecordsTable.ts
+├── 1704067200002-CreateUserSettingsTable.ts
+├── 1704067200003-AddIndexes.ts
+└── 1704067200004-AddConstraints.ts
+```
+
+**TypeORM Configuration:**
+
 ```json
 {
-  "version": "1.0",
+  "type": "postgres",
+  "host": "postgres",
+  "port": 5432,
+  "database": "misc",
+  "migrations": ["src/migrations/*.ts"],
+  "migrationsTableName": "schema_migrations",
+  "migrationsTransactionMode": "each",
+  "synchronize": false,
+  "logging": ["migration", "error", "warn"]
+}
+```
+
+#### 4.2.3 Data Migration Contract
+
+**Export Format Structure:**
+
+```json
+{
+  "version": "2.0",
   "records": [
     {
-      "content": "ToDo meeting Petrov 15:00",
-      "createdAt": "2024-01-01T10:00:00Z",
-      "updatedAt": "2024-01-01T10:00:00Z"
+      "content": "string",
+      "createdAt": "ISO-8601",
+      "updatedAt": "ISO-8601"
     }
   ],
   "metadata": {
-    "exportedAt": "2024-01-15T12:00:00Z",
-    "recordCount": 42,
+    "exportedAt": "ISO-8601",
+    "recordCount": "number",
     "normalizationRules": {
-      "caseSensitive": false,
-      "removeAccents": false
+      "caseSensitive": "boolean",
+      "removeAccents": "boolean"
     }
   }
 }
 ```
 
-#### Import/Export Security
-
-**Export:**
-- Not exported: Record and tag UUIDs
-- Exported: Content, creation/update dates
-- Format: Standard JSON with versioning
-- Size: Warning when exporting > 1000 records
-
-**Import:**
-- Complete replacement: All existing data is deleted
-- Warning: Mandatory user confirmation
-- Backup: Automatic creation before import
-- Validation: JSON structure check before import
-- New UUIDs: All records and tags get new identifiers
-
----
-
-# PART 4: USER INTERFACE
-
-## Main Interface
-
-- **Single input field**: Universal field for search and record creation
-- **Adaptive display**: 
-  - Search mode by default
-  - Suggest creating a record when no results found
-- **Minimalist design**: Focus on content, minimal visual elements
-- **Status indicators**:
-  - Search: Visual indication during debounce delay (e.g., ellipsis or spinner)
-  - Loading: Indicator when performing operations
-
-## Keyboard Management
-
-- **Enter**: Save new record / Open selected for editing
-- **Escape**: Clear input field
-- **Tab**: Tag auto-completion
-- **↑/↓**: Navigate search results
-- **Delete**: Delete selected record
-
-## Main Interface Workflow Algorithm
-
-### Single field input flow
-```
-User enters text
-    ↓
-Debounce 300ms
-    ↓
-Search records
-    ↓
-Found?
-  ├─ Yes → Fits on screen?
-  │       ├─ Yes → Show list
-  │       └─ No → Show tag cloud
-  └─ No → Suggest creating record
-          └─ Enter → Create
-```
-
-### Import/Export flow
-```
-Export:
-  User → "Export" button → JSON file (without UUIDs)
-
-Import:
-  User → Select file → Warning about replacing all data
-    ↓
-  Confirmation → Complete deletion → Import records → Create new UUIDs
-```
-
-## UI States
+**Contract Test Specification:**
 
 ```typescript
-type UIMode = 
-  | { type: 'empty' }
-  | { type: 'searching'; query: string }
-  | { type: 'list'; records: RecordDTO[] }
-  | { type: 'cloud'; tags: TagCloudItemDTO[] }
-  | { type: 'creating'; content: string }
-  | { type: 'editing'; record: RecordDTO }
-  | { type: 'no-results'; query: string }
-  | { type: 'importing'; progress?: number }
-  | { type: 'export-ready'; data: ExportDTO }
-```
-
----
-
-# PART 5: NON-FUNCTIONAL REQUIREMENTS
-
-## Performance
-
-- **Search response time**: < 100ms for 10,000 records
-- **Save time**: < 50ms
-- **Application size**: < 500KB (gzipped)
-- **Application startup**: < 2 seconds
-- **Auto-completion**: < 50ms for 10,000 tags
-- **Display mode detection**: < 10ms for 100 records
-- **Full import**: < 2sec for 1,000 records
-- **Export**: < 1sec for 10,000 records
-
-## Reliability
-
-- **Data persistence**: Automatic saving without data loss
-- **Validation**: Correctness checking at all levels
-- **Error handling**: Graceful degradation, informative messages
-- **Recovery**: Ability to recover from exported data
-
-## Usability
-
-- **Responsive design**: Adaptation to different screen sizes
-- **Accessibility**: Support for keyboard-only navigation
-- **Feedback**: Visual status indicators
-- **UI response time**: < 16ms for smooth animations
-
-## Testability
-
-- **Unit testing**: All components should be testable in isolation
-- **Integration testing**: Tests for interaction between layers
-- **E2E testing**: Main user scenarios
-- **Test data**: Ability to generate and load test data
-
-## Modularity and Extensibility
-
-- **Layer independence**: Changes in one layer should not require changes in others
-- **Pluggable storage**: Ability to replace localStorage with other storage solutions
-- **Function extensibility**: New features added without changing existing code
-- **Configurability**: Settings extracted to configuration
-
-## Compatibility
-
-- **Browsers**: Latest 2 versions of Chrome, Firefox, Safari, Edge
-- **Minimum resolution**: 320px width
-- **JavaScript**: ES2020+ with transpilation
-
----
-
-# PART 6: DOMAIN MODEL
-
-## Entities
-
-### Record
-
-**Description**: Record - main system entity, represents user-saved information.
-
-**Fields:**
-- `id`: RecordId - unique record identifier
-- `content`: RecordContent - record content as entered by user (preserves tag order)
-- `tagIds`: Set<TagId> - set of tag identifiers (for fast search)
-- `createdAt`: Date - creation date
-- `updatedAt`: Date - last update date
-
-**Behavior:**
-- `hasTag(tagId: TagId)`: boolean - check tag presence
-- `hasSameTagSet(other: Record)`: boolean - check for same tag set
-- `equals(other: Record)`: boolean - compare by ID
-
-**Invariants:**
-- ID immutable after creation
-- Content cannot be empty
-- Content must contain at least one valid tag
-- tagIds contains all tags from content (synchronization)
-
-### Tag
-
-**Description**: Tag as entity - unique concept in the system.
-
-**Fields:**
-- `id`: TagId - unique tag identifier
-- `normalizedValue`: string - normalized form for search and uniqueness
-
-**Behavior:**
-- `equals(other: Tag)`: boolean - compare by ID
-
-**Invariants:**
-- ID immutable after creation
-- normalizedValue unique in system
-
-## Value Objects
-
-- **RecordId**: Record identifier (UUID)
-- **TagId**: Tag identifier (UUID)
-- **RecordContent**: Record content - string of tags as entered by user
-- **SearchQuery**: User search query with normalized tokens
-
-## Domain Services
-
-### TagNormalizer
-**Description**: Tag normalization service.
-**Rules:**
-- Convert to lowercase
-- Optionally: remove diacritics (in configuration)
-
-### TagParser
-**Description**: Service for parsing content into tags. Returns array of normalized tag values.
-
-### TagValidator
-**Description**: Token validation.
-**Rules:**
-- Length from 1 to 100 characters (configurable)
-- Does not contain forbidden characters: `{}[]:,"\`
-- Does not contain spaces
-
-### RecordMatcher
-**Description**: Service for checking record match against search query.
-**Logic:**
-- All tokens from query must be present in record (AND logic)
-- Comparison by normalized values
-
-### RecordDuplicateChecker
-**Description**: Service for checking record uniqueness.
-**Logic:**
-- Records are duplicates if they have the same set of tagIds
-- Order doesn't matter
-
----
-
-# PART 7: APPLICATION LAYER - USE CASES
-
-## CreateRecord
-
-**Input:** `{ content: string }`  
-**Output:** `RecordDTO`  
-**Logic:**
-1. Parse content into tokens
-2. Validate each token
-3. Normalize tokens
-4. Find or create tags for each unique normalized value
-5. Check for duplicate
-6. Create Record with Set<TagId>
-7. Save to repository
-8. Return DTO
-
-## SearchRecords
-
-**Input:** `{ query: string }`  
-**Output:** `SearchResultDTO`  
-**Logic:**
-1. Parse and normalize query
-2. Find tags by normalized values
-3. Find records containing ALL tags from query
-4. Determine display mode (list/cloud)
-5. Form result
-
-## UpdateRecord
-
-**Input:** `{ id: string, content: string }`  
-**Output:** `RecordDTO`  
-**Logic:**
-1. Find record
-2. Parse new content
-3. Find/create tags
-4. Check for duplicate (excluding current record)
-5. Update record
-6. Clean unused tags
-7. Return DTO
-
-## DeleteRecord
-
-**Input:** `{ id: string }`  
-**Output:** `void`  
-**Logic:**
-1. Find and delete record
-2. Check and delete unused tags
-
-## GetTagSuggestions
-
-**Input:** `{ partial: string }`  
-**Output:** `string[]`  
-**Logic:**
-1. Normalize partial
-2. Find all tags starting with partial
-3. Return normalized values for auto-completion
-
-## ExportData
-
-**Input:** `{ format: 'json' }`  
-**Output:** `ExportDTO`  
-**Logic:**
-1. Get all records
-2. Form JSON with content and metadata
-3. DO NOT export record and tag UUIDs (only content and dates)
-
-## ImportData
-
-**Input:** `{ data: string, format: 'json' }`  
-**Output:** `ImportResultDTO`  
-**Logic:**
-1. **FULL IMPORT**: Delete all existing records and tags
-2. Parse JSON data
-3. For each record from import:
-   - Parse content
-   - Create new tags (with new UUIDs)
-   - Create new record (with new UUID)
-   - Save to repository
-4. Return import statistics
-
-**⚠️ Important**: Import completely replaces all data in the system!
-
----
-
-# PART 8: INFRASTRUCTURE AND STORAGE
-
-## Storage Schema (localStorage)
-
-```javascript
-{
-  "version": "2.1",
-  
-  // Tags - object for O(1) access by ID
-  "tags": {
-    "uuid-tag-1": {
-      "id": "uuid-tag-1",
-      "normalizedValue": "todo"
-    }
-  },
-  
-  // Records - object for O(1) access by ID
-  "records": {
-    "uuid-record-1": {
-      "id": "uuid-record-1",
-      "content": "ToDo meeting Petrov 15:00",
-      "tagIds": ["uuid-tag-1", "uuid-tag-2", "uuid-tag-3", "uuid-tag-4"],
-      "createdAt": "2024-01-01T10:00:00Z",
-      "updatedAt": "2024-01-01T10:00:00Z"
-    }
-  },
-  
-  // Indexes for fast search
-  "indexes": {
-    // normalized value → tag ID
-    "normalizedToTagId": {
-      "todo": "uuid-tag-1"
-    },
-    
-    // tag ID → array of record IDs
-    "tagToRecords": {
-      "uuid-tag-1": ["uuid-record-1", "uuid-record-2"]
-    }
-  }
-}
-```
-
-**Why objects instead of arrays:**
-- O(1) access by ID instead of O(n) search
-- Critical for 10,000 records
-- Easier updates and deletion
-
-## Adapters
-
-Repository implementation through localStorage with support for:
-- Indexes for fast search
-- deleteAll() method for full import
-- Transactionality through UnitOfWork
-
-## Ports (interfaces for Infrastructure)
-
-**RecordRepository**: Record management
-- CRUD operations
-- Search by tags with AND logic
-- Full cleanup for import
-
-**TagRepository**: Tag management
-- CRUD operations
-- Search by normalized value
-- Auto-completion by prefix
-- Cleanup of unused tags
-
-**UnitOfWork**: Pattern for operation transactionality
-
----
-
-# PART 9: SETTINGS AND CONFIGURATION
-
-## User Settings
-
-### Basic Settings
-- **Tag case sensitivity**: On/Off (default: off)
-- **Remove diacritics**: On/Off (default: on)
-- **Live search**: On/Off (default: on)
-- **Interface language**: Auto-detection with ability to change
-
-### Limits
-- **Maximum tag length**: Configurable (default: 100 characters)
-- **Maximum number of tags per record**: Configurable (default: 50)
-- **Maximum storage size**: Warning when approaching limit
-
-## System Configuration
-
-**Tags:**
-- maxLength: 100 characters
-- maxPerRecord: 50 tags
-
-**Normalization:**
-- caseSensitive: false
-- removeAccents: false
-
-**Search:**
-- debounceMs: 300
-- liveSearch: true
-
-**Display:**
-- recordHeight: 60px
-- Automatic list/cloud switching
-
-**Storage:**
-- maxSizeMB: 5
-- backupBeforeImport: true
-
-**Import/Export:**
-- warningThreshold: 1000 records
-- Format versioning
-
----
-
-# PART 10: USER SCENARIOS
-
-## First Use
-
-1. User opens the application
-2. Sees empty input field with placeholder
-3. Starts typing tags separated by spaces
-4. Presses Enter - record is saved
-5. Field clears, ready for new record
-
-## Information Search
-
-1. User enters one or several tags
-2. Sees results in real time
-3. If many results - sees tag cloud
-4. Clicks on tag in cloud for refinement
-5. Finds needed record
-
-## Record Editing
-
-1. User finds record through search
-2. Clicks on record or selects with arrows + Enter
-3. Record loads into input field preserving original tag order
-4. Edits content
-5. Presses Enter - changes are saved
-
-## Data Export/Import
-
-1. **Export**: User clicks "Export" → gets JSON file with all records
-2. **Import**: 
-   - User selects JSON file
-   - Sees warning about complete data replacement
-   - Confirms → all old data is deleted
-   - New data is loaded from file
-   - Tags are automatically created based on content
-
----
-
-# PART 11: DEVELOPMENT PLAN
-
-## Development Principles
-
-1. **TDD First**: Tests first, then implementation
-2. **Inside-Out**: From domain to external layers
-3. **Incremental**: Small iterations with working code
-4. **No Mocks in Domain**: Domain layer tested without mocks
-5. **CI from Day One**: Continuous integration from first commit
-
-## Development Phases
-
-### Phase 0: Project Initialization (1-2 days)
-
-#### Tasks:
-- Create repository and basic structure
-- Set up yarn workspaces
-- Set up TypeScript configuration
-- Set up Jest for all packages
-- Set up ESLint and Prettier
-- Set up pre-commit hooks (Husky)
-- Set up GitHub Actions for CI
-- Create basic package.json for all packages
-
-#### Readiness Criteria:
-- Can run `yarn test` in any package
-- CI runs on push and checks linting and tests
-- Folder structure matches project-structure.md
-
-### Phase 1: Domain Layer (3-5 days)
-
-#### Implementation Order:
-
-##### Day 1: Value Objects
-- RecordId with tests (TDD)
-- TagId with tests (TDD)
-- RecordContent with tests (TDD)
-- SearchQuery with tests (TDD)
-- Factories for Value Objects
-- Integration and refactoring
-
-##### Day 2: Entities
-- Tag entity with tests (TDD)
-- TagFactory with tests
-- Record entity with tests (TDD)
-- RecordFactory with tests
-- Invariant checking
-
-##### Day 3: Domain Services
-- TagNormalizer with tests (TDD)
-- TagValidator with tests (TDD)
-- TagParser with tests (TDD)
-- RecordMatcher with tests (TDD)
-- RecordDuplicateChecker with tests (TDD)
-
-##### Day 4: Domain Errors and integration
-- All Domain Errors with tests
-- Result type and utilities
-- Domain integration tests
-- Refactoring and optimization
-- Public API documentation
-
-#### Success Metrics:
-- Test coverage > 95%
-- All tests pass < 1 sec
-- No dependencies except shared package
-
-### Phase 2: Application Layer (4-5 days)
-
-#### Implementation Order:
-
-##### Day 1: Basic Infrastructure
-- Ports (Repository interfaces)
-- Basic DTOs
-- ApplicationError hierarchy
-- ApplicationConfig
-- Repository mocks for tests
-
-##### Day 2-3: Core Use Cases
-- CreateRecord use case (TDD)
-- SearchRecords use case (TDD)
-- UpdateRecord use case (TDD)
-- DeleteRecord use case (TDD)
-- SearchModeDetector service
-
-##### Day 4: Import/Export
-- ImportValidator with tests
-- ExportFormatter with tests
-- ImportData use case (TDD)
-- ExportData use case (TDD)
-
-##### Day 5: Additional Services
-- GetTagSuggestions use case (TDD)
-- TagCloudBuilder service
-- ApplicationContainer
-- Integration tests
-- Documentation
-
-#### Success Metrics:
-- Test coverage > 90%
-- Use cases don't depend on implementation details
-- All operations return Result type
-
-### Phase 3: Infrastructure Layer - localStorage (3-4 days)
-
-#### Implementation Order:
-
-##### Day 1: Storage Manager
-- StorageSchema definition
-- StorageManager with tests (TDD)
-- Serialization/deserialization
-- IndexManager with tests (TDD)
-- Index optimization
-
-##### Day 2: Repositories
-- LocalStorageRecordRepository (TDD)
-- CRUD operations with tests
-- LocalStorageTagRepository (TDD)
-- Search and auto-completion
-
-##### Day 3: Unit of Work and migrations
-- LocalStorageUnitOfWork
-- Operation transactionality
-- MigrationManager
-- Schema versioning
-
-##### Day 4: Integration and optimization
-- Integration tests with real localStorage
-- Performance tests
-- Edge case handling (quota exceeded)
-- Documentation
-
-#### Success Metrics:
-- Search 10,000 records < 100ms
-- Save < 50ms
-- Correct localStorage limits handling
-
-### Phase 4: Presentation Layer - Web (5-6 days)
-
-#### Implementation Order:
-
-##### Day 1: Basic React Infrastructure
-- Set up Vite
-- Basic components and styles
-- Contexts and providers
-- ApplicationContext setup
-- Integration with Application layer
-
-##### Day 2: Main UI
-- SearchInput component (TDD)
-- Debounce and keyboard handling
-- RecordList component (TDD)
-- RecordItem with actions
-
-##### Day 3: Tag Cloud and auto-completion
-- TagCloud component (TDD)
-- Interactivity and animations
-- AutoComplete component (TDD)
-- Integration with SearchInput
-
-##### Day 4: Import/Export UI
-- ImportExport components
-- Dialogs and progress
-- Error handling
-- Client-side validation
-
-##### Day 5: Integration and polish
-- Keyboard shortcuts
-- Responsive design
-- Dark theme (optional)
-- E2E tests for main scenarios
-- Performance optimization
-
-##### Day 6: Finalization
-- Accessibility (a11y) checks
-- Performance audit
-- Bundle size optimization
-- Component documentation
-
-#### Success Metrics:
-- Lighthouse score > 90
-- Bundle size < 500KB (gzipped)
-- FCP < 1.5s, TTI < 3s
-- 100% keyboard navigable
-
-### Phase 5: CLI version (3-4 days) [Optional]
-
-#### Implementation Order:
-
-##### Day 1: Basic structure
-- Set up Ink
-- Basic CLI components
-- Integration with Application layer
-
-##### Day 2: Commands
-- add command
-- search command
-- update/delete commands
-
-##### Day 3: Import/Export and finalization
-- import/export commands
-- Shell auto-completion
-- Man pages
-
-#### Success Metrics:
-- All main operations available
-- Response time < 100ms
-- Works in pipe chains
-
-### Phase 6: MVP with Backend
-
-- Migration to PostgreSQL
-- REST API / GraphQL
-- Authorization and authentication
-- Data synchronization
-- Multi-user support
-
----
-
-# PART 12: PROJECT STRUCTURE
-
-## Overall Monorepo Structure
-
-```
-misc/
-├── packages/                    # Monorepo packages
-│   ├── domain/                  # Domain layer (core)
-│   ├── application/             # Application layer (use cases)
-│   ├── infrastructure/          # Infrastructure layer
-│   │   └── localStorage/        # localStorage implementation
-│   ├── presentation/            # Presentation layer
-│   │   ├── web/                # Web application (React)
-│   │   └── cli/                # CLI application (Ink)
-│   └── shared/                  # Shared utilities and types
-├── docs/                        # Documentation
-├── scripts/                     # Build and deploy scripts
-└── config/                      # Configuration files
-```
-
-## Detailed Domain Package Structure
-
-```
-domain/
-├── src/
-│   ├── entities/
-│   │   ├── Record.ts
-│   │   ├── Tag.ts
-│   │   └── index.ts
-│   ├── value-objects/
-│   │   ├── RecordId.ts
-│   │   ├── TagId.ts
-│   │   ├── RecordContent.ts
-│   │   ├── SearchQuery.ts
-│   │   └── index.ts
-│   ├── services/
-│   │   ├── TagNormalizer.ts
-│   │   ├── TagParser.ts
-│   │   ├── TagValidator.ts
-│   │   ├── RecordMatcher.ts
-│   │   ├── RecordDuplicateChecker.ts
-│   │   └── index.ts
-│   ├── errors/
-│   │   ├── DomainError.ts
-│   │   ├── InvalidRecordContentError.ts
-│   │   ├── InvalidTagError.ts
-│   │   ├── DuplicateRecordError.ts
-│   │   ├── TagLimitExceededError.ts
-│   │   └── index.ts
-│   ├── factories/
-│   │   ├── RecordFactory.ts
-│   │   ├── TagFactory.ts
-│   │   └── index.ts
-│   └── index.ts
-├── tests/
-│   ├── entities/
-│   ├── value-objects/
-│   ├── services/
-│   └── test-utils/
-├── package.json
-├── tsconfig.json
-└── README.md
-```
-
-## Detailed Application Package Structure
-
-```
-application/
-├── src/
-│   ├── use-cases/
-│   │   ├── CreateRecord/
-│   │   ├── SearchRecords/
-│   │   ├── UpdateRecord/
-│   │   ├── DeleteRecord/
-│   │   ├── GetTagSuggestions/
-│   │   ├── ExportData/
-│   │   ├── ImportData/
-│   │   └── index.ts
-│   ├── ports/
-│   │   ├── RecordRepository.ts
-│   │   ├── TagRepository.ts
-│   │   ├── UnitOfWork.ts
-│   │   └── index.ts
-│   ├── dto/
-│   │   ├── RecordDTO.ts
-│   │   ├── SearchResultDTO.ts
-│   │   ├── TagCloudItemDTO.ts
-│   │   ├── ExportDTO.ts
-│   │   ├── ImportResultDTO.ts
-│   │   ├── ValidationResultDTO.ts
-│   │   └── index.ts
-│   ├── services/
-│   │   ├── SearchModeDetector.ts
-│   │   ├── TagCloudBuilder.ts
-│   │   ├── ImportValidator.ts
-│   │   ├── ExportFormatter.ts
-│   │   └── index.ts
-│   ├── errors/
-│   │   └── ApplicationError.ts
-│   ├── config/
-│   │   ├── ApplicationConfig.ts
-│   │   └── defaultConfig.ts
-│   └── container/
-│       ├── ApplicationContainer.ts
-│       └── ApplicationContainerFactory.ts
-├── tests/
-├── package.json
-├── tsconfig.json
-└── README.md
-```
-
-## Package Dependencies
-
-```
-shared → nobody
-   ↑
-domain → shared
-   ↑
-application → domain, shared
-   ↑
-infrastructure → domain, application, shared
-   ↑
-presentation → application, shared
-```
-
-## Conventions and Rules
-
-### Naming
-- **Packages**: `@misc/package-name`
-- **Files**: PascalCase for classes/interfaces, camelCase for functions
-- **Tests**: `*.test.ts` or `*.spec.ts`
-- **Styles**: CSS Modules with `*.module.css`
-
-### Import Rules
-- Absolute imports within package: `@/entities/Record`
-- Imports between packages: `@misc/domain`
-- Import grouping: external → misc packages → local
-
----
-
-# PART 13: METRICS AND SUCCESS CRITERIA
-
-## Target Metrics
-
-- Time to first record: < 10 seconds
-- Learning time: < 1 minute
-- Usage universality: 80% of users for 3+ information types
-- Retention: 60% active users after a month
-- **Test coverage**: 
-  - Domain layer: > 95%
-  - Use Cases: > 90%
-  - Overall coverage: > 80%
-
-## Technical Metrics
-
-- Test coverage: > 80% overall, > 95% domain
-- Build time: < 30 seconds
-- Bundle size: < 500KB gzipped
-- Performance: 60 FPS for all interactions
-- Zero critical bugs in production
-
-## Product Metrics
-
-- Time to productive use: < 1 minute
-- NPS: > 50 after a month of use
-- Daily Active Users: > 100 for validation
-- Number of records per user: > 50 in first month
-- Use case diversity: 3+ information types per user
-
-## Code Quality Metrics
-
-- Cyclomatic complexity: < 10 for all functions
-- Code duplication: < 3%
-- Technical debt (by SonarQube): < 5 days
-- PR review time: < 24 hours
-- Average bug fix time: < 48 hours
-
-## Acceptance Criteria
-
-### Functional Criteria
-- All main use cases work according to specification
-- Data is saved and restored correctly
-- Search finds all relevant records
-- Export/import works without data loss
-- Hotkeys work as described
-- Normalization with diacritics works correctly
-
-### Architectural Criteria
-- Domain layer has no dependencies on other layers
-- Use cases are tested without UI and DB
-- Repositories are easily replaceable (localStorage → PostgreSQL)
-- New features are added without changing existing code
-- All layers have clear boundaries and interfaces
-
-### Quality Criteria
-- Test coverage meets target metrics
-- Performance meets requirements
-- Code follows SOLID principles
-- Documentation covers all public APIs
-- No critical and high severity bugs
-
-## Prototype Readiness Criteria
-
-**Domain Layer:**
-- Record with content and Set<TagId>
-- Tag with id and normalizedValue
-- Parsing and normalization services
-- Token validation
-
-**Application Layer:**
-- CreateRecord use case
-- SearchRecords with auto mode detection
-- UpdateRecord with duplicate checking
-- DeleteRecord with tag cleanup
-- GetTagSuggestions for auto-completion
-- ExportData without UUIDs
-- ImportData with full replacement
-
-**Infrastructure Layer:**
-- localStorage adapters
-- Indexes for fast search
-- deleteAll() methods for import
-- JSON export/import
-
-**Presentation Layer:**
-- Single input field
-- Auto list/cloud switching
-- Keyboard navigation
-- Loading indicators
-- Import/export UI with warnings
-
-**Testing:**
-- 95% Domain coverage
-- 90% Use Cases coverage
-- Storage integration tests
-- Import/export tests with full replacement verification
-
----
-
-# PART 14: RISKS AND LIMITATIONS
-
-## Technical Risks
-
-| Risk | Probability | Impact | Mitigation |
-|------|-------------|---------|-----------|
-| Clean Architecture complexity for simple prototype | Medium | Medium | Phased implementation, starting with domain |
-| Performance with large number of records | Low | High | Indexing, pagination, list virtualization |
-| localStorage limits | Medium | Medium | Usage monitoring, warnings |
-| Diacritic normalization issues | Low | Low | Testing with different languages, settings |
-| Large bundle size | Medium | Medium | Code splitting, lazy loading, tree shaking |
-
-## Product Risks
-
-| Risk | Probability | Impact | Mitigation |
-|------|-------------|---------|-----------|
-| "Too simple" for users | Medium | High | Educational materials, usage examples |
-| Confusion with "everything is tags" concept | Medium | Medium | Intuitive UI, onboarding |
-| Record duplication due to typos | High | Low | Aggressive auto-completion, fuzzy search in future |
-| "Too simple" for enterprise users | Medium | Medium | Focus on personal use, then team features |
-| Open source monetization complexity | Medium | Medium | Cloud version, premium features, support |
-| Competition with giant tech | Low | High | Ultra-minimalism niche, dedicated community |
-
-## Organizational Risks
-
-| Risk | Probability | Mitigation |
-|------|-------------|-----------|
-| Over-complication at start | High | Focus on MVP functionality |
-| Long refactoring | Medium | Small iterations, continuous refactoring |
-| Loss of focus | Medium | Clear readiness criteria for each phase |
-
-## Prototype Limitations
-
-- **Data volume**: Up to 5-10MB (localStorage limitations)
-- **Multi-user support**: Absent
-- **Synchronization**: Absent
-- **Backup**: Only through manual export
-- **Fuzzy search**: Absent (exact tag matching)
-- **Change history**: Absent
-- **Collaborative work**: Absent
-
----
-
-# PART 15: PRODUCT DEVELOPMENT STAGES
-
-## Prototype
-
-- Web application with local storage
-- Basic functionality: create, search, edit
-- Auto-completion based on existing tags
-- Data export/import
-- Concept validation
-
-## MVP
-
-- PostgreSQL backend
-- Multi-user support
-- Authorization and personal spaces
-- Enhanced tag auto-completion
-
-## Scaling
-
-- Mobile applications (PWA → Native)
-- CLI version for developers
-- API for integrations
-- Cross-device synchronization
-- Export to various formats
-- Browser extension
-
-## Ecosystem
-
-- Public and team spaces
-- API for third-party developers
-- Plugins and extensions
-- ML suggestions (optional, without breaking simplicity)
-- Premium features for monetization
-
-## Future Preparation (NOT implemented in prototype)
-
-### What's built into the structure
-1. **Tags as entities** - will allow renaming
-2. **UUIDs for everything** - will allow synchronization
-3. **Normalization in one place** - easy to change rules
-4. **Clean layers** - easy to replace localStorage with API
-5. **Export versioning** - will allow format migrations
-
-### What we DON'T do now
-1. ❌ Events and EventBus
-2. ❌ Tag renaming
-3. ❌ Tag merging
-4. ❌ Change history
-5. ❌ Synchronization
-6. ❌ Incremental import
-7. ❌ Complex validation
-
----
-
-# PART 16: COMPETITIVE ADVANTAGES
-
-1. **Radical simplicity**: No analogues with such level of minimalism
-2. **Zero entry barrier**: Requires no learning
-3. **Open Source**: Transparency and community trust
-4. **Universality**: Replaces multiple specialized tools
-
----
-
-# PART 17: DEVELOPMENT TOOLS AND TECHNOLOGIES
-
-## Required Tools
-
-- **IDE**: VS Code with TypeScript extensions
-- **Node.js**: v22.18.0 (specified in .nvmrc)
-- **Yarn**: v3+ (Berry)
-- **Git**: Conventional Commits
-
-## Recommended VS Code Extensions
-
-- ESLint
-- Prettier
-- Jest Runner
-- GitLens
-- Better Comments
-- TODO Highlight
-
-## Development Commands
-
-```bash
-# Project initialization
-yarn install
-yarn build
-
-# Domain development
-cd packages/domain
-yarn test:watch
-
-# Application development
-cd packages/application
-yarn test:watch
-
-# Run web version
-yarn dev:web
-
-# Coverage check
-yarn test:coverage
-
-# Full check before commit
-yarn lint && yarn test && yarn build
-```
-
-## Definition of Done
-
-### For each task:
-- Tests written and passing
-- Code meets linter requirements
-- Documentation written
-- PR created and reviewed
-- CI passes completely
-
-### For each phase:
-- All tasks completed
-- Target metrics achieved
-- Integration tests passing
-- Documentation up to date
-- No critical bugs
-
----
-
-# PART 18: FIRST DEVELOPMENT STEPS
-
-## 1. Create repository
-```bash
-git init misc
-cd misc
-```
-
-## 2. Initialize yarn workspaces
-```bash
-yarn init -y
-yarn set version berry
-yarn config set nodeLinker node-modules
-```
-
-## 3. Create basic structure
-```bash
-mkdir -p packages/{domain,application,shared}
-mkdir -p packages/infrastructure/localStorage
-mkdir -p packages/presentation/{web,cli}
-```
-
-## 4. Set up TypeScript and Jest
-```bash
-yarn add -D typescript jest @types/jest ts-jest
-yarn add -D @typescript-eslint/parser @typescript-eslint/eslint-plugin
-yarn add -D prettier eslint-config-prettier
-```
-
-## 5. Create first test
-```typescript
-// packages/domain/tests/value-objects/RecordId.test.ts
-describe('RecordId', () => {
-  it('should generate unique UUID when created without value', () => {
-    // Red phase - test should fail
-    expect(true).toBe(false);
+describe('Data Migration Contract', () => {
+  describe('Import from JSON', () => {
+    it('should import records from v1.0 format');
+    it('should import records from v2.0 format');
+    it('should skip duplicate records during import');
+    it('should preserve original timestamps');
+    it('should apply current user normalization settings');
+    it('should report count of imported, skipped and failed records');
+    it('should validate JSON structure before import');
+    it('should handle malformed JSON gracefully');
+    it('should enforce maximum import size limit');
+    it('should maintain tag order from original records');
   });
-});
+  
+  describe('Export to JSON', () => {
+    it('should export all user records');
+    it('should include version identifier');
+    it('should include export metadata');
+    it('should preserve record timestamps');
+    it('should maintain tag order in exported records');
+    it('should include user normalization settings');
+    it('should generate valid JSON format');
+    it('should handle large datasets (10k+ records)');
+  });
+})
 ```
 
-## 6. Start TDD cycle
-```bash
-cd packages/domain
-yarn test:watch
+### 4.3 REST API Specification
+
+#### 4.3.1 API Endpoints
+
+```yaml
+openapi: 3.0.0
+info:
+  title: MISC API
+  version: 2.0.0
+
+paths:
+  /auth/google:
+    post:
+      summary: Authenticate with Google OAuth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+      responses:
+        200:
+          description: Authentication successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+
+  /api/records:
+    get:
+      summary: Search records
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: q
+          in: query
+          schema:
+            type: string
+          description: Space-separated tags to search
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 100
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        200:
+          description: Search results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  records:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Record'
+                  total:
+                    type: integer
+    
+    post:
+      summary: Create new record
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                content:
+                  type: string
+                  example: "meeting project alpha 15:00"
+      responses:
+        201:
+          description: Record created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Record'
+
+  /api/records/{id}:
+    put:
+      summary: Update record
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                content:
+                  type: string
+      responses:
+        200:
+          description: Record updated
+          
+    delete:
+      summary: Delete record
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        204:
+          description: Record deleted
+
+  /api/tags:
+    get:
+      summary: Get tag statistics
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: Tag cloud data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    tag:
+                      type: string
+                    count:
+                      type: integer
+
+  /api/export:
+    get:
+      summary: Export all user data
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: Export data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExportFormat'
+
+  /api/import:
+    post:
+      summary: Import data
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExportFormat'
+      responses:
+        200:
+          description: Import result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  imported:
+                    type: integer
+                  skipped:
+                    type: integer
+                  errors:
+                    type: array
+                    items:
+                      type: string
 ```
 
-And start implementation through Red-Green-Refactor!
+#### 4.3.2 API Contract Tests
 
-## TDD cycle:
-1. **Red**: Write a test that fails
-2. **Green**: Write minimal code to pass the test
-3. **Refactor**: Improve code while keeping tests green
+**Contract Test Specification:**
 
-## Clean Architecture checklist:
-- Domain doesn't know about other layers
-- Application orchestrates but doesn't contain business logic
-- Infrastructure implements interfaces from Application
-- Presentation uses only Application layer
-- Dependencies point inward
+```typescript
+describe('Records API Contract', () => {
+  describe('POST /api/records', () => {
+    it('should create record with automatic tag extraction');
+    it('should preserve tag order as entered by user');
+    it('should normalize tags according to user settings');
+    it('should apply case-insensitive normalization when configured');
+    it('should remove accents from tags when configured');
+    it('should reject duplicate records with 409 status');
+    it('should validate maximum tag length');
+    it('should validate maximum number of tags per record');
+    it('should require authentication with 401 for anonymous');
+    it('should isolate records per user');
+    it('should return created record with generated ID');
+    it('should set creation and update timestamps');
+  });
 
-## Priorities:
-1. **Working code** > Perfect architecture
-2. **Simplicity** > Future flexibility
-3. **Tests** > Documentation
-4. **Refactoring** > Rewriting from scratch
+  describe('GET /api/records', () => {
+    it('should search with AND logic for multiple tags');
+    it('should return empty results for non-matching search');
+    it('should respect user data isolation');
+    it('should support pagination with limit and offset');
+    it('should return total count with results');
+    it('should order results by creation date descending');
+    it('should handle empty search query (return all records)');
+    it('should normalize search terms according to user settings');
+    it('should require authentication with 401 for anonymous');
+    it('should handle special characters in search query');
+  });
+  
+  describe('PUT /api/records/:id', () => {
+    it('should update existing record content');
+    it('should recalculate tags from new content');
+    it('should update modification timestamp');
+    it('should preserve creation timestamp');
+    it('should return 404 for non-existent record');
+    it('should return 404 for other user record');
+    it('should validate updated content constraints');
+    it('should handle duplicate check for updated tags');
+    it('should require authentication with 401 for anonymous');
+  });
+  
+  describe('DELETE /api/records/:id', () => {
+    it('should delete existing record');
+    it('should return 204 on successful deletion');
+    it('should return 404 for non-existent record');
+    it('should return 404 for other user record');
+    it('should require authentication with 401 for anonymous');
+  });
+  
+  describe('GET /api/tags', () => {
+    it('should return tag frequency statistics');
+    it('should include only user own tags');
+    it('should order tags by frequency descending');
+    it('should include tag count for each tag');
+    it('should handle tags with special characters');
+    it('should require authentication with 401 for anonymous');
+  });
+  
+  describe('GET /api/export', () => {
+    it('should export all user records in JSON format');
+    it('should include version identifier in export');
+    it('should include export metadata');
+    it('should preserve record timestamps');
+    it('should maintain tag order in exports');
+    it('should include normalization settings');
+    it('should require authentication with 401 for anonymous');
+  });
+  
+  describe('POST /api/import', () => {
+    it('should import valid JSON data');
+    it('should return import statistics (imported/skipped/errors)');
+    it('should handle v1.0 format migration');
+    it('should handle v2.0 format import');
+    it('should skip duplicate records');
+    it('should validate JSON structure');
+    it('should reject invalid JSON with 400');
+    it('should enforce size limits');
+    it('should require authentication with 401 for anonymous');
+    it('should isolate imported data per user');
+  });
+})
+```
 
----
+### 4.4 Business Logic Migration
 
-# CONCLUSION
+#### 4.4.1 Domain Layer Preservation
 
-MISC is not just an information management system, it's a philosophy of radical simplicity. The project is built on Clean Architecture principles using TDD, which ensures high code quality and system evolution capability.
+The existing domain entities must remain unchanged to preserve business logic:
 
-Key project features:
-- Single principle: everything is tags
-- Instant information capture
-- Zero entry barrier
-- Clean architecture with independent layers
-- Test-driven development
-- Ready for evolution and scaling
+  - Record entity with tag extraction
+  - Tag normalization services
+  - Content validation rules
+  - Tag order preservation logic
 
-The project is ready for phased implementation, starting with the domain layer and ending with a full-featured web application with the possibility of further development into a multi-user system with synchronization and API.
+New domain entities for MVP:
 
-Happy development! 🚀
+  - User aggregate root
+  - User settings value object
+  - Authentication context
+
+#### 4.4.2 Repository Contracts
+
+**Contract Test Specification:**
+
+```typescript
+describe('Record Repository Contract', () => {
+  describe('save', () => {
+    it('should persist new record with user association');
+    it('should update existing record preserving creation date');
+    it('should normalize tags according to user settings');
+    it('should detect and reject duplicates');
+    it('should maintain tag order from domain entity');
+    it('should handle concurrent saves safely');
+  });
+  
+  describe('findByTags', () => {
+    it('should find records matching all specified tags (AND logic)');
+    it('should return empty array when no matches');
+    it('should search using normalized tags');
+    it('should return only user-owned records');
+    it('should preserve domain entity structure');
+    it('should order by creation date descending');
+  });
+  
+  describe('findById', () => {
+    it('should return record by ID for owner');
+    it('should return null for non-existent record');
+    it('should return null for other user record');
+    it('should reconstruct complete domain entity');
+  });
+  
+  describe('delete', () => {
+    it('should remove record from storage');
+    it('should only delete user-owned records');
+    it('should handle non-existent record gracefully');
+  });
+  
+  describe('getTagStatistics', () => {
+    it('should count frequency for each unique tag');
+    it('should include only user tags');
+    it('should use normalized tags for counting');
+    it('should order by frequency descending');
+  });
+})
+
+describe('User Repository Contract', () => {
+  describe('findByGoogleId', () => {
+    it('should find user by Google OAuth ID');
+    it('should return null for non-existent user');
+    it('should include user settings');
+  });
+  
+  describe('create', () => {
+    it('should create new user with Google profile');
+    it('should initialize default settings');
+    it('should handle duplicate email gracefully');
+    it('should set creation timestamp');
+  });
+  
+  describe('updateSettings', () => {
+    it('should persist user preference changes');
+    it('should validate setting constraints');
+    it('should update modification timestamp');
+  });
+})
+```
+
+### 4.5 Frontend Adaptation
+
+#### 4.5.1 API Client Contract
+
+**Contract Test Specification:**
+
+```typescript
+describe('API Client Contract', () => {
+  describe('Authentication', () => {
+    it('should initiate Google OAuth flow');
+    it('should handle OAuth callback');
+    it('should store authentication tokens');
+    it('should include auth headers in requests');
+    it('should handle token expiration');
+    it('should refresh tokens automatically');
+    it('should clear tokens on logout');
+  });
+  
+  describe('Record Operations', () => {
+    it('should search records with query string');
+    it('should create new record from content');
+    it('should update existing record');
+    it('should delete record by ID');
+    it('should handle network errors gracefully');
+    it('should retry failed requests with exponential backoff');
+    it('should show loading states during operations');
+  });
+  
+  describe('Data Migration', () => {
+    it('should export all user data to JSON');
+    it('should import data from JSON file');
+    it('should show import progress');
+    it('should handle import errors');
+    it('should validate file format before import');
+  });
+  
+  describe('Error Handling', () => {
+    it('should display user-friendly error messages');
+    it('should redirect to login on 401');
+    it('should show network error notifications');
+    it('should handle rate limit errors');
+    it('should log errors for debugging');
+  });
+})
+```
+
+#### 4.5.2 State Management Adaptation
+
+**Contract Test Specification:**
+
+```typescript
+describe('Frontend State Management Contract', () => {
+  describe('Authentication State', () => {
+    it('should track authentication status');
+    it('should store user profile information');
+    it('should persist auth state across refreshes');
+    it('should clear state on logout');
+    it('should handle authentication errors');
+  });
+  
+  describe('Records State', () => {
+    it('should manage records list');
+    it('should track loading states');
+    it('should handle optimistic updates');
+    it('should rollback on server errors');
+    it('should cache search results');
+    it('should invalidate cache on mutations');
+  });
+  
+  describe('UI State', () => {
+    it('should manage search query');
+    it('should track selected record');
+    it('should handle edit mode');
+    it('should manage error notifications');
+    it('should control loading indicators');
+  });
+})
+```
+
+## 5. Non-Functional Requirements
+
+### 5.1 Performance Requirements
+
+```yaml
+Response Times:
+  Authentication: < 2s (including Google OAuth)
+  Record Creation: < 100ms
+  Search (up to 10k records): < 200ms
+  Tag Statistics: < 500ms
+  Export (10k records): < 5s
+
+Throughput:
+  Concurrent Users: 100
+  Requests per Second: 50
+  Database Connections: 20 (pool size)
+
+Resource Usage:
+  Memory (API Server): < 512MB
+  Memory (Database): < 1GB
+  Disk (Database): < 10GB for 100 users
+  CPU: < 2 cores average usage
+```
+
+### 5.2 Security Requirements
+
+```yaml
+Authentication:
+  Provider: Google OAuth 2.0
+  Token Type: JWT
+  Token Storage: httpOnly secure cookies
+  Session Duration: 7 days
+  
+Transport Security:
+  Protocol: HTTPS only
+  SSL/TLS: Let's Encrypt certificates
+  HSTS: Enabled
+  
+Data Protection:
+  Input Validation: All user inputs sanitized
+  SQL Injection: Parameterized queries only
+  XSS Prevention: Content Security Policy
+  CORS: Restricted to application domain
+  
+Rate Limiting:
+  Authentication: 5 attempts per minute
+  API Calls: 100 requests per minute per user
+```
+
+### 5.3 Reliability Requirements
+
+```yaml
+Availability:
+  Uptime Target: 99% (for MVP)
+  Planned Maintenance: < 1 hour monthly
+  
+Data Durability:
+  Database Backups: Daily automated
+  Backup Retention: 30 days
+  Recovery Time Objective: < 4 hours
+  Recovery Point Objective: < 24 hours
+  
+Error Handling:
+  Graceful Degradation: Cached data on API failure
+  Error Logging: Structured logs with context
+  User Feedback: Clear error messages
+```
+
+### 5.4 Scalability Considerations
+
+```yaml
+Current Limitations (MVP):
+  Users: 100 concurrent
+  Records per User: 10,000
+  Database Size: 10GB
+  
+Future Scaling Path:
+  Database: Read replicas for search
+  Caching: Redis for session and search cache
+  CDN: Static asset delivery
+  Horizontal Scaling: Kubernetes deployment
+```
+
+## 6. Testing Requirements
+
+### 6.1 Test Coverage Targets
+
+```yaml
+Unit Tests:
+  Domain Layer: > 95%
+  Use Cases: > 90%
+  API Routes: > 85%
+  
+Integration Tests:
+  Database Operations: > 90%
+  Authentication Flow: > 95%
+  API Endpoints: > 90%
+  
+E2E Tests:
+  Critical User Journeys: 100%
+  Authentication: 100%
+  CRUD Operations: 100%
+  Export/Import: 100%
+```
+
+### 6.2 Test Specifications
+
+#### 6.2.1 Authentication Test Suite
+
+**E2E Contract Test Specification:**
+
+```typescript
+describe('E2E: Authentication Flow', () => {
+  it('should complete Google OAuth flow');
+  it('should display user email after login');
+  it('should persist session across page refreshes');
+  it('should redirect to login on session expiry');
+  it('should handle OAuth errors gracefully');
+  it('should logout and clear session');
+  it('should prevent access to protected routes when not authenticated');
+  it('should redirect to originally requested page after login');
+})
+```
+
+#### 6.2.2 Data Isolation Test Suite
+
+**Integration Contract Test Specification:**
+
+```typescript
+describe('Data Isolation Contract', () => {
+  it('should not allow access to other users records via API');
+  it('should not include other users records in search results');
+  it('should not show other users tags in statistics');
+  it('should isolate import operations per user');
+  it('should prevent cross-user record updates');
+  it('should prevent cross-user record deletion');
+  it('should separate export data per user');
+})
+```
+
+#### 6.2.3 Migration Test Suite
+
+**Integration Contract Test Specification:**
+
+```typescript
+describe('Data Migration Contract', () => {
+  it('should successfully migrate v1.0 prototype data to MVP');
+  it('should preserve all record content during migration');
+  it('should maintain tag order from original records');
+  it('should convert timestamps to new format');
+  it('should handle large datasets (1000+ records)');
+  it('should report accurate import statistics');
+  it('should skip malformed records with error reporting');
+  it('should prevent data loss during failed imports');
+  it('should support partial import recovery');
+})
+```
+
+#### 6.2.4 Performance Test Suite
+
+**Performance Contract Test Specification:**
+
+```typescript
+describe('Performance Contract', () => {
+  describe('Response Times', () => {
+    it('should authenticate with Google in less than 2 seconds');
+    it('should create record in less than 100ms');
+    it('should search 10k records in less than 200ms');
+    it('should calculate tag statistics in less than 500ms');
+    it('should export 10k records in less than 5 seconds');
+  });
+  
+  describe('Concurrent Load', () => {
+    it('should handle 100 concurrent users');
+    it('should process 50 requests per second');
+    it('should maintain response times under load');
+    it('should not leak memory under sustained load');
+  });
+})
+```
+
+#### 6.2.5 Security Test Suite
+
+**Security Contract Test Specification:**
+
+```typescript
+describe('Security Contract', () => {
+  describe('Authentication', () => {
+    it('should reject requests without valid JWT');
+    it('should prevent JWT token tampering');
+    it('should enforce token expiration');
+    it('should use secure httpOnly cookies');
+  });
+  
+  describe('Input Validation', () => {
+    it('should sanitize user input to prevent XSS');
+    it('should use parameterized queries to prevent SQL injection');
+    it('should validate request body schema');
+    it('should enforce maximum payload sizes');
+    it('should reject malformed JSON');
+  });
+  
+  describe('Transport Security', () => {
+    it('should enforce HTTPS for all endpoints');
+    it('should set appropriate security headers');
+    it('should implement CORS correctly');
+    it('should prevent clickjacking with X-Frame-Options');
+  });
+})
+```
+
+## 7. Development Phases
+
+### 7.1 Phase 1: Backend Foundation (Week 1-2)
+
+```yaml
+TDD Approach:
+  - Write failing tests for domain entities FIRST
+  - Define repository contracts through tests
+  - Create migration tests before implementing migrations
+  - All code written to satisfy existing tests
+
+Tasks:
+  - Setup backend project structure in monorepo
+  - Configure TypeScript, ESLint, Prettier
+  - Write tests for User domain entity
+  - Implement User entity to pass tests
+  - Write migration contract tests
+  - Setup PostgreSQL with Docker Compose
+  - Implement database migrations with TypeORM
+  - Setup test infrastructure with coverage reporting
+
+Deliverables:
+  - Working Docker Compose setup
+  - Database with tested migrations
+  - Domain entities with 95%+ test coverage
+  - CI pipeline enforcing test-first development
+
+Test Coverage Target: 
+  - Domain: >95%
+  - Migrations: 100%
+```
+
+### 7.2 Phase 2: Authentication (Week 3)
+
+```yaml
+TDD Approach:
+  - Write authentication contract tests first
+  - Define JWT token validation tests
+  - Create session management test suite
+  - Implement only code to pass tests
+
+Tasks:
+  - Write authentication flow tests
+  - Write JWT token management tests
+  - Implement Google OAuth integration
+  - Create JWT token management
+  - Setup session handling
+  - Write user repository tests
+  - Implement user creation/retrieval
+  - Add authentication middleware
+  - Create login/logout endpoints
+
+Deliverables:
+  - Test suite for complete auth flow
+  - Working Google OAuth (test-driven)
+  - Protected API routes with tests
+  - User session management
+
+Test Coverage Target:
+  - Auth flow: >95%
+  - All tests written before implementation
+```
+
+### 7.3 Phase 3: Core API (Week 4-5)
+
+```yaml
+TDD Approach:
+  - Write API contract tests for each endpoint
+  - Create repository integration tests
+  - Define validation test cases
+  - Red-Green-Refactor for each feature
+
+Tasks:
+  - Write complete API contract test suite
+  - Write repository integration tests
+  - Implement record CRUD to pass tests
+  - Create PostgreSQL repository (test-driven)
+  - Add search functionality via tests
+  - Write tag statistics tests
+  - Implement tag statistics
+  - Create data validation tests
+  - Add error handling with tests
+
+Deliverables:
+  - Complete test suite before implementation
+  - REST API developed via TDD
+  - PostgreSQL integration (test-driven)
+  - API documentation from tests
+
+Test Coverage Target:
+  - API routes: >85%
+  - Repository: >90%
+  - Tests must exist before code
+```
+
+### 7.4 Phase 4: Frontend Integration (Week 6-7)
+
+```yaml
+TDD Approach:
+  - Write API client tests first
+  - Create component tests before UI
+  - Define state management tests
+  - Mock-first development
+
+Tasks:
+  - Write API client test suite
+  - Write authentication UI tests
+  - Add API client implementation
+  - Implement authentication UI
+  - Write state management tests
+  - Adapt state management for async
+  - Create loading state tests
+  - Add loading states
+  - Write error boundary tests
+  - Implement error handling
+
+Deliverables:
+  - Frontend test suite
+  - Integrated frontend (test-driven)
+  - Authentication flow with tests
+  - Async state management
+
+Test Coverage Target:
+  - API client: >90%
+  - Components: >80%
+  - All features test-driven
+```
+
+### 7.5 Phase 5: Import/Export (Week 8)
+
+```yaml
+TDD Approach:
+  - Define import/export contract tests
+  - Write migration compatibility tests
+  - Create validation test cases
+  - Test error scenarios first
+
+Tasks:
+  - Write export endpoint tests
+  - Write import functionality tests
+  - Implement export endpoint via TDD
+  - Create import functionality (test-driven)
+  - Write version compatibility tests
+  - Add version compatibility
+  - Write duplicate detection tests
+  - Handle duplicate detection
+  - Create progress indicator tests
+  - Add progress indicators
+
+Deliverables:
+  - Complete test coverage first
+  - Working import/export (TDD)
+  - Migration from v1.0 tested
+  - Progress feedback tested
+
+Test Coverage Target:
+  - Migration: >95%
+  - Every scenario test-driven
+```
+
+### 7.6 Phase 6: Deployment & Polish (Week 9-10)
+
+```yaml
+TDD Approach:
+  - Write deployment smoke tests
+  - Create security test suite
+  - Define performance benchmarks
+  - E2E tests for critical paths
+
+Tasks:
+  - Write E2E test suite
+  - Write security validation tests
+  - Setup Nginx configuration
+  - Configure SSL with Let's Encrypt
+  - Create deployment scripts
+  - Add monitoring/logging
+  - Write performance tests
+  - Performance optimization
+  - Security hardening via tests
+
+Deliverables:
+  - E2E test suite complete
+  - Production-ready deployment
+  - SSL configuration tested
+  - Deployment documentation
+  - All optimizations test-driven
+
+Test Coverage Target:
+  - E2E tests: 100% critical paths
+  - Security tests: 100% requirements
+```
+
+## 8. Acceptance Criteria
+
+### 8.1 Functional Criteria
+
+```yaml
+Authentication:
+  ✓ Users can sign in with Google
+  ✓ Sessions persist across browser refreshes
+  ✓ Users can sign out
+  ✓ Unauthorized access is prevented
+
+Data Management:
+  ✓ All CRUD operations work correctly
+  ✓ Search returns accurate results
+  ✓ Tag normalization works as specified
+  ✓ Data isolation is enforced
+
+Migration:
+  ✓ V1.0 data imports successfully
+  ✓ Export format is compatible
+  ✓ No data loss during migration
+  ✓ Duplicates are handled correctly
+
+Performance:
+  ✓ Search responds in <200ms
+  ✓ Page load time <2s
+  ✓ No memory leaks
+  ✓ Handles 100 concurrent users
+```
+
+### 8.2 Technical Criteria
+
+```yaml
+Architecture:
+  ✓ Clean Architecture maintained
+  ✓ Domain logic unchanged
+  ✓ Dependency injection used
+  ✓ Repository pattern implemented
+
+Testing:
+  ✓ Test coverage meets targets
+  ✓ All tests pass in CI
+  ✓ E2E tests cover critical paths
+  ✓ Contract tests validate APIs
+
+Security:
+  ✓ HTTPS enforced
+  ✓ Authentication required
+  ✓ Input validation complete
+  ✓ SQL injection prevented
+
+Deployment:
+  ✓ Docker Compose works
+  ✓ Single command deployment
+  ✓ Rollback capability
+  ✓ Backup/restore tested
+```
+
+## 9. Risks and Mitigations
+
+### 9.1 Technical Risks
+
+| Risk | Probability | Impact | Mitigation Strategy |
+|------|-------------|--------|-------------------|
+| Migration data loss | Low | High | Comprehensive testing, backup before migration, rollback plan |
+| OAuth service outage | Low | High | Graceful error handling, status page, alternative auth in future |
+| Database performance degradation | Medium | Medium | Indexing strategy, query optimization, monitoring |
+| Token security breach | Low | Critical | Secure token storage, rotation

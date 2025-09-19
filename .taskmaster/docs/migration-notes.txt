@@ -1,25 +1,299 @@
-# Migration from Prototype to MVP
+# MISC Migration Notes: Prototype to MVP
 
-## What Changed
-- localStorage → PostgreSQL
-- Single-user → Multi-user with OAuth
-- Local app → Server-based with REST API
-- No auth → Google OAuth + JWT
+## Document Purpose
+This document provides context for TaskMaster AI and developers about the transition from the completed prototype (localStorage, single-user) to the MVP (PostgreSQL, multi-user with authentication).
 
-## What Remains
-- Domain entities and business logic
-- Clean Architecture principles
-- UI components and interactions
-- Tag normalization rules
+## Migration Overview
 
-## Migration Path for Users
-1. Export data from prototype (JSON)
-2. Create account in MVP
-3. Import JSON file
-4. All records migrated with timestamps
+### What Was Completed (Prototype)
+- 50 tasks completed with status: "done"
+- Single-user web application with localStorage
+- Clean Architecture fully implemented
+- Domain and Application layers with >95% test coverage
+- React frontend with all core features
+- Complete CRUD operations for records
+- Tag-based search with AND logic
+- Import/Export functionality
+- Tag cloud visualization
 
-## Technical Migration
-- Repository interfaces unchanged
-- Use cases enhanced with user context
-- Frontend adapted for async operations
-- New backend package added to monorepo
+### What Changes in MVP
+- Backend: New Node.js/Express server package
+- Database: PostgreSQL replaces localStorage
+- Authentication: Google OAuth 2.0 required
+- Multi-user: Complete data isolation per user
+- API: RESTful endpoints replace direct storage access
+- Deployment: Docker-based instead of static files
+
+### What Remains Unchanged
+- Domain layer entities and logic (100% reusable)
+- Application layer use cases (enhanced with user context)
+- Core UI components and interactions
+- Tag normalization and validation rules
+- Search algorithm (AND logic)
+- Import/Export format (with version bump to 2.0)
+
+## Technical Migration Path
+
+### 1. Repository Layer Transformation
+```
+Prototype: LocalStorageRecordRepository -> PostgreSQL RecordRepository
+- Same interface (RecordRepository)
+- Same methods (save, findByTags, delete)
+- New: user_id filtering in all queries
+- New: PostgreSQL-specific optimizations (GIN indexes)
+```
+
+### 2. Use Cases Enhancement
+```
+Prototype: CreateRecord.execute(content)
+MVP: CreateRecord.execute(content, userId)
+- All use cases now accept user context
+- Business logic unchanged
+- New: user isolation enforced at repository level
+```
+
+### 3. Frontend Adaptation
+```
+Changes required:
+- Add authentication flow (Google OAuth)
+- Replace direct localStorage calls with API calls
+- Add loading states for async operations
+- Handle authentication errors (401)
+- Implement token refresh logic
+```
+
+### 4. New Components for MVP
+```
+New packages/backend/:
+- Express server setup
+- Authentication middleware
+- JWT token management
+- API route handlers
+- PostgreSQL migrations
+- Rate limiting
+- CORS configuration
+```
+
+## Data Migration Strategy
+
+### For End Users
+1. User exports data from prototype (JSON file)
+2. User creates account in MVP (Google OAuth)
+3. User imports JSON file through UI
+4. System creates records with new UUIDs
+5. All timestamps and content preserved
+
+### JSON Format Compatibility
+```
+Version 1.0 (Prototype):
+{
+  "version": "1.0",
+  "records": [{
+    "content": "string",
+    "createdAt": "ISO-8601",
+    "updatedAt": "ISO-8601"
+  }]
+}
+
+Version 2.0 (MVP):
+{
+  "version": "2.0",
+  "records": [...same structure...],
+  "metadata": {
+    "exportedAt": "ISO-8601",
+    "recordCount": number,
+    "normalizationRules": {...}
+  }
+}
+```
+
+### Import Process
+- Version detection for backward compatibility
+- Automatic tag extraction from content
+- Duplicate detection (skip existing)
+- Progress reporting during import
+- Rollback on critical errors
+
+## Development Migration Tasks
+
+### Phase 1: Backend Foundation (Weeks 1-2)
+Priority: Critical
+- Setup backend package structure
+- PostgreSQL schema creation
+- TypeORM migrations setup
+- User entity implementation
+- TDD: Write repository contract tests first
+
+### Phase 2: Authentication (Week 3)
+Priority: Critical
+- Google OAuth integration
+- JWT token generation
+- Session management
+- Protected routes
+- TDD: Authentication flow tests first
+
+### Phase 3: API Implementation (Weeks 4-5)
+Priority: Critical
+- RESTful endpoints
+- Request validation
+- Error handling
+- Rate limiting
+- TDD: API contract tests first
+
+### Phase 4: Frontend Integration (Weeks 6-7)
+Priority: High
+- API client implementation
+- Authentication UI
+- Async state management
+- Error boundaries
+- TDD: Component integration tests first
+
+### Phase 5: Migration Features (Week 8)
+Priority: High
+- Import endpoint
+- Export endpoint
+- Version compatibility
+- Progress indicators
+- TDD: Migration tests first
+
+### Phase 6: Deployment (Weeks 9-10)
+Priority: Medium
+- Docker configuration
+- Nginx setup
+- SSL certificates
+- Production optimizations
+- E2E tests for all user journeys
+
+## Risk Mitigation
+
+### Technical Risks
+1. **Data Loss During Import**
+   - Mitigation: Mandatory backup before import
+   - Validation before processing
+   - Transaction-based import
+
+2. **Performance Degradation**
+   - Mitigation: GIN indexes for array search
+   - Connection pooling
+   - Query optimization
+
+3. **Authentication Failures**
+   - Mitigation: Fallback error handling
+   - Clear user messaging
+   - Session persistence
+
+### User Experience Risks
+1. **Learning Curve for Login**
+   - Mitigation: Familiar Google OAuth
+   - Clear onboarding flow
+   - No password management
+
+2. **Import Confusion**
+   - Mitigation: Step-by-step guide
+   - Progress indicators
+   - Success confirmation
+
+## Component Reusability Map
+
+### Fully Reusable (No Changes)
+- domain/entities/Record.ts
+- domain/entities/Tag.ts
+- domain/services/TagNormalizer.ts
+- domain/services/TagValidator.ts
+- domain/services/RecordMatcher.ts
+- shared/Result.ts
+- shared/UUID.ts
+
+### Minor Adaptations Required
+- application/use-cases/* (add userId parameter)
+- presentation/web/components/* (add loading states)
+
+### New Implementation Required
+- backend/api/routes/*
+- backend/auth/*
+- backend/repositories/PostgreSQL*
+- backend/middleware/*
+
+## Configuration Changes
+
+### Environment Variables (New)
+```
+# Database
+DATABASE_URL=postgresql://...
+DB_HOST, DB_PORT, DB_USER, DB_PASSWORD
+
+# Authentication
+GOOGLE_OAUTH_CLIENT_ID
+GOOGLE_OAUTH_CLIENT_SECRET
+JWT_SECRET
+JWT_REFRESH_SECRET
+
+# Application
+NODE_ENV=development|production
+PORT=3000
+FRONTEND_URL=http://localhost:5173
+```
+
+### Build Configuration
+- Add backend to monorepo workspaces
+- Update TypeScript paths for new package
+- Configure Docker build stages
+- Add production build scripts
+
+## Testing Migration
+
+### Test Coverage Requirements
+- Maintain Domain >95%
+- Maintain Application >90%
+- New: API routes >85%
+- New: Authentication flow >95%
+- New: E2E user journeys 100%
+
+### Test Data Migration
+- Convert localStorage test fixtures to PostgreSQL
+- Add user context to all test scenarios
+- Create OAuth mock for testing
+- Add multi-user test cases
+
+## Success Criteria
+
+### Technical Success
+- [ ] All prototype features working in MVP
+- [ ] Authentication flow complete
+- [ ] Data import preserves all records
+- [ ] Performance targets met (<200ms search)
+- [ ] 100 concurrent users supported
+
+### User Success
+- [ ] Zero data loss during migration
+- [ ] Intuitive authentication process
+- [ ] Same UI/UX for core features
+- [ ] Successful import/export flow
+- [ ] No breaking changes in workflow
+
+## Key Decisions Log
+
+1. **PostgreSQL over MongoDB**: Better for structured tag queries
+2. **JWT over sessions**: Stateless, scalable
+3. **Google OAuth only**: Reduce complexity for MVP
+4. **Same domain model**: Preserve tested business logic
+5. **Docker from start**: Consistent environments
+6. **TDD mandatory**: Maintain code quality
+
+## Next Steps After Migration
+
+1. Complete TaskMaster task generation for MVP
+2. Setup CI/CD pipeline with test gates
+3. Create deployment documentation
+4. Performance benchmarking
+5. Security audit
+6. User acceptance testing
+
+## Notes for TaskMaster AI
+
+- Use this document for context when generating MVP tasks
+- Prioritize backend and authentication tasks
+- Ensure all tasks follow TDD approach
+- Reference prototype tasks for patterns
+- Maintain Clean Architecture principles
+- Consider user migration path in all decisions
