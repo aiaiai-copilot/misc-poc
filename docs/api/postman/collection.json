@@ -1,0 +1,479 @@
+{
+  "info": {
+    "_postman_id": "misc-mvp-api-v2",
+    "name": "MISC MVP API",
+    "description": "Complete API collection for MISC (MindSection) MVP - a minimalist information management system where everything is tags",
+    "version": "2.0.0",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{access_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Check if token needs refresh",
+          "const tokenExpiry = pm.environment.get('token_expiry');",
+          "if (tokenExpiry && new Date(tokenExpiry) <= new Date()) {",
+          "    console.log('Token expired, need to refresh');",
+          "}"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Global test for 401 responses",
+          "if (pm.response.code === 401) {",
+          "    console.log('Unauthorized - need to authenticate');",
+          "}"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "google_oauth_url",
+      "value": "https://accounts.google.com/o/oauth2/v2/auth",
+      "type": "string"
+    },
+    {
+      "key": "client_id",
+      "value": "your-client-id.apps.googleusercontent.com",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "1. Get Google OAuth URL",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/auth/google",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "google"]
+            },
+            "description": "Initiates Google OAuth flow. In production, this redirects to Google."
+          }
+        },
+        {
+          "name": "2. Exchange Google Token",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"token\": \"{{google_id_token}}\"}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/google",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "google"]
+            }
+          }
+        },
+        {
+          "name": "3. Refresh Token",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"refreshToken\": \"{{refresh_token}}\"}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/refresh",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "refresh"]
+            }
+          }
+        },
+        {
+          "name": "4. Logout",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/auth/logout",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "logout"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "User",
+      "item": [
+        {
+          "name": "Get User Profile",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/user/profile",
+              "host": ["{{base_url}}"],
+              "path": ["api", "user", "profile"]
+            }
+          }
+        },
+        {
+          "name": "Get User Settings",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/user/settings",
+              "host": ["{{base_url}}"],
+              "path": ["api", "user", "settings"]
+            }
+          }
+        },
+        {
+          "name": "Update User Settings",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"caseSensitive\": false, \"removeAccents\": true, \"maxTagLength\": 100, \"maxTagsPerRecord\": 50, \"uiLanguage\": \"en\"}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/user/settings",
+              "host": ["{{base_url}}"],
+              "path": ["api", "user", "settings"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Records",
+      "item": [
+        {
+          "name": "Create Record",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"content\": \"meeting project alpha tomorrow 15:00\"}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/records",
+              "host": ["{{base_url}}"],
+              "path": ["api", "records"]
+            }
+          }
+        },
+        {
+          "name": "Search Records",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/records?q=meeting project&limit=100&offset=0",
+              "host": ["{{base_url}}"],
+              "path": ["api", "records"],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "meeting project"
+                },
+                {
+                  "key": "limit",
+                  "value": "100"
+                },
+                {
+                  "key": "offset",
+                  "value": "0"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get All Records",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/records",
+              "host": ["{{base_url}}"],
+              "path": ["api", "records"]
+            }
+          }
+        },
+        {
+          "name": "Get Record by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/records/{{last_record_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "records", "{{last_record_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Record",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"content\": \"updated meeting project beta tomorrow 16:00\"}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/records/{{last_record_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "records", "{{last_record_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Record",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/records/{{last_record_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "records", "{{last_record_id}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Tags",
+      "item": [
+        {
+          "name": "Get Tag Statistics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/tags?limit=100",
+              "host": ["{{base_url}}"],
+              "path": ["api", "tags"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "100"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Tag Suggestions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/tags/suggest?prefix=mee&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["api", "tags", "suggest"],
+              "query": [
+                {
+                  "key": "prefix",
+                  "value": "mee"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Import/Export",
+      "item": [
+        {
+          "name": "Export Data",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/export",
+              "host": ["{{base_url}}"],
+              "path": ["api", "export"]
+            }
+          }
+        },
+        {
+          "name": "Import Data",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"version\": \"2.0\", \"records\": [{\"content\": \"imported test record\", \"createdAt\": \"2025-01-01T10:00:00Z\", \"updatedAt\": \"2025-01-01T10:00:00Z\"}], \"metadata\": {\"exportedAt\": \"2025-01-15T12:00:00Z\", \"recordCount\": 1}}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/import",
+              "host": ["{{base_url}}"],
+              "path": ["api", "import"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "System",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": ["{{base_url}}"],
+              "path": ["health"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Error Cases",
+      "item": [
+        {
+          "name": "401 - Unauthorized",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/records",
+              "host": ["{{base_url}}"],
+              "path": ["api", "records"]
+            }
+          }
+        },
+        {
+          "name": "400 - Invalid Request",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"content\": \"\"}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/records",
+              "host": ["{{base_url}}"],
+              "path": ["api", "records"]
+            }
+          }
+        },
+        {
+          "name": "404 - Not Found",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/records/00000000-0000-0000-0000-000000000000",
+              "host": ["{{base_url}}"],
+              "path": ["api", "records", "00000000-0000-0000-0000-000000000000"]
+            }
+          }
+        },
+        {
+          "name": "409 - Duplicate Record",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"content\": \"duplicate test tags\"}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/records",
+              "host": ["{{base_url}}"],
+              "path": ["api", "records"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
