@@ -202,3 +202,8 @@ For EVERY UI change, ensure tests cover:
 **Failure to maintain E2E tests will result in incomplete implementation.**
 
 Refer to `e2e/README.md` for detailed guidelines and examples.
+
+## Task Master AI Instructions
+
+**Import Task Master's development workflow commands and guidelines, treat as if import is in the main CLAUDE.md file.**
+@./.taskmaster/CLAUDE.md
