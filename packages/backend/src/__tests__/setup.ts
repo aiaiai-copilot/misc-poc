@@ -14,6 +14,12 @@ process.env.SESSION_NAME = 'test-session';
 process.env.SESSION_MAX_AGE = '3600000'; // 1 hour
 process.env.NODE_ENV = 'test';
 
+// Database mock configuration
+process.env.DATABASE_URL = 'postgresql://test:test@localhost:5432/test_db';
+process.env.TEST_DATABASE_URL = 'postgresql://test:test@localhost:5432/test_db';
+
+// Database mocking will be added when pg module is installed
+
 // Extend Jest matchers if needed
 beforeAll(() => {
   // Global test setup
