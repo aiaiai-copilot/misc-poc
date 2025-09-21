@@ -49,3 +49,7 @@ playwright-report/
 # E2E test data files
 e2e/test-data/
 e2e/downloads/
+
+# Task files
+# tasks.json
+# tasks/ 

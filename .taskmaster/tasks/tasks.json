@@ -1,0 +1,1430 @@
+{
+  "mvp": {
+    "tasks": [
+      {
+        "id": 1,
+        "title": "Setup Backend Package Structure and Dependencies",
+        "description": "Create backend package in monorepo with Express server, TypeScript configuration, and core dependencies",
+        "details": "Create packages/backend directory with package.json including Express/Fastify, PostgreSQL client, Passport.js for OAuth, Joi/Zod for validation, Jest for testing, and TypeScript configuration. Setup workspace dependency on existing domain and application packages. Configure build and test scripts consistent with monorepo structure.",
+        "testStrategy": "Unit tests for package configuration, dependency resolution verification, and build process validation",
+        "priority": "high",
+        "dependencies": [],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Create packages/backend directory structure and workspace configuration",
+            "description": "Initialize backend package directory with proper package.json workspace configuration and metadata",
+            "dependencies": [],
+            "details": "Create packages/backend directory, initialize package.json with workspace configuration, set proper name (@misc-poc/backend), version, description, and workspace dependencies on existing domain and application packages. Configure package as private workspace member.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "Install and configure Express server with TypeScript core dependencies",
+            "description": "Setup Express framework with TypeScript configuration and essential middleware",
+            "dependencies": ["1.1"],
+            "details": "Install Express, @types/express, TypeScript, ts-node, and essential middleware (cors, helmet, morgan). Create tsconfig.json with proper module resolution and build configuration. Setup basic Express server structure with middleware initialization.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "Setup PostgreSQL client and database connection libraries",
+            "description": "Configure PostgreSQL connectivity with connection pooling and migration support",
+            "dependencies": ["1.1"],
+            "details": "Install pg, @types/pg for PostgreSQL client, node-pg-migrate for database migrations, and connection pooling configuration. Setup database connection utilities and environment variable configuration for database credentials.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 4,
+            "title": "Configure authentication dependencies and OAuth setup",
+            "description": "Install and configure Passport.js with JWT and OAuth strategies",
+            "dependencies": ["1.1"],
+            "details": "Install passport, passport-google-oauth20, passport-jwt, jsonwebtoken, and related types. Setup OAuth configuration utilities, JWT token generation/validation, and session management middleware. Configure environment variables for OAuth credentials.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 5,
+            "title": "Setup validation, testing framework and build scripts",
+            "description": "Configure data validation library, Jest testing framework, and build scripts matching monorepo patterns",
+            "dependencies": ["1.2", "1.3", "1.4"],
+            "details": "Install Joi or Zod for request validation, Jest and supertest for testing, and configure build scripts (build, test, dev, start). Setup test configuration with database mocking, validation schemas structure, and ensure scripts follow monorepo conventions.",
+            "status": "pending",
+            "testStrategy": ""
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "title": "Setup PostgreSQL Database with Docker Compose",
+        "description": "Configure PostgreSQL database environment with Docker Compose for development and testing",
+        "details": "Create docker-compose.yml with PostgreSQL 15+ service, environment variables configuration, data volume persistence, and health checks. Include separate test database configuration. Setup connection configuration and database initialization scripts.",
+        "testStrategy": "Integration tests for database connectivity, Docker compose startup verification, and connection pool testing",
+        "priority": "high",
+        "dependencies": [1],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Create docker-compose.yml with PostgreSQL service configuration",
+            "description": "Set up the main Docker Compose file with PostgreSQL 15+ service definition, port mapping, and basic configuration",
+            "dependencies": [],
+            "details": "Create docker-compose.yml file with PostgreSQL 15+ official image, expose port 5432, configure service name as 'postgres', set up basic PostgreSQL configuration including shared_preload_libraries for extensions, and configure restart policies. Include development-specific settings for easier debugging.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "Setup environment variables and secrets management",
+            "description": "Configure environment variables for database credentials, connection settings, and secrets management",
+            "dependencies": ["2.1"],
+            "details": "Create .env.example and .env files with PostgreSQL environment variables (POSTGRES_DB, POSTGRES_USER, POSTGRES_PASSWORD, DATABASE_URL). Set up secure password generation, configure connection pool settings, and document all environment variables. Ensure .env is properly gitignored.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "Configure data persistence volumes and networking",
+            "description": "Set up Docker volumes for data persistence and configure networking between services",
+            "dependencies": ["2.1"],
+            "details": "Configure named Docker volumes for PostgreSQL data persistence, set up proper volume mounting paths, configure custom network for service communication, and ensure data survives container restarts. Include volume backup considerations and proper permissions setup.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 4,
+            "title": "Create separate test database configuration",
+            "description": "Configure isolated test database environment for testing purposes",
+            "dependencies": ["2.2", "2.3"],
+            "details": "Create docker-compose.test.yml or test-specific configuration for isolated test database, configure separate test database name and credentials, set up test data cleanup procedures, and ensure test database doesn't interfere with development data. Include fast startup options for CI/CD.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 5,
+            "title": "Implement health checks and connection validation",
+            "description": "Add health checks to PostgreSQL service and create connection validation scripts",
+            "dependencies": ["2.2", "2.3"],
+            "details": "Configure Docker health checks using pg_isready command, set up proper health check intervals and timeouts, create connection validation scripts for application startup, and implement retry logic for database connections. Include monitoring and logging for health check failures.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 6,
+            "title": "Create database initialization scripts and documentation",
+            "description": "Develop database initialization scripts and comprehensive setup documentation",
+            "dependencies": ["2.4", "2.5"],
+            "details": "Create init.sql scripts for database setup, user permissions, and initial schema if needed. Write comprehensive README with setup instructions, troubleshooting guide, and common Docker commands. Include scripts for database reset, backup procedures, and development workflow documentation.",
+            "status": "pending",
+            "testStrategy": ""
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "title": "Implement Database Migration System with TypeORM",
+        "description": "Create migration infrastructure using TypeORM for schema management and version control",
+        "details": "Configure TypeORM for migrations only (no Active Record pattern). Create migration files for users, records, user_settings tables with proper indexes and constraints. Implement migration runner with rollback capability and checksum validation. Setup CI/CD integration for automatic migrations.",
+        "testStrategy": "Migration execution tests, rollback verification, schema validation after migrations, and CI pipeline integration tests",
+        "priority": "high",
+        "dependencies": [2],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Configure TypeORM for migrations-only mode",
+            "description": "Setup TypeORM configuration specifically for migrations without Active Record pattern",
+            "dependencies": [],
+            "details": "Create ormconfig.json or DataSource configuration for migrations-only mode. Configure database connection settings, migration directory structure, and ensure no entity synchronization. Setup separate configuration for development, testing, and production environments.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "Create users table migration with OAuth fields",
+            "description": "Generate migration file for users table with Google OAuth integration fields",
+            "dependencies": ["3.1"],
+            "details": "Create migration with fields: id (UUID primary key), google_id (unique), email, name, profile_picture_url, created_at, updated_at. Add proper indexes on google_id and email. Include constraints for required OAuth fields and email validation.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "Create records table migration with proper indexes",
+            "description": "Generate migration file for records table with optimized indexing strategy",
+            "dependencies": ["3.2"],
+            "details": "Create migration with fields: id (UUID), user_id (foreign key), original_content, normalized_content, tags (array/JSONB), created_at, updated_at. Add indexes on user_id, tags (GIN index for PostgreSQL), created_at, and composite indexes for common query patterns.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 4,
+            "title": "Create user_settings table migration",
+            "description": "Generate migration file for user settings and preferences",
+            "dependencies": ["3.2"],
+            "details": "Create migration with fields: id (UUID), user_id (foreign key), normalization_enabled (boolean), custom_tags (JSONB), preferences (JSONB), created_at, updated_at. Add unique constraint on user_id and indexes for efficient settings retrieval.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 5,
+            "title": "Implement migration runner with rollback capability",
+            "description": "Create migration execution system with rollback functionality",
+            "dependencies": ["3.3", "3.4"],
+            "details": "Implement migration runner that can execute pending migrations, perform rollbacks to specific versions, and handle migration failures gracefully. Include transaction wrapping, error logging, and state tracking. Create CLI commands for migration operations.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 6,
+            "title": "Add checksum validation and version control",
+            "description": "Implement migration integrity checking and version tracking",
+            "dependencies": ["3.5"],
+            "details": "Add checksum generation for migration files to detect unauthorized changes. Implement version tracking in migrations table with timestamps and checksums. Create validation logic to ensure migration history integrity and prevent corruption.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 7,
+            "title": "Setup CI/CD integration for automated migrations",
+            "description": "Configure automated migration execution in deployment pipeline",
+            "dependencies": ["3.6"],
+            "details": "Setup GitHub Actions or similar CI/CD pipeline to run migrations automatically during deployment. Include pre-deployment migration validation, staging environment testing, and production migration execution with proper error handling and rollback procedures.",
+            "status": "pending",
+            "testStrategy": ""
+          }
+        ]
+      },
+      {
+        "id": 4,
+        "title": "Create User Domain Entity and Authentication Value Objects",
+        "description": "Extend domain layer with User aggregate root and authentication-related value objects",
+        "details": "Create User domain entity with GoogleId, email, profile information, and settings. Implement UserSettings value object for normalization preferences. Create AuthenticationContext value object for session management. Maintain existing Record entity contracts.",
+        "testStrategy": "Comprehensive unit tests for User entity invariants, UserSettings validation, and AuthenticationContext behavior with >95% coverage",
+        "priority": "medium",
+        "dependencies": [],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Design User Aggregate Root with Business Rules",
+            "description": "Create User domain entity class with core properties, business rules, and domain invariants",
+            "dependencies": [],
+            "details": "Define User aggregate root with GoogleId, email, displayName, profilePicture, settings, createdAt, and lastLoginAt properties. Implement business rules for user creation, profile updates, and authentication state management. Define domain invariants for data consistency and validation rules.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "Create GoogleId Value Object with Validation",
+            "description": "Implement GoogleId value object with proper validation and equality semantics",
+            "dependencies": [],
+            "details": "Create GoogleId value object with string validation, immutability, and proper equals/hashCode implementation. Include format validation for Google OAuth2 subject identifiers and error handling for invalid formats. Ensure type safety and domain-specific validation rules.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "Implement UserSettings Value Object for Preferences",
+            "description": "Create UserSettings value object to encapsulate user preference configurations",
+            "dependencies": [],
+            "details": "Define UserSettings value object with normalization preferences, UI settings, and notification preferences. Implement immutable structure with builder pattern for updates. Include validation for preference values and default configuration handling.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 4,
+            "title": "Create AuthenticationContext for Session Management",
+            "description": "Implement AuthenticationContext value object for managing authentication state and session information",
+            "dependencies": ["4.2"],
+            "details": "Create AuthenticationContext value object containing session token, expiration, user roles, and authentication method. Implement session validation logic, token refresh mechanisms, and security-related business rules for authentication state management.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 5,
+            "title": "Define User Factory and Domain Invariants",
+            "description": "Implement User factory methods and enforce domain invariants across the aggregate",
+            "dependencies": ["4.1", "4.2", "4.3"],
+            "details": "Create User factory methods for creating new users from Google OAuth, updating profiles, and managing settings. Define and enforce domain invariants such as unique email constraints, valid profile data, and consistent authentication state. Include validation logic and error handling.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 6,
+            "title": "Ensure Compatibility with Existing Record Contracts",
+            "description": "Verify User domain integration maintains compatibility with existing Record entity patterns and domain architecture",
+            "dependencies": ["4.1", "4.4", "4.5"],
+            "details": "Review and test integration between User aggregate and existing Record entities. Ensure consistent domain patterns, proper aggregate boundaries, and maintained contracts. Update any necessary interfaces and verify no breaking changes to existing Record functionality.",
+            "status": "pending",
+            "testStrategy": ""
+          }
+        ]
+      },
+      {
+        "id": 5,
+        "title": "Implement Google OAuth Authentication Flow",
+        "description": "Setup Google OAuth 2.0 integration with Passport.js and JWT token management",
+        "details": "Configure Passport.js with Google OAuth strategy, implement JWT token generation and validation, create refresh token rotation mechanism, setup secure httpOnly cookies, and implement session management middleware. Include Google API client configuration and error handling.",
+        "testStrategy": "Authentication flow tests, JWT token validation tests, refresh token rotation tests, and OAuth error scenario handling tests",
+        "priority": "high",
+        "dependencies": [4],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Configure Google OAuth Client and Credentials",
+            "description": "Setup Google Cloud Console project, obtain OAuth 2.0 credentials, and configure environment variables",
+            "dependencies": [],
+            "details": "Create Google Cloud Console project, enable Google+ API, configure OAuth consent screen, generate client ID and secret, setup redirect URLs, and configure environment variables for secure credential storage",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "Setup Passport.js with Google OAuth Strategy",
+            "description": "Install and configure Passport.js with Google OAuth 2.0 strategy for authentication",
+            "dependencies": ["5.1"],
+            "details": "Install passport and passport-google-oauth20 packages, configure Google OAuth strategy with client credentials, implement user profile serialization/deserialization, and setup strategy callback handling",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "Implement JWT Token Generation and Validation",
+            "description": "Create JWT token generation, validation, and verification utilities",
+            "dependencies": ["5.2"],
+            "details": "Install jsonwebtoken package, implement JWT signing with secure secret, create token validation middleware, implement token payload structure with user data, and add token expiration handling",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 4,
+            "title": "Create Refresh Token Rotation Mechanism",
+            "description": "Implement secure refresh token generation, storage, and rotation system",
+            "dependencies": ["5.3"],
+            "details": "Design refresh token database schema, implement token generation with cryptographic randomness, create token rotation on refresh, implement token blacklisting for security, and add automatic cleanup of expired tokens",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 5,
+            "title": "Setup Secure HttpOnly Cookie Handling",
+            "description": "Configure secure cookie settings for JWT and refresh token storage",
+            "dependencies": ["5.4"],
+            "details": "Install cookie-parser middleware, configure httpOnly, secure, and sameSite cookie attributes, implement cookie signing for integrity, setup domain and path restrictions, and add CSRF protection considerations",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 6,
+            "title": "Implement Session Management Middleware",
+            "description": "Create middleware for session validation, renewal, and cleanup",
+            "dependencies": ["5.5"],
+            "details": "Implement session validation middleware, create automatic token refresh logic, add session timeout handling, implement concurrent session management, and create session cleanup on logout",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 7,
+            "title": "Add Comprehensive OAuth Error Handling",
+            "description": "Implement robust error handling for all OAuth failure scenarios",
+            "dependencies": ["5.6"],
+            "details": "Handle OAuth consent denied scenarios, implement network failure retry logic, add invalid token error responses, create rate limiting error handling, implement account linking error scenarios, and add comprehensive logging for debugging",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 8,
+            "title": "Create Authentication Flow Integration Tests",
+            "description": "Develop comprehensive test suite for the complete OAuth authentication flow",
+            "dependencies": ["5.7"],
+            "details": "Create end-to-end OAuth flow tests, implement JWT token validation tests, test refresh token rotation scenarios, verify cookie security settings, test error handling scenarios, and add performance tests for authentication endpoints",
+            "status": "pending",
+            "testStrategy": ""
+          }
+        ]
+      },
+      {
+        "id": 6,
+        "title": "Create PostgreSQL User Repository Implementation",
+        "description": "Implement user repository with PostgreSQL backend following repository pattern",
+        "details": "Create PostgreSQL implementation of User repository with findByGoogleId, create, updateSettings, and updateLastLogin methods. Implement proper error handling, connection pooling, and prepared statements for SQL injection prevention. Include user settings management.",
+        "testStrategy": "Repository contract tests, database integration tests, error handling tests, and performance tests for concurrent operations",
+        "priority": "medium",
+        "dependencies": [3, 4],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Create User Repository Interface Implementation",
+            "description": "Implement PostgreSQL-based User repository class with core interface methods",
+            "dependencies": [],
+            "details": "Create PostgreSQLUserRepository class implementing the User repository interface. Set up basic class structure with constructor for database connection, implement skeleton methods for findByGoogleId, create, updateSettings, and updateLastLogin. Establish TypeScript types and ensure interface compatibility.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "Implement findByGoogleId with Proper Indexing",
+            "description": "Create findByGoogleId method with optimized database queries and indexing",
+            "dependencies": ["6.1"],
+            "details": "Implement findByGoogleId method using prepared statements with proper SQL query optimization. Create database index on google_id column for performance. Add proper error handling for database connection issues and implement result mapping to User domain objects.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "Create User Creation and Profile Management Methods",
+            "description": "Implement create method for new user registration and profile management",
+            "dependencies": ["6.1"],
+            "details": "Implement create method for inserting new users with Google OAuth data. Add profile management capabilities including user metadata handling. Implement proper data validation, duplicate prevention, and return proper User domain objects with generated IDs.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 4,
+            "title": "Implement updateSettings with Validation",
+            "description": "Create updateSettings method with comprehensive validation and error handling",
+            "dependencies": ["6.2", "6.3"],
+            "details": "Implement updateSettings method with JSON schema validation for user preferences. Add proper error handling for invalid settings, implement atomic updates using transactions, and ensure backward compatibility with existing settings format. Include updateLastLogin method implementation.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 5,
+            "title": "Add Connection Pooling and Prepared Statements",
+            "description": "Implement database connection pooling and SQL injection prevention",
+            "dependencies": ["6.2", "6.3"],
+            "details": "Set up PostgreSQL connection pooling for performance and scalability. Convert all SQL queries to use prepared statements for SQL injection prevention. Implement connection health checks, timeout handling, and connection recycling. Add database transaction management.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 6,
+            "title": "Create Comprehensive Error Handling and Logging",
+            "description": "Implement robust error handling, logging, and monitoring for the repository",
+            "dependencies": ["6.4", "6.5"],
+            "details": "Implement comprehensive error handling for database connection failures, constraint violations, and query timeouts. Add structured logging for debugging and monitoring. Create custom error types for different failure scenarios and implement retry logic for transient failures.",
+            "status": "pending",
+            "testStrategy": ""
+          }
+        ]
+      },
+      {
+        "id": 7,
+        "title": "Implement Authentication Middleware and Routes",
+        "description": "Create authentication middleware and REST API routes for login/logout/refresh",
+        "details": "Implement authentication middleware for JWT validation, create /auth/google, /auth/refresh, /auth/logout endpoints following OpenAPI specification. Include request validation, error handling, and security headers. Setup CORS configuration for SPA.",
+        "testStrategy": "API endpoint tests, middleware functionality tests, security validation tests, and CORS configuration verification",
+        "priority": "high",
+        "dependencies": [5, 6],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Create JWT validation middleware",
+            "description": "Implement middleware to validate JWT tokens and extract user information",
+            "dependencies": [],
+            "details": "Create JWT validation middleware that verifies token signature, checks expiration, extracts user payload, and handles invalid tokens. Include proper error responses and integration with Express.js middleware chain.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "Implement /auth/google OAuth callback route",
+            "description": "Create Google OAuth callback endpoint for authentication flow",
+            "dependencies": ["7.1"],
+            "details": "Implement /auth/google endpoint that handles OAuth callback, exchanges authorization code for tokens, validates Google user information, creates/updates user records, and generates JWT tokens for session management.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "Create /auth/refresh token refresh endpoint",
+            "description": "Implement token refresh endpoint for maintaining user sessions",
+            "dependencies": ["7.1"],
+            "details": "Create /auth/refresh endpoint that validates refresh tokens, generates new access tokens, handles token rotation, and manages refresh token expiration with proper security measures.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 4,
+            "title": "Implement /auth/logout with session cleanup",
+            "description": "Create logout endpoint with proper session invalidation",
+            "dependencies": ["7.1"],
+            "details": "Implement /auth/logout endpoint that invalidates JWT tokens, clears refresh tokens from database, removes session cookies, and handles cleanup for both client and server-side session data.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 5,
+            "title": "Setup request validation and sanitization",
+            "description": "Implement input validation and sanitization for authentication routes",
+            "dependencies": ["7.2", "7.3", "7.4"],
+            "details": "Add comprehensive request validation using Joi or Zod for all authentication endpoints, implement input sanitization to prevent injection attacks, and create consistent error response formatting.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 6,
+            "title": "Configure CORS for SPA integration",
+            "description": "Setup CORS configuration for frontend integration",
+            "dependencies": [],
+            "details": "Configure CORS middleware to allow frontend SPA access, set appropriate origins, headers, and methods for authentication routes, and handle preflight requests for cross-origin authentication flows.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 7,
+            "title": "Add comprehensive security headers and rate limiting",
+            "description": "Implement security headers and rate limiting for authentication endpoints",
+            "dependencies": ["7.5", "7.6"],
+            "details": "Add security headers (HSTS, CSP, X-Frame-Options), implement rate limiting for authentication endpoints to prevent brute force attacks, and configure additional security middleware for production deployment.",
+            "status": "pending",
+            "testStrategy": ""
+          }
+        ]
+      },
+      {
+        "id": 8,
+        "title": "Create PostgreSQL Record Repository Implementation",
+        "description": "Implement record repository with PostgreSQL backend replacing localStorage implementation",
+        "details": "Create PostgreSQL implementation of Record repository with save, findByTags, findById, delete, and getTagStatistics methods. Implement user data isolation, GIN indexes for tag search performance, and normalized tag handling. Maintain exact compatibility with existing repository contract.",
+        "testStrategy": "Repository contract tests ensuring 100% compatibility with existing interface, performance tests for tag search, and data isolation verification tests",
+        "priority": "high",
+        "dependencies": [3],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Implement Core CRUD Operations",
+            "description": "Create PostgreSQL implementation of save, findById, and delete methods maintaining exact interface compatibility",
+            "dependencies": [],
+            "details": "Implement save() method with INSERT/UPDATE logic, findById() with user isolation, and delete() with soft delete option. Ensure exact return types and error handling match existing localStorage contract. Include prepared statements and connection pooling.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "Create Database Schema and Tables",
+            "description": "Design and create PostgreSQL schema with proper indexing and constraints for records and tags",
+            "dependencies": [],
+            "details": "Create records table with user_id, data JSONB column, created_at, updated_at. Create normalized tags table with many-to-many relationship. Add GIN indexes on tags and JSONB data. Include foreign key constraints and user isolation.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "Implement Tag Search with GIN Indexes",
+            "description": "Create efficient findByTags method using PostgreSQL GIN indexes for tag search performance",
+            "dependencies": ["8.2"],
+            "details": "Implement findByTags() method using GIN indexes for fast tag queries. Support AND/OR logic, tag filtering, and pagination. Optimize queries for large datasets with proper indexing strategy and query planning.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 4,
+            "title": "Implement User Data Isolation and Security",
+            "description": "Add row-level security and user isolation to ensure data privacy across users",
+            "dependencies": ["8.2"],
+            "details": "Implement user_id filtering in all queries, add row-level security policies, validate user permissions on all operations. Include SQL injection prevention and prepared statement usage throughout.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 5,
+            "title": "Create Tag Statistics and Aggregation Queries",
+            "description": "Implement getTagStatistics method with efficient aggregation queries for tag usage analytics",
+            "dependencies": ["8.2", "8.3"],
+            "details": "Implement getTagStatistics() method with COUNT, GROUP BY queries on normalized tag data. Include tag frequency, usage over time, and user-specific statistics. Optimize with proper indexing and caching strategies.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 6,
+            "title": "Add Batch Operations for Import/Export",
+            "description": "Implement efficient batch operations for bulk data operations and import/export functionality",
+            "dependencies": ["8.1", "8.3"],
+            "details": "Create saveBatch() and deleteBatch() methods for efficient bulk operations. Use transactions, batch inserts, and proper error handling. Support progress reporting and rollback capabilities for large datasets.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 7,
+            "title": "Ensure Repository Contract Compatibility",
+            "description": "Validate 100% compatibility with existing repository contract and optimize query performance",
+            "dependencies": ["8.1", "8.3", "8.4", "8.5", "8.6"],
+            "details": "Run existing repository tests against PostgreSQL implementation, ensure exact method signatures and return types. Performance tune queries, add connection pooling, and implement caching where appropriate. Document any performance improvements.",
+            "status": "pending",
+            "testStrategy": ""
+          }
+        ]
+      },
+      {
+        "id": 9,
+        "title": "Implement Records CRUD API Endpoints",
+        "description": "Create REST API endpoints for record management following OpenAPI specification",
+        "details": "Implement GET/POST /api/records, GET/PUT/DELETE /api/records/:id endpoints with request validation using Joi/Zod, proper error handling, rate limiting, and user authentication. Include pagination, search functionality, and duplicate detection.",
+        "testStrategy": "Complete API contract tests covering all CRUD operations, validation scenarios, error cases, and performance under load",
+        "priority": "high",
+        "dependencies": [7, 8],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Create GET/POST /api/records endpoints with pagination",
+            "description": "Implement collection-level endpoints for retrieving and creating records",
+            "dependencies": [],
+            "details": "Create GET /api/records endpoint with pagination support (limit, offset), sorting, and POST /api/records for record creation. Include proper HTTP status codes, response formatting, and pagination metadata in responses.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "Implement GET/PUT/DELETE /api/records/:id operations",
+            "description": "Create individual record management endpoints",
+            "dependencies": ["9.1"],
+            "details": "Implement GET /api/records/:id for single record retrieval, PUT /api/records/:id for updates, and DELETE /api/records/:id for deletion. Include proper 404 handling for non-existent records and optimistic locking for updates.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "Add request validation using Joi/Zod schemas",
+            "description": "Implement comprehensive request validation for all endpoints",
+            "dependencies": ["9.1", "9.2"],
+            "details": "Create validation schemas for record creation and update requests using Joi or Zod. Validate required fields, data types, format constraints, and business rules. Return detailed validation error messages with field-specific feedback.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 4,
+            "title": "Implement search functionality and filtering",
+            "description": "Add search and filtering capabilities to GET /api/records",
+            "dependencies": ["9.1"],
+            "details": "Implement query parameters for text search, field-based filtering, date ranges, and tag filtering. Use database indexes for performance and support partial matches and case-insensitive search.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 5,
+            "title": "Add rate limiting and authentication checks",
+            "description": "Integrate authentication middleware and rate limiting for all endpoints",
+            "dependencies": ["9.1", "9.2"],
+            "details": "Apply authentication middleware to all record endpoints, implement rate limiting per user/IP, and add proper authorization checks. Include different rate limits for read vs write operations and handle rate limit exceeded responses.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 6,
+            "title": "Create duplicate detection logic",
+            "description": "Implement duplicate record detection and prevention",
+            "dependencies": ["9.1", "9.3"],
+            "details": "Create duplicate detection algorithm based on record content similarity, implement deduplication checks during record creation, and provide options for handling potential duplicates (merge, skip, or flag for review).",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 7,
+            "title": "Add comprehensive error handling and logging",
+            "description": "Implement robust error handling and logging across all endpoints",
+            "dependencies": ["9.1", "9.2", "9.3", "9.4", "9.5", "9.6"],
+            "details": "Add structured error responses, implement request/response logging, add performance monitoring, handle database connection errors, and create proper error categorization (client vs server errors) with appropriate HTTP status codes.",
+            "status": "pending",
+            "testStrategy": ""
+          }
+        ]
+      },
+      {
+        "id": 10,
+        "title": "Implement Tag Statistics and Suggestions API",
+        "description": "Create API endpoints for tag cloud statistics and auto-completion suggestions",
+        "details": "Implement GET /api/tags for tag frequency statistics and GET /api/tags/suggest for auto-completion. Include efficient PostgreSQL queries with proper indexing, caching considerations, and user data isolation. Support prefix matching and frequency-based sorting.",
+        "testStrategy": "API functionality tests, performance tests for large tag datasets, and suggestion accuracy validation tests",
+        "priority": "medium",
+        "dependencies": [8],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Create GET /api/tags endpoint for frequency statistics",
+            "description": "Implement REST API endpoint to return tag usage statistics and frequency data",
+            "dependencies": [],
+            "details": "Create GET /api/tags endpoint that returns tag frequency statistics for tag cloud visualization. Include tag names, usage counts, and percentage calculations. Implement proper request validation, error handling, and response formatting according to OpenAPI specification.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "Implement GET /api/tags/suggest for auto-completion",
+            "description": "Create auto-completion endpoint for tag suggestions based on user input",
+            "dependencies": [],
+            "details": "Implement GET /api/tags/suggest endpoint that accepts query parameters for prefix matching and returns relevant tag suggestions. Include configurable result limits, case-insensitive matching, and proper response formatting for frontend integration.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "Design efficient PostgreSQL queries with proper indexing",
+            "description": "Optimize database queries and create necessary indexes for tag operations",
+            "dependencies": ["10.1", "10.2"],
+            "details": "Design and implement efficient PostgreSQL queries for tag statistics and suggestions. Create appropriate indexes on tag columns for prefix matching and frequency calculations. Optimize query performance for large datasets and ensure scalability.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 4,
+            "title": "Add user data isolation for multi-tenancy",
+            "description": "Implement user-specific data filtering to ensure proper data isolation",
+            "dependencies": ["10.1", "10.2"],
+            "details": "Add user authentication verification and data filtering to ensure users only see their own tags in statistics and suggestions. Implement proper WHERE clauses and security measures to prevent data leakage between users.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 5,
+            "title": "Implement caching strategy for performance",
+            "description": "Add caching layer to improve API response times for frequently accessed data",
+            "dependencies": ["10.3", "10.4"],
+            "details": "Implement Redis-based caching for tag statistics and suggestion results. Design cache invalidation strategies for when tags are added/modified. Include cache warming, TTL configuration, and cache hit/miss monitoring.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 6,
+            "title": "Create prefix matching and frequency-based sorting algorithms",
+            "description": "Implement advanced sorting and matching logic for tag suggestions",
+            "dependencies": ["10.2", "10.3"],
+            "details": "Develop algorithms for intelligent prefix matching that handles partial words and typos. Implement frequency-based sorting that prioritizes commonly used tags while maintaining relevance to user input. Include configurable ranking factors and result relevance scoring.",
+            "status": "pending",
+            "testStrategy": ""
+          }
+        ]
+      },
+      {
+        "id": 11,
+        "title": "Implement User Profile and Settings API",
+        "description": "Create API endpoints for user profile management and settings configuration",
+        "details": "Implement GET /api/user/profile, GET/PUT /api/user/settings endpoints with settings validation, default value handling, and profile information management. Include normalization setting updates that affect tag processing.",
+        "testStrategy": "User management API tests, settings validation tests, and normalization behavior verification tests",
+        "priority": "medium",
+        "dependencies": [6, 7],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Create GET /api/user/profile endpoint",
+            "description": "Implement API endpoint to retrieve user profile information",
+            "dependencies": [],
+            "details": "Create GET /api/user/profile endpoint that returns authenticated user's profile data including name, email, avatar, and account creation date. Include proper authentication middleware integration and response formatting following OpenAPI specification.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "Implement GET /api/user/settings endpoint",
+            "description": "Create endpoint to retrieve user settings configuration",
+            "dependencies": ["11.1"],
+            "details": "Implement GET /api/user/settings endpoint that returns user's current settings including normalization preferences, display options, and system configurations. Include default value handling for missing settings and proper JSON response structure.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "Implement PUT /api/user/settings endpoint",
+            "description": "Create endpoint to update user settings with validation",
+            "dependencies": ["11.2"],
+            "details": "Implement PUT /api/user/settings endpoint that accepts settings updates with comprehensive input validation using Joi/Zod. Include partial update support, validation error responses, and proper conflict handling for concurrent updates.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 4,
+            "title": "Add settings schema validation and default handling",
+            "description": "Implement comprehensive settings validation schema and default value management",
+            "dependencies": ["11.3"],
+            "details": "Create robust settings validation schema covering all supported settings types, implement default value resolution logic, and add settings migration support for schema changes. Include validation for normalization settings and their impact on tag processing.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 5,
+            "title": "Implement normalization setting updates and tag processing integration",
+            "description": "Connect settings updates to tag normalization processing with error handling",
+            "dependencies": ["11.4"],
+            "details": "Implement integration between normalization setting updates and tag processing system. Include comprehensive input validation, error handling for invalid configurations, rollback mechanisms for failed updates, and proper error responses following API specification.",
+            "status": "pending",
+            "testStrategy": ""
+          }
+        ]
+      },
+      {
+        "id": 12,
+        "title": "Create Data Export/Import API Endpoints",
+        "description": "Implement export and import functionality for data migration and backup",
+        "details": "Implement GET /api/export and POST /api/import endpoints supporting v1.0 and v2.0 formats. Include JSON validation, duplicate detection, progress reporting, file size limits, and error handling for malformed data. Support both localStorage and PostgreSQL formats.",
+        "testStrategy": "Export/import functionality tests, format compatibility tests, large dataset handling tests, and error recovery verification",
+        "priority": "medium",
+        "dependencies": [8],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Design Import/Export Data Format Schemas",
+            "description": "Define JSON schemas for v1.0 (localStorage) and v2.0 (PostgreSQL) export formats with validation rules",
+            "dependencies": [],
+            "details": "Create comprehensive JSON schemas supporting both localStorage and PostgreSQL data formats. Include field validation, type checking, and version compatibility rules. Define schema migration paths between v1.0 and v2.0 formats.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "Create GET /api/export Endpoint with Format Selection",
+            "description": "Implement export endpoint with format version selection and data serialization",
+            "dependencies": ["12.1"],
+            "details": "Build REST endpoint supporting query parameters for format version (v1.0/v2.0), user data filtering, and export scope selection. Implement data serialization logic for both localStorage and PostgreSQL formats.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "Implement POST /api/import with JSON Validation",
+            "description": "Create import endpoint with comprehensive JSON validation and format detection",
+            "dependencies": ["12.1"],
+            "details": "Build POST endpoint accepting multipart/form-data uploads. Implement JSON validation against schemas, automatic format version detection, and preliminary data structure verification before processing.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 4,
+            "title": "Add Duplicate Detection and Conflict Resolution",
+            "description": "Implement logic to detect and resolve data conflicts during import operations",
+            "dependencies": ["12.3"],
+            "details": "Create duplicate detection algorithms comparing record IDs, timestamps, and content hashes. Implement conflict resolution strategies (skip, overwrite, merge) with user preference configuration and detailed conflict reporting.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 5,
+            "title": "Implement Progress Reporting for Large Datasets",
+            "description": "Add real-time progress tracking and status updates for import/export operations",
+            "dependencies": ["12.2", "12.3"],
+            "details": "Implement WebSocket or Server-Sent Events for real-time progress updates. Include processing statistics, estimated completion time, and detailed operation logs for large dataset handling.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 6,
+            "title": "Add File Size Limits and Streaming Support",
+            "description": "Implement file size validation and streaming processing for large file uploads",
+            "dependencies": ["12.3"],
+            "details": "Add configurable file size limits, streaming JSON parsing for memory efficiency, and chunked processing for large datasets. Implement temporary file handling and cleanup mechanisms.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 7,
+            "title": "Create Error Recovery and Partial Import Handling",
+            "description": "Implement comprehensive error handling with recovery options and partial import support",
+            "dependencies": ["12.4", "12.5", "12.6"],
+            "details": "Build error recovery mechanisms supporting transaction rollback, partial import continuation, detailed error logging, and user-friendly error messages. Include validation error reporting and data repair suggestions.",
+            "status": "pending",
+            "testStrategy": ""
+          }
+        ]
+      },
+      {
+        "id": 13,
+        "title": "Add API Security, Rate Limiting, and Error Handling",
+        "description": "Implement comprehensive security measures, rate limiting, and standardized error handling",
+        "details": "Add rate limiting middleware, input sanitization, SQL injection prevention, XSS protection, security headers (HSTS, CSP), request validation, and standardized error response format. Include logging and monitoring setup.",
+        "testStrategy": "Security penetration tests, rate limiting verification, input validation tests, and error handling consistency tests",
+        "priority": "high",
+        "dependencies": [7, 9],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Implement Rate Limiting Middleware",
+            "description": "Create rate limiting middleware with Redis/memory backend and configurable limits",
+            "dependencies": [],
+            "details": "Implement rate limiting middleware using express-rate-limit with Redis store for distributed rate limiting. Configure different limits for authentication endpoints vs general API. Include bypass mechanisms for trusted sources and proper error responses when limits exceeded.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "Add Input Sanitization and XSS Protection",
+            "description": "Implement comprehensive input sanitization and XSS protection mechanisms",
+            "dependencies": [],
+            "details": "Add DOMPurify for HTML sanitization, implement input validation middleware to sanitize all request data, configure XSS protection headers, and create utility functions for safe data handling across the application.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "Configure Security Headers",
+            "description": "Setup comprehensive security headers including HSTS, CSP, and other protective headers",
+            "dependencies": [],
+            "details": "Configure helmet.js middleware with HSTS, Content Security Policy, X-Frame-Options, X-Content-Type-Options, and other security headers. Create environment-specific CSP configurations and implement proper CORS policies.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 4,
+            "title": "Create Standardized Error Response Format",
+            "description": "Implement consistent error response structure and global error handling",
+            "dependencies": [],
+            "details": "Design standardized error response schema with error codes, messages, and metadata. Create global error handler middleware, implement custom error classes for different error types, and ensure consistent error formatting across all endpoints.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 5,
+            "title": "Implement Request Validation and SQL Injection Prevention",
+            "description": "Add comprehensive request validation and database security measures",
+            "dependencies": [],
+            "details": "Implement Joi/Zod schema validation for all API endpoints, ensure parameterized queries for all database operations, add input validation middleware, and create validation schemas for all request bodies and parameters.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 6,
+            "title": "Add Comprehensive Logging and Monitoring",
+            "description": "Setup structured logging, monitoring, and security event tracking",
+            "dependencies": ["13.1", "13.4"],
+            "details": "Implement Winston logger with structured logging format, add request/response logging middleware, create security event monitoring for failed auth attempts and rate limit breaches, setup health check endpoints, and configure log rotation.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 7,
+            "title": "Create Security Testing Framework",
+            "description": "Develop security testing suite and penetration testing framework",
+            "dependencies": ["13.1", "13.2", "13.3", "13.4", "13.5"],
+            "details": "Create automated security tests for XSS, CSRF, SQL injection attempts, rate limiting verification, authentication bypass attempts, and security header validation. Setup penetration testing scripts and security audit checklist.",
+            "status": "pending",
+            "testStrategy": ""
+          }
+        ]
+      },
+      {
+        "id": 14,
+        "title": "Adapt Frontend API Client for Server Communication",
+        "description": "Replace localStorage calls with HTTP API client in presentation layer",
+        "details": "Create API client service with authentication handling, automatic token refresh, error handling, loading states, and retry logic. Replace all localStorage repository calls with API endpoints. Implement optimistic updates and cache invalidation.",
+        "testStrategy": "API client integration tests, authentication flow tests, error handling tests, and state management verification",
+        "priority": "high",
+        "dependencies": [9, 10, 11],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Create Base HTTP API Client Service",
+            "description": "Implement core HTTP client with request/response interceptors and base configuration",
+            "dependencies": [],
+            "details": "Create HTTP client service using fetch or axios with base URL configuration, request/response interceptors for headers, content-type handling, and basic error parsing. Include TypeScript interfaces for API responses.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "Implement Authentication Handling in API Client",
+            "description": "Add JWT token management and authentication headers to HTTP requests",
+            "dependencies": ["14.1"],
+            "details": "Integrate authentication token storage, automatic header injection for authenticated requests, token validation, and logout handling when tokens are invalid or expired.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "Create Automatic Token Refresh Logic",
+            "description": "Implement token refresh mechanism with retry queue for failed requests",
+            "dependencies": ["14.2"],
+            "details": "Add token refresh interceptor that detects 401 responses, refreshes tokens automatically, and retries original requests. Include request queuing during refresh process to prevent multiple refresh attempts.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 4,
+            "title": "Replace LocalStorage Repository Calls with API Endpoints",
+            "description": "Convert all localStorage-based data operations to HTTP API calls",
+            "dependencies": ["14.3"],
+            "details": "Replace localStorage repository methods (create, read, update, delete) with corresponding API endpoints. Update all components and services to use the new API client instead of localStorage.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 5,
+            "title": "Add Loading States and Error Handling",
+            "description": "Implement comprehensive error handling and loading indicators for API operations",
+            "dependencies": ["14.4"],
+            "details": "Add loading state management for async operations, error boundary components, specific error handling for different HTTP status codes, and user-friendly error messages with retry options.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 6,
+            "title": "Implement Optimistic Updates and Cache Invalidation",
+            "description": "Add optimistic UI updates and smart cache management for better user experience",
+            "dependencies": ["14.5"],
+            "details": "Implement optimistic updates for create/update operations, cache invalidation strategies, rollback mechanisms for failed optimistic updates, and cache synchronization with server state.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 7,
+            "title": "Create Retry Logic and Network Error Handling",
+            "description": "Implement smart retry mechanisms and network-specific error handling",
+            "dependencies": ["14.6"],
+            "details": "Add exponential backoff retry logic for network failures, differentiate between retryable and non-retryable errors, implement request timeout handling, and provide user feedback for persistent network issues.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 8,
+            "title": "Add Offline State Detection and Graceful Degradation",
+            "description": "Implement offline detection and fallback mechanisms for network unavailability",
+            "dependencies": ["14.7"],
+            "details": "Add network connectivity detection, offline state management, graceful degradation to read-only mode when offline, and background sync when connection is restored. Ensure compatibility with existing state management.",
+            "status": "pending",
+            "testStrategy": ""
+          }
+        ]
+      },
+      {
+        "id": 15,
+        "title": "Implement Frontend Authentication Integration",
+        "description": "Add Google OAuth integration and session management to React frontend",
+        "details": "Integrate Google OAuth client library, implement login/logout flows, add authentication state management, protected route handling, and session persistence. Include user profile display and settings management UI.",
+        "testStrategy": "Authentication flow E2E tests, session persistence tests, protected route verification, and user experience validation",
+        "priority": "high",
+        "dependencies": [14],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Setup Google OAuth Client Library Integration",
+            "description": "Install and configure Google OAuth2 client library for React application",
+            "dependencies": [],
+            "details": "Install @google-cloud/local-auth or similar OAuth library, configure OAuth client credentials, setup environment variables for client ID and secrets, and create initial OAuth configuration service. Include proper error handling for configuration issues.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "Implement Login and Logout UI Components",
+            "description": "Create login/logout UI components with Google OAuth integration",
+            "dependencies": ["15.1"],
+            "details": "Design and implement login button component with Google branding, create logout functionality, add loading states and error handling, implement redirect handling after authentication, and ensure accessibility compliance.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "Create Authentication State Management with React Context",
+            "description": "Implement centralized authentication state management using React Context API",
+            "dependencies": ["15.1"],
+            "details": "Create AuthContext with user state, authentication status, login/logout actions, token management, and error state handling. Include TypeScript interfaces for authentication state and provide custom hooks for consuming auth context.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 4,
+            "title": "Implement Protected Route Handling and Redirects",
+            "description": "Create protected route components and authentication-based navigation",
+            "dependencies": ["15.3"],
+            "details": "Implement ProtectedRoute component that checks authentication status, handles redirects to login page for unauthenticated users, preserves intended destination URLs, and provides fallback UI for authentication loading states.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 5,
+            "title": "Add Session Persistence and Restoration",
+            "description": "Implement session persistence using localStorage/sessionStorage and automatic session restoration",
+            "dependencies": ["15.3"],
+            "details": "Create session storage utilities for persisting authentication tokens, implement automatic session restoration on app initialization, handle token expiration and refresh logic, and provide secure storage practices for sensitive data.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 6,
+            "title": "Create User Profile Display and Management UI",
+            "description": "Build user profile components for displaying and managing user information",
+            "dependencies": ["15.3", "15.5"],
+            "details": "Create user profile display component showing user info from Google OAuth, implement profile settings management UI, add user avatar display, create profile editing capabilities, and integrate with user settings API endpoints.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 7,
+            "title": "Implement Comprehensive Authentication Flow Testing",
+            "description": "Create E2E and integration tests for complete authentication flows",
+            "dependencies": ["15.2", "15.4", "15.6"],
+            "details": "Write E2E tests for login/logout flows, test protected route access and redirects, verify session persistence across browser sessions, test error scenarios and edge cases, and create integration tests for authentication state management.",
+            "status": "pending",
+            "testStrategy": ""
+          }
+        ]
+      },
+      {
+        "id": 16,
+        "title": "Add Frontend Error Handling and Loading States",
+        "description": "Implement comprehensive error handling and loading indicators for async operations",
+        "details": "Add error boundaries, loading spinners, toast notifications for errors/success, network error handling, retry mechanisms, and offline state detection. Implement graceful degradation when API is unavailable.",
+        "testStrategy": "Error scenario E2E tests, loading state verification, offline behavior tests, and user feedback validation",
+        "priority": "medium",
+        "dependencies": [14],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Implement Error Boundaries for Component Error Catching",
+            "description": "Create React error boundaries to catch JavaScript errors in component trees and display fallback UI",
+            "dependencies": [],
+            "details": "Implement ErrorBoundary component using componentDidCatch lifecycle method or error boundary hook. Create fallback UI components for different error scenarios. Add error logging and reporting. Wrap key application sections with error boundaries to prevent complete app crashes.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "Add Loading Spinners and Progress Indicators",
+            "description": "Implement loading states and progress indicators for async operations throughout the application",
+            "dependencies": [],
+            "details": "Create reusable loading spinner components, progress bars, and skeleton screens. Implement loading state management in React components and API calls. Add loading overlays for page transitions and form submissions. Ensure accessibility with proper ARIA labels and screen reader support.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "Create Toast Notification System for User Feedback",
+            "description": "Build a toast notification system to provide user feedback for success and error states",
+            "dependencies": [],
+            "details": "Create toast notification component with different variants (success, error, warning, info). Implement toast queue management and auto-dismiss functionality. Add toast positioning and animation. Integrate with API calls to show operation results. Ensure notifications are accessible and keyboard navigable.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 4,
+            "title": "Implement Network Error Handling and Retry Mechanisms",
+            "description": "Add comprehensive network error handling with automatic retry logic for failed requests",
+            "dependencies": [],
+            "details": "Implement HTTP interceptors for request/response error handling. Add exponential backoff retry strategy for transient failures. Create network error classification (timeout, connection, server errors). Implement circuit breaker pattern for repeated failures. Add user-friendly error messages for different network scenarios.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 5,
+            "title": "Add Offline State Detection and User Communication",
+            "description": "Detect offline/online states and communicate network status to users",
+            "dependencies": [],
+            "details": "Implement browser online/offline event listeners. Create offline indicator UI component. Add offline queue for failed requests to retry when online. Implement service worker for offline functionality if needed. Show appropriate messaging when app functionality is limited due to connectivity.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 6,
+            "title": "Create Graceful Degradation When API is Unavailable",
+            "description": "Implement fallback behaviors and graceful degradation when backend services are unavailable",
+            "dependencies": ["16.1", "16.3", "16.4"],
+            "details": "Create fallback UI states for when API endpoints are unavailable. Implement local storage fallbacks where appropriate. Add server health check endpoints and monitoring. Create maintenance mode UI. Ensure critical app functions remain usable with degraded backend availability.",
+            "status": "pending",
+            "testStrategy": ""
+          }
+        ]
+      },
+      {
+        "id": 17,
+        "title": "Create Production Docker Configuration",
+        "description": "Setup production-ready Docker configuration with Nginx reverse proxy",
+        "details": "Create production Dockerfile for backend, Nginx configuration for reverse proxy, SSL/TLS setup with Let's Encrypt, environment variable management, health checks, and multi-stage builds. Include production optimizations.",
+        "testStrategy": "Docker build tests, Nginx configuration validation, SSL certificate verification, and production deployment simulation",
+        "priority": "medium",
+        "dependencies": [2, 13],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Create Production Dockerfile with Multi-stage Builds",
+            "description": "Implement optimized production Dockerfile using multi-stage builds for minimal image size",
+            "dependencies": [],
+            "details": "Create production Dockerfile with multi-stage builds separating build and runtime environments. Include dependency caching, security hardening with non-root user, and minimal runtime image. Optimize for layer caching and build speed.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "Configure Nginx Reverse Proxy and Load Balancing",
+            "description": "Setup Nginx configuration for reverse proxy with load balancing capabilities",
+            "dependencies": ["17.1"],
+            "details": "Create Nginx configuration files for reverse proxy to backend services. Include load balancing configuration, upstream server definitions, proxy headers, and connection pooling. Configure gzip compression and static file serving.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "Setup SSL/TLS with Let's Encrypt Automation",
+            "description": "Implement automated SSL certificate management using Let's Encrypt",
+            "dependencies": ["17.2"],
+            "details": "Configure SSL/TLS certificates with Let's Encrypt automation using certbot. Include automatic certificate renewal, HTTPS redirection, SSL security headers, and certificate validation. Setup Docker volumes for certificate persistence.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 4,
+            "title": "Implement Environment Variable Management and Secrets",
+            "description": "Setup secure environment variable and secrets management for production",
+            "dependencies": ["17.1"],
+            "details": "Create environment variable management system with Docker secrets or external secret management. Include configuration for database credentials, API keys, SSL certificates, and application settings. Implement secrets rotation and validation.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 5,
+            "title": "Add Health Checks and Monitoring Endpoints",
+            "description": "Implement health check endpoints and monitoring configuration",
+            "dependencies": ["17.1", "17.2"],
+            "details": "Add Docker health checks for all services, implement /health and /metrics endpoints for application monitoring. Configure Nginx health checks, database connection monitoring, and service dependency verification.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 6,
+            "title": "Create Production Deployment and Optimization Documentation",
+            "description": "Document production deployment process and optimization guidelines",
+            "dependencies": ["17.3", "17.4", "17.5"],
+            "details": "Create comprehensive documentation for production deployment including docker-compose configuration, deployment scripts, performance tuning guidelines, security considerations, and troubleshooting guide. Include backup and disaster recovery procedures.",
+            "status": "pending",
+            "testStrategy": ""
+          }
+        ]
+      },
+      {
+        "id": 18,
+        "title": "Implement Database Backup and Recovery System",
+        "description": "Setup automated database backups and recovery procedures",
+        "details": "Implement automated PostgreSQL backups with pg_dump, backup rotation policy, backup verification, point-in-time recovery setup, and restore procedures. Include monitoring and alerting for backup failures.",
+        "testStrategy": "Backup creation tests, restore procedure validation, backup integrity verification, and recovery time testing",
+        "priority": "medium",
+        "dependencies": [2, 3],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Implement automated pg_dump backup scripts",
+            "description": "Create automated backup scripts using pg_dump with proper configuration and scheduling",
+            "dependencies": [],
+            "details": "Develop shell scripts for automated PostgreSQL backups using pg_dump with compression, proper connection handling, environment variable configuration, and cron job scheduling. Include backup file naming conventions with timestamps and database identification.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "Create backup rotation and retention policies",
+            "description": "Implement backup file rotation and retention management system",
+            "dependencies": ["18.1"],
+            "details": "Create backup rotation logic to manage storage space by implementing retention policies (daily, weekly, monthly backups), automatic cleanup of old backup files, and configurable retention periods. Include disk space monitoring and cleanup procedures.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "Add backup verification and integrity checking",
+            "description": "Implement backup file validation and integrity verification processes",
+            "dependencies": ["18.1"],
+            "details": "Create backup verification scripts that check file integrity using checksums, validate backup file structure, perform test restores to verify backup completeness, and log verification results with status reporting.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 4,
+            "title": "Implement point-in-time recovery procedures",
+            "description": "Setup PostgreSQL point-in-time recovery (PITR) configuration and procedures",
+            "dependencies": ["18.1"],
+            "details": "Configure PostgreSQL WAL archiving for point-in-time recovery, create recovery scripts and procedures, document recovery processes, and implement recovery testing procedures. Include recovery.conf template generation and recovery verification steps.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 5,
+            "title": "Create restore testing and validation processes",
+            "description": "Develop automated restore testing and validation procedures",
+            "dependencies": ["18.3", "18.4"],
+            "details": "Create automated restore testing scripts that perform regular restore validations to test environments, verify data integrity after restore, measure recovery time objectives (RTO), and validate restore procedures. Include restore documentation and runbooks.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 6,
+            "title": "Add monitoring and alerting for backup failures",
+            "description": "Implement comprehensive monitoring and alerting system for backup operations",
+            "dependencies": ["18.2", "18.3"],
+            "details": "Setup monitoring for backup job success/failure, disk space usage, backup file integrity, and recovery testing results. Implement alerting mechanisms (email, Slack, etc.) for backup failures, configure health checks, and create backup status dashboard with metrics and reporting.",
+            "status": "pending",
+            "testStrategy": ""
+          }
+        ]
+      },
+      {
+        "id": 19,
+        "title": "Create Data Migration Tool for LocalStorage to PostgreSQL",
+        "description": "Implement migration utility to transfer data from localStorage prototype to PostgreSQL MVP",
+        "details": "Create CLI tool for migrating localStorage data to PostgreSQL format, including data validation, user creation, tag normalization, duplicate detection, and progress reporting. Support batch processing for large datasets.",
+        "testStrategy": "Migration accuracy tests, large dataset handling tests, data integrity verification, and rollback capability testing",
+        "priority": "medium",
+        "dependencies": [8, 12],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Design CLI Tool Architecture and Command Interface",
+            "description": "Design the overall architecture for the migration CLI tool and define command-line interface structure",
+            "dependencies": [],
+            "details": "Create CLI tool structure with commander.js or similar, define command arguments (source, target, options), design configuration file format, establish logging framework, and create help documentation. Define migration modes (dry-run, full, incremental) and command validation.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "Implement LocalStorage Data Reading and Validation",
+            "description": "Create functionality to read and validate localStorage data from browser exports",
+            "dependencies": ["19.1"],
+            "details": "Implement localStorage data parser for JSON exports, create data validation schemas, handle malformed data gracefully, detect data format versions (v1.0, v2.0), and create data structure mapping. Include support for different browser export formats.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "Create User Creation and Authentication Setup",
+            "description": "Implement user account creation process during migration",
+            "dependencies": ["19.1"],
+            "details": "Create user registration workflow for migrated data, implement Google OAuth integration for new users, handle existing user detection, create user mapping from localStorage to PostgreSQL format, and establish user session management for CLI operations.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 4,
+            "title": "Add Tag Normalization and Data Transformation",
+            "description": "Implement tag standardization and data format transformation logic",
+            "dependencies": ["19.2"],
+            "details": "Create tag normalization rules (case sensitivity, special characters), implement data transformation from localStorage format to PostgreSQL schema, handle nested data structures, create mapping for record metadata, and ensure data type consistency.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 5,
+            "title": "Implement Duplicate Detection and Conflict Resolution",
+            "description": "Create logic to detect and resolve duplicate records during migration",
+            "dependencies": ["19.3", "19.4"],
+            "details": "Implement record deduplication algorithms based on content similarity, create conflict resolution strategies (merge, skip, overwrite), handle timestamp conflicts, provide user choice for resolution methods, and maintain audit trail of resolution decisions.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 6,
+            "title": "Add Batch Processing for Large Datasets",
+            "description": "Implement batch processing capability to handle large migration datasets efficiently",
+            "dependencies": ["19.5"],
+            "details": "Create batch processing engine with configurable batch sizes, implement memory management for large datasets, add database transaction management, create checkpoint/resume functionality, and optimize database connection pooling for batch operations.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 7,
+            "title": "Create Progress Reporting and Error Logging",
+            "description": "Implement comprehensive progress tracking and error logging for migration operations",
+            "dependencies": ["19.6"],
+            "details": "Create progress bar and status reporting, implement detailed error logging with categorization, add migration statistics reporting, create rollback capability documentation, generate migration summary reports, and implement email notifications for completion status.",
+            "status": "pending",
+            "testStrategy": ""
+          }
+        ]
+      },
+      {
+        "id": 20,
+        "title": "Setup E2E Testing for MVP API and Authentication",
+        "description": "Extend E2E test suite to cover API endpoints and authentication flows",
+        "details": "Add Playwright tests for Google OAuth flow, API CRUD operations, user settings management, data export/import, error scenarios, and multi-user data isolation. Include performance testing and load testing setup.",
+        "testStrategy": "Comprehensive E2E test suite covering all user journeys, API contract validation, performance benchmarks, and security verification",
+        "priority": "medium",
+        "dependencies": [15, 16],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Setup Playwright Test Environment for Authentication",
+            "description": "Configure Playwright test environment with Google OAuth mocking and authentication test utilities",
+            "dependencies": [],
+            "details": "Setup Playwright configuration for authentication testing, create test utilities for OAuth flow mocking, configure test data isolation, and setup authentication state management for tests. Include environment variables for test OAuth credentials and mock server configuration.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "Implement Google OAuth E2E Flow Tests",
+            "description": "Create comprehensive E2E tests for Google OAuth authentication flow including login, logout, and token refresh",
+            "dependencies": ["20.1"],
+            "details": "Implement Playwright tests for complete OAuth flow: login initiation, Google consent screen handling, callback processing, JWT token validation, refresh token rotation, and logout. Include error scenarios like denied consent and expired tokens.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "Create API Contract Testing Suite",
+            "description": "Implement API contract tests for all REST endpoints using Playwright API testing capabilities",
+            "dependencies": ["20.1"],
+            "details": "Create comprehensive API tests for all endpoints: authentication routes, record CRUD operations, tag management, user settings, and data export/import. Include request/response validation, error handling verification, and API contract compliance testing.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 4,
+            "title": "Implement Multi-User Data Isolation Tests",
+            "description": "Create tests to verify complete data isolation between different users in the system",
+            "dependencies": ["20.2", "20.3"],
+            "details": "Implement E2E tests with multiple user sessions to verify data isolation: records, tags, settings, and export data. Test concurrent user operations, data leakage prevention, and user-specific data access controls.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 5,
+            "title": "Setup Performance and Load Testing Framework",
+            "description": "Configure performance testing framework and implement load testing for critical user journeys",
+            "dependencies": ["20.3"],
+            "details": "Setup performance testing with Playwright metrics collection, implement load testing for authentication flow, API operations, and data export/import. Include response time benchmarks, concurrent user testing, and database performance under load.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 6,
+            "title": "Create Error Scenario and Edge Case Testing",
+            "description": "Implement comprehensive error handling and edge case testing for all critical flows",
+            "dependencies": ["20.2", "20.3"],
+            "details": "Create tests for error scenarios: network failures, invalid tokens, database connection issues, malformed API requests, rate limiting, and unexpected server responses. Include recovery testing and graceful degradation verification.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 7,
+            "title": "Implement Data Export/Import E2E Validation",
+            "description": "Create comprehensive E2E tests for data export and import functionality with validation",
+            "dependencies": ["20.4"],
+            "details": "Implement E2E tests for complete export/import cycle: data export in various formats, file integrity validation, import process verification, data consistency checks, and error handling for corrupted imports. Include large dataset testing and format compatibility verification.",
+            "status": "pending",
+            "testStrategy": ""
+          }
+        ]
+      }
+    ],
+    "metadata": {
+      "created": "2025-09-21T07:42:47.545Z",
+      "updated": "2025-09-21T07:42:47.545Z",
+      "description": "Tasks for mvp context"
+    }
+  }
+}
