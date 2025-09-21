@@ -5,6 +5,7 @@
   "workspaces": [
     "packages/domain",
     "packages/application",
+    "packages/backend",
     "packages/infrastructure/localStorage",
     "packages/presentation/web",
     "packages/presentation/cli",
