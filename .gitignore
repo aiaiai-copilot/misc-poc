@@ -52,4 +52,8 @@ e2e/downloads/
 
 # Task files
 # tasks.json
-# tasks/ 
+# tasks/
+
+# Docker data volumes
+data/
+!data/.gitkeep

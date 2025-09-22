@@ -35,7 +35,17 @@
     "all": "echo 'Use: yarn test, yarn lint, yarn typecheck, yarn build, or yarn clean'",
     "lint": "yarn exec eslint packages/shared/src --ext .ts; yarn exec eslint packages/domain/src --ext .ts; yarn exec eslint packages/application/src --ext .ts; yarn exec eslint packages/infrastructure/localStorage/src --ext .ts; echo 'CLI: No src directory found, skipping lint'; test -d packages/presentation/web/src && yarn exec eslint packages/presentation/web/src --ext .ts,.tsx || echo 'Presentation web: No src directory found, skipping lint'",
     "typecheck": "yarn workspace @misc-poc/shared typecheck; yarn workspace @misc-poc/domain typecheck; yarn workspace @misc-poc/application typecheck; yarn workspace @misc-poc/infrastructure-localstorage typecheck; yarn workspace @misc-poc/presentation-cli typecheck; yarn workspace @misc-poc/presentation-web typecheck",
-    "docs:check": "node scripts/docs/sync-check.js"
+    "docs:check": "node scripts/docs/sync-check.js",
+    "db:test:start": "./scripts/test-db-setup.sh start",
+    "db:test:stop": "./scripts/test-db-setup.sh stop",
+    "db:test:restart": "./scripts/test-db-setup.sh restart",
+    "db:test:reset": "./scripts/test-db-setup.sh reset",
+    "db:test:status": "./scripts/test-db-setup.sh status",
+    "db:health": "./scripts/db-health-check.sh",
+    "db:health:test": "./scripts/db-health-check.sh --test",
+    "db:health:monitor": "./scripts/db-health-check.sh --monitor",
+    "db:wait": "./scripts/wait-for-db.sh",
+    "db:wait:test": "./scripts/wait-for-db.sh --test"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.10.2",

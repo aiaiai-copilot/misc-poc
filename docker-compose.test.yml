@@ -1,0 +1,73 @@
+services:
+  postgres-test:
+    image: postgres:15
+    container_name: misc-poc-postgres-test
+    restart: "no"  # Don't restart for tests
+    ports:
+      - "5433:5432"  # Different port to avoid conflicts
+    environment:
+      POSTGRES_DB: ${POSTGRES_TEST_DB:-misc_poc_test}
+      POSTGRES_USER: ${POSTGRES_TEST_USER:-postgres_test}
+      POSTGRES_PASSWORD: ${POSTGRES_TEST_PASSWORD:-test_password}
+      # Fast startup options for CI/CD
+      POSTGRES_INITDB_ARGS: "--auth-host=trust --auth-local=trust"
+      # Minimal performance settings for faster startup
+      POSTGRES_SHARED_BUFFERS: 128MB
+      POSTGRES_MAX_CONNECTIONS: 20
+      POSTGRES_EFFECTIVE_CACHE_SIZE: 256MB
+      # Disable fsync for faster testing (data integrity not critical in tests)
+      POSTGRES_FSYNC: "off"
+      POSTGRES_SYNCHRONOUS_COMMIT: "off"
+      POSTGRES_FULL_PAGE_WRITES: "off"
+    volumes:
+      - postgres_test_data:/var/lib/postgresql/data
+      - ./scripts/test-init-db:/docker-entrypoint-initdb.d
+      # Use tmpfs for faster test performance
+      - type: tmpfs
+        target: /tmp
+        tmpfs:
+          size: 50M
+    networks:
+      - misc-poc-test-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_TEST_USER:-postgres_test} -d ${POSTGRES_TEST_DB:-misc_poc_test}"]
+      interval: 5s  # Faster health checks for tests
+      timeout: 3s
+      retries: 3
+      start_period: 10s  # Shorter start period for tests
+    # Security and performance optimizations for testing
+    user: "999:999"
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /run/postgresql:size=50M,uid=999,gid=999,mode=0755
+    # Fast startup command optimizations for testing
+    command: >
+      postgres
+      -c log_statement=none
+      -c log_destination=stderr
+      -c log_min_duration_statement=-1
+      -c log_connections=off
+      -c log_disconnections=off
+      -c fsync=off
+      -c synchronous_commit=off
+      -c full_page_writes=off
+      -c checkpoint_segments=32
+      -c checkpoint_completion_target=0.9
+      -c wal_buffers=16MB
+
+volumes:
+  postgres_test_data:
+    driver: local
+    # Use tmpfs for test data for faster performance and automatic cleanup
+    driver_opts:
+      type: tmpfs
+      device: tmpfs
+
+networks:
+  misc-poc-test-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.21.0.0/16
+          gateway: 172.21.0.1
