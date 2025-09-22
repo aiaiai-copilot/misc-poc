@@ -184,8 +184,17 @@ describe('Docker Compose Test Configuration', () => {
     );
     expect(fs.existsSync(testSetupPath)).toBe(true);
 
-    // Check if script is executable
+    // Check if script is executable (cross-platform)
     const stats = fs.statSync(testSetupPath);
-    expect(stats.mode & parseInt('111', 8)).toBeTruthy(); // Check execute permissions
+
+    // On Windows, all files are considered executable if they exist
+    // On Unix systems, check actual execute permissions
+    if (process.platform === 'win32') {
+      // On Windows, just verify the file exists and has content
+      expect(stats.size).toBeGreaterThan(0);
+    } else {
+      // On Unix systems, check execute permissions
+      expect(stats.mode & parseInt('111', 8)).toBeTruthy();
+    }
   });
 });
