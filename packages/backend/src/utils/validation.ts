@@ -5,6 +5,17 @@ import { z } from 'zod';
 import type { Request, Response, NextFunction } from 'express';
 
 /**
+ * Extend Express Request interface to include validated data
+ */
+declare global {
+  namespace Express {
+    interface Request {
+      validated?: unknown;
+    }
+  }
+}
+
+/**
  * Express middleware factory for validating request data with Zod schemas
  */
 export const validateRequest = <T>(
@@ -36,7 +47,7 @@ export const validateRequest = <T>(
       }
 
       // Attach validated data to request object
-      (req as Record<string, unknown>).validated = result.data;
+      req.validated = result.data;
       next();
     } catch {
       res.status(500).json({
