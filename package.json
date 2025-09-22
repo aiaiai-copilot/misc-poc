@@ -40,7 +40,12 @@
     "db:test:stop": "./scripts/test-db-setup.sh stop",
     "db:test:restart": "./scripts/test-db-setup.sh restart",
     "db:test:reset": "./scripts/test-db-setup.sh reset",
-    "db:test:status": "./scripts/test-db-setup.sh status"
+    "db:test:status": "./scripts/test-db-setup.sh status",
+    "db:health": "./scripts/db-health-check.sh",
+    "db:health:test": "./scripts/db-health-check.sh --test",
+    "db:health:monitor": "./scripts/db-health-check.sh --monitor",
+    "db:wait": "./scripts/wait-for-db.sh",
+    "db:wait:test": "./scripts/wait-for-db.sh --test"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.10.2",
