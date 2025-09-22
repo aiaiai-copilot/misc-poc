@@ -1,7 +1,7 @@
 -- Test Database Initialization Script
 -- This script sets up the test database with minimal configuration
 
--- Create test schema if it doesn't exist
+-- Create test schema if it does not exist
 CREATE SCHEMA IF NOT EXISTS test_schema;
 
 -- Set search path to include test schema
