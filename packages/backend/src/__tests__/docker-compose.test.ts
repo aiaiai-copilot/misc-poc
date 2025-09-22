@@ -52,9 +52,16 @@ describe('Docker Compose Configuration', () => {
     expect(postgres.volumes).toContain(
       'postgres_data:/var/lib/postgresql/data'
     );
+    expect(postgres.volumes).toContain(
+      'postgres_backup:/var/lib/postgresql/backups'
+    );
 
     // Check networks
-    expect(postgres.networks).toContain('misc-poc-network');
+    expect(postgres.networks).toBeDefined();
+    expect(postgres.networks['misc-poc-network']).toBeDefined();
+    expect(postgres.networks['misc-poc-network'].ipv4_address).toBe(
+      '172.20.0.10'
+    );
 
     // Check health check
     expect(postgres.healthcheck).toBeDefined();
@@ -72,6 +79,9 @@ describe('Docker Compose Configuration', () => {
     expect(config.volumes).toBeDefined();
     expect(config.volumes.postgres_data).toBeDefined();
     expect(config.volumes.postgres_data.driver).toBe('local');
+
+    expect(config.volumes.postgres_backup).toBeDefined();
+    expect(config.volumes.postgres_backup.driver).toBe('local');
   });
 
   test('should define required networks', () => {
@@ -81,6 +91,16 @@ describe('Docker Compose Configuration', () => {
     expect(config.networks).toBeDefined();
     expect(config.networks['misc-poc-network']).toBeDefined();
     expect(config.networks['misc-poc-network'].driver).toBe('bridge');
+
+    // Check IPAM configuration
+    expect(config.networks['misc-poc-network'].ipam).toBeDefined();
+    expect(config.networks['misc-poc-network'].ipam.config).toBeDefined();
+    expect(config.networks['misc-poc-network'].ipam.config[0].subnet).toBe(
+      '172.20.0.0/16'
+    );
+    expect(config.networks['misc-poc-network'].ipam.config[0].gateway).toBe(
+      '172.20.0.1'
+    );
   });
 
   test('should have performance and development settings', () => {
@@ -103,15 +123,20 @@ describe('Docker Compose Configuration', () => {
     expect(postgres.command).toContain('log_connections=on');
   });
 
-  test('should validate with docker-compose config', () => {
+  test('should validate with docker compose config', () => {
     // This test requires Docker to be installed and running
     // Skip if Docker is not available
     try {
       execSync('docker --version', { stdio: 'ignore' });
-      execSync('docker-compose --version', { stdio: 'ignore' });
+      // Try newer 'docker compose' command first, fall back to 'docker-compose'
+      try {
+        execSync('docker compose version', { stdio: 'ignore' });
+      } catch {
+        execSync('docker-compose --version', { stdio: 'ignore' });
+      }
     } catch (error) {
       console.warn(
-        'Docker or docker-compose not available, skipping validation test'
+        'Docker or docker compose not available, skipping validation test'
       );
       return;
     }
@@ -119,10 +144,19 @@ describe('Docker Compose Configuration', () => {
     const projectRoot = path.join(__dirname, '../../../..');
 
     expect(() => {
-      execSync('docker-compose config', {
-        cwd: projectRoot,
-        stdio: 'ignore',
-      });
+      try {
+        // Try newer 'docker compose' command first
+        execSync('docker compose config', {
+          cwd: projectRoot,
+          stdio: 'ignore',
+        });
+      } catch {
+        // Fall back to older 'docker-compose' command
+        execSync('docker-compose config', {
+          cwd: projectRoot,
+          stdio: 'ignore',
+        });
+      }
     }).not.toThrow();
   });
 });
