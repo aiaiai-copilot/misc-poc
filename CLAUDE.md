@@ -42,6 +42,7 @@ tm set-status --id=<id> --status=in-progress
 - Make focused commits with clear messages
 - Run tests before completion
 - Follow TDD approach when applicable
+- **MANDATORY**: After each subtask completion, ALWAYS commit changes and ask for user's manual testing approval before proceeding
 
 ### 3. Task Completion (AUTOMATICALLY do ALL of these)
 
@@ -143,6 +144,19 @@ git pull origin main
 ```
 
 **Key Principle: Task work (including status updates) stays on task branch until task is fully complete and merged.**
+
+## MANDATORY SUBTASK WORKFLOW
+
+### After Each Subtask Completion:
+
+1. **Complete the subtask implementation**
+2. **Ask user**: "Do you want to test manually before committing?"
+3. **Wait for user confirmation**
+4. **ONLY AFTER user approval**: Commit the changes
+5. **Update subtask status**: `tm set-status --id=<subtask-id> --status=done`
+6. **Continue to next subtask or complete main task**
+
+**This workflow applies to EVERY subtask - no exceptions. Never commit without asking for manual testing approval first.**
 
 ## E2E Test Requirements for UI/UX Changes
 
