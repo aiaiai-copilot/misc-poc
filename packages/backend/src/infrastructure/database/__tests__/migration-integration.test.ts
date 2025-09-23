@@ -1,51 +1,84 @@
 import { DataSource, QueryRunner } from 'typeorm';
-import { TestDataSource } from '../data-source.js';
+import {
+  PostgreSqlContainer,
+  StartedPostgreSqlContainer,
+} from '@testcontainers/postgresql';
 import { CreateUsersTable1758589440121 } from '../migrations/1758589440121-CreateUsersTable.js';
 
 /**
- * Integration tests for database migration execution
+ * Integration tests for database migration execution using Testcontainers
  * Following TDD contract specifications from PRD section 4.2.2
+ *
+ * Now uses Testcontainers for reliable, isolated PostgreSQL testing
  */
-describe('Database Migration Contract - Integration Tests', () => {
+describe('Database Migration Contract - Integration Tests with Testcontainers', () => {
+  let container: StartedPostgreSqlContainer;
   let dataSource: DataSource;
   let queryRunner: QueryRunner;
 
-  beforeAll(async () => {
-    // Use test database for integration tests
-    dataSource = TestDataSource;
+  // Increase timeout for container operations
+  jest.setTimeout(120000);
 
-    // Skip if no test database available
-    if (!process.env.POSTGRES_TEST_PASSWORD) {
-      console.warn('Skipping integration tests - no test database configured');
-      return;
-    }
+  beforeAll(async () => {
+    console.log(
+      '🐳 Starting PostgreSQL container for migration integration tests...'
+    );
 
     try {
+      // Start PostgreSQL container with Testcontainers
+      container = await new PostgreSqlContainer('postgres:15')
+        .withDatabase('migration_test')
+        .withUsername('test_user')
+        .withPassword('test_password')
+        .start();
+
+      console.log(
+        `✅ PostgreSQL container started: ${container.getHost()}:${container.getMappedPort(5432)}`
+      );
+
+      // Create DataSource with dynamic container configuration
+      dataSource = new DataSource({
+        type: 'postgres',
+        host: container.getHost(),
+        port: container.getMappedPort(5432),
+        database: container.getDatabase(),
+        username: container.getUsername(),
+        password: container.getPassword(),
+        synchronize: false,
+        dropSchema: false,
+        logging: ['error'], // Reduce test noise
+        entities: [],
+        migrations: [], // We'll test individual migrations
+        migrationsTableName: 'migrations',
+      });
+
       await dataSource.initialize();
       queryRunner = dataSource.createQueryRunner();
+
+      console.log('✅ Migration integration test environment ready');
     } catch (error) {
-      console.warn(
-        'Skipping integration tests - database connection failed:',
-        error
-      );
+      console.error('Failed to initialize test environment:', error);
+      throw error;
     }
   });
 
   afterAll(async () => {
+    console.log('🧹 Cleaning up test resources...');
+
     if (queryRunner) {
       await queryRunner.release();
     }
     if (dataSource?.isInitialized) {
       await dataSource.destroy();
     }
+    if (container) {
+      await container.stop();
+      console.log('✅ PostgreSQL container stopped');
+    }
   });
 
   beforeEach(async () => {
-    if (!queryRunner) {
-      return; // Skip test if no database connection
-    }
-
-    // Clean up any existing users table
+    // Clean up any existing users table for fresh state
     try {
       await queryRunner.dropTable('users', true); // ifExists = true
     } catch {
@@ -55,10 +88,6 @@ describe('Database Migration Contract - Integration Tests', () => {
 
   describe('Migration Execution', () => {
     it('should run migration and track in migrations table', async () => {
-      if (!queryRunner) {
-        return; // Skip test if no database connection
-      }
-
       const migration = new CreateUsersTable1758589440121();
 
       // Act: Run the migration
@@ -81,10 +110,6 @@ describe('Database Migration Contract - Integration Tests', () => {
     });
 
     it('should create proper indexes for optimization', async () => {
-      if (!queryRunner) {
-        return; // Skip test if no database connection
-      }
-
       const migration = new CreateUsersTable1758589440121();
 
       // Act: Run the migration
@@ -119,10 +144,6 @@ describe('Database Migration Contract - Integration Tests', () => {
     });
 
     it('should create constraints for data integrity', async () => {
-      if (!queryRunner) {
-        return; // Skip test if no database connection
-      }
-
       const migration = new CreateUsersTable1758589440121();
 
       // Act: Run the migration
@@ -158,10 +179,6 @@ describe('Database Migration Contract - Integration Tests', () => {
     });
 
     it('should enforce data validation constraints', async () => {
-      if (!queryRunner) {
-        return; // Skip test if no database connection
-      }
-
       const migration = new CreateUsersTable1758589440121();
       await migration.up(queryRunner);
 
@@ -191,10 +208,6 @@ describe('Database Migration Contract - Integration Tests', () => {
     });
 
     it('should prevent duplicate migration execution', async () => {
-      if (!queryRunner) {
-        return; // Skip test if no database connection
-      }
-
       const migration = new CreateUsersTable1758589440121();
 
       // Act: Run migration twice
@@ -207,10 +220,6 @@ describe('Database Migration Contract - Integration Tests', () => {
 
   describe('Migration Rollback', () => {
     it('should rollback migration and remove all artifacts', async () => {
-      if (!queryRunner) {
-        return; // Skip test if no database connection
-      }
-
       const migration = new CreateUsersTable1758589440121();
 
       // Setup: Run migration first
@@ -226,10 +235,6 @@ describe('Database Migration Contract - Integration Tests', () => {
     });
 
     it('should handle rollback in reverse chronological order', async () => {
-      if (!queryRunner) {
-        return; // Skip test if no database connection
-      }
-
       const migration = new CreateUsersTable1758589440121();
 
       // Setup: Run migration first
@@ -243,10 +248,6 @@ describe('Database Migration Contract - Integration Tests', () => {
     });
 
     it('should handle data preservation during rollback', async () => {
-      if (!queryRunner) {
-        return; // Skip test if no database connection
-      }
-
       const migration = new CreateUsersTable1758589440121();
 
       // Setup: Run migration and add test data
@@ -266,10 +267,6 @@ describe('Database Migration Contract - Integration Tests', () => {
 
   describe('Migration Safety', () => {
     it('should use transactions for migration operations', async () => {
-      if (!queryRunner) {
-        return; // Skip test if no database connection
-      }
-
       const migration = new CreateUsersTable1758589440121();
 
       // Act: Run migration (implicitly uses transaction in TypeORM)
@@ -280,10 +277,6 @@ describe('Database Migration Contract - Integration Tests', () => {
     });
 
     it('should validate schema after migration', async () => {
-      if (!queryRunner) {
-        return; // Skip test if no database connection
-      }
-
       const migration = new CreateUsersTable1758589440121();
 
       // Act: Run migration
@@ -311,10 +304,6 @@ describe('Database Migration Contract - Integration Tests', () => {
     });
 
     it('should handle migration failure gracefully', async () => {
-      if (!queryRunner) {
-        return; // Skip test if no database connection
-      }
-
       // Create a scenario that might fail (table already exists without IF NOT EXISTS)
       await queryRunner.query(`
         CREATE TABLE users (id SERIAL PRIMARY KEY)
@@ -329,10 +318,6 @@ describe('Database Migration Contract - Integration Tests', () => {
 
   describe('Migration Execution Order', () => {
     it('should execute migration operations in correct sequence', async () => {
-      if (!queryRunner) {
-        return; // Skip test if no database connection
-      }
-
       const migration = new CreateUsersTable1758589440121();
 
       // Act: Run migration

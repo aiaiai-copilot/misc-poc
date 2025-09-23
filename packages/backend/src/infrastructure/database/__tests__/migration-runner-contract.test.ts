@@ -1,8 +1,11 @@
 import { DataSource } from 'typeorm';
-import { TestDataSource } from '../data-source.js';
+import {
+  PostgreSqlContainer,
+  StartedPostgreSqlContainer,
+} from '@testcontainers/postgresql';
 
 /**
- * Contract tests for migration runner system
+ * Contract tests for migration runner system using Testcontainers
  * Following TDD specifications from PRD section 4.2.2
  *
  * These tests define the contract for migration execution system:
@@ -11,41 +14,70 @@ import { TestDataSource } from '../data-source.js';
  * - Rollback capabilities
  * - Transaction safety
  * - Checksum validation
+ *
+ * Now uses Testcontainers for reliable, isolated testing
  */
-describe('Migration Runner Contract Tests', () => {
+describe('Migration Runner Contract Tests with Testcontainers', () => {
+  let container: StartedPostgreSqlContainer;
   let dataSource: DataSource;
 
-  beforeAll(async () => {
-    dataSource = TestDataSource;
+  // Increase timeout for container operations
+  jest.setTimeout(120000);
 
-    if (!process.env.POSTGRES_TEST_PASSWORD) {
-      console.warn(
-        'Skipping migration runner tests - no test database configured'
-      );
-      return;
-    }
+  beforeAll(async () => {
+    console.log(
+      '🐳 Starting PostgreSQL container for migration runner contract tests...'
+    );
 
     try {
-      await dataSource.initialize();
-    } catch (error) {
-      console.warn(
-        'Skipping migration runner tests - database connection failed:',
-        error
+      // Start PostgreSQL container
+      container = await new PostgreSqlContainer('postgres:15')
+        .withDatabase('contract_test')
+        .withUsername('test_user')
+        .withPassword('test_password')
+        .start();
+
+      console.log(
+        `✅ PostgreSQL container started: ${container.getHost()}:${container.getMappedPort(5432)}`
       );
+
+      // Create DataSource with dynamic configuration
+      dataSource = new DataSource({
+        type: 'postgres',
+        host: container.getHost(),
+        port: container.getMappedPort(5432),
+        database: container.getDatabase(),
+        username: container.getUsername(),
+        password: container.getPassword(),
+        synchronize: false,
+        dropSchema: false,
+        logging: ['error'],
+        entities: [],
+        migrations: ['src/migrations/*.ts'],
+        migrationsTableName: 'migrations',
+      });
+
+      await dataSource.initialize();
+      console.log('✅ Migration runner contract test environment ready');
+    } catch (error) {
+      console.error('Failed to initialize test environment:', error);
+      throw error;
     }
   });
 
   afterAll(async () => {
+    console.log('🧹 Cleaning up contract test resources...');
+
     if (dataSource?.isInitialized) {
       await dataSource.destroy();
+    }
+    if (container) {
+      await container.stop();
+      console.log('✅ PostgreSQL container stopped');
     }
   });
 
   beforeEach(async () => {
-    if (!dataSource?.isInitialized) {
-      return;
-    }
-
     // Clean up migration history for isolated tests
     const queryRunner = dataSource.createQueryRunner();
     try {
