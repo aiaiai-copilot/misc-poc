@@ -235,6 +235,180 @@ For EVERY UI change, ensure tests cover:
 
 Refer to `e2e/README.md` for detailed guidelines and examples.
 
+## 🧪 CRITICAL: Testing Strategy Guidelines
+
+### 🚨 MANDATORY TEST CLASSIFICATION 🚨
+
+**NEVER create "integration tests" using mocks - these are unit tests!**
+
+#### Test Type Decision Matrix
+
+| What are you testing?           | Dependencies    | Test Type            | Tools to Use                      |
+| ------------------------------- | --------------- | -------------------- | --------------------------------- |
+| Individual function/class logic | Mocked          | **Unit Test**        | Jest + Mocks                      |
+| Database interactions           | Real PostgreSQL | **Integration Test** | Jest + Testcontainers             |
+| API endpoints with DB           | Real DB + HTTP  | **Integration Test** | Jest + Testcontainers + Supertest |
+| Migration behavior              | Real PostgreSQL | **Integration Test** | Jest + Testcontainers             |
+| Cross-service communication     | Real services   | **Contract Test**    | Jest + Testcontainers             |
+
+#### 🔍 INTEGRATION TEST DETECTION
+
+**Automatically use Testcontainers when testing:**
+
+- ✅ Database migrations (`up()`, `down()` methods)
+- ✅ Database queries (`QueryRunner`, `Repository` operations)
+- ✅ Schema validation (tables, indexes, constraints)
+- ✅ Database connections and configurations
+- ✅ Transaction behavior
+- ✅ Data integrity and constraints
+- ✅ Performance with real data volumes
+
+#### 📁 File Naming Convention
+
+```bash
+# Unit tests (isolated logic with mocks)
+*.test.ts
+*-unit.test.ts
+
+# Integration tests (real dependencies)
+*-integration.test.ts
+*-contract.test.ts
+
+# End-to-end tests
+*.e2e.test.ts
+*.spec.ts
+```
+
+### 🏗️ Integration Test Template
+
+**ALWAYS start integration tests with this template:**
+
+```typescript
+import {
+  PostgreSqlContainer,
+  StartedPostgreSqlContainer,
+} from '@testcontainers/postgresql';
+import { DataSource } from 'typeorm';
+
+describe('Feature Integration Tests', () => {
+  let container: StartedPostgreSqlContainer;
+  let dataSource: DataSource;
+
+  beforeAll(async () => {
+    // 🐳 MANDATORY: Real PostgreSQL container
+    container = await new PostgreSqlContainer('postgres:15').start();
+
+    dataSource = new DataSource({
+      type: 'postgres',
+      host: container.getHost(),
+      port: container.getMappedPort(5432),
+      database: container.getDatabase(),
+      username: container.getUsername(),
+      password: container.getPassword(),
+      // ... real configuration
+    });
+
+    await dataSource.initialize();
+  });
+
+  afterAll(async () => {
+    await dataSource?.destroy();
+    await container?.stop();
+  });
+
+  // ... real integration tests
+});
+```
+
+### 🚫 ANTI-PATTERNS TO AVOID
+
+#### ❌ WRONG: Mock-based "Integration" Test
+
+```typescript
+// DON'T DO THIS - This is a unit test disguised as integration test
+describe('Migration Integration Test', () => {
+  const mockQueryRunner = {
+    createTable: jest.fn(),
+    // ... more mocks
+  };
+
+  it('should run migration', async () => {
+    await migration.up(mockQueryRunner as any); // ❌ FAKE INTEGRATION
+  });
+});
+```
+
+#### ✅ CORRECT: Real Integration Test
+
+```typescript
+// DO THIS - Real database testing
+describe('Migration Integration Test', () => {
+  let container: StartedPostgreSqlContainer;
+  let queryRunner: QueryRunner;
+
+  beforeAll(async () => {
+    container = await new PostgreSqlContainer('postgres:15').start();
+    // ... real setup
+  });
+
+  it('should run migration on real database', async () => {
+    await migration.up(queryRunner); // ✅ REAL INTEGRATION
+
+    // Verify with real database queries
+    const table = await queryRunner.getTable('users');
+    expect(table).toBeDefined();
+  });
+});
+```
+
+### 🔍 PRE-CREATION CHECKLIST
+
+**Before creating ANY test file, ask these questions:**
+
+1. **□ Does this test interact with a database?** → Use Testcontainers
+2. **□ Does this test verify schema, migrations, or queries?** → Use Testcontainers
+3. **□ Does the filename contain "integration" or "contract"?** → Use Testcontainers
+4. **□ Am I testing real system behavior?** → Use Testcontainers
+5. **□ Am I testing isolated logic only?** → Use mocks
+
+### 🛡️ VALIDATION RULES
+
+#### Automatic Red Flags
+
+- File named `*integration.test.ts` without `@testcontainers` import
+- Testing `QueryRunner`, `DataSource`, or migration classes with mocks
+- Testing database schema/constraints with fake objects
+- Using `jest.fn()` for database operations that should be real
+
+#### Code Review Checklist
+
+```bash
+# 🚨 Flag integration tests without Testcontainers
+grep -r "integration\.test\.ts" --include="*.ts" | \
+  xargs grep -L "@testcontainers" | \
+  if read; then echo "❌ Integration tests must use Testcontainers"; exit 1; fi
+```
+
+### 📊 TESTING STRATEGY SUMMARY
+
+| Test Level      | Purpose               | Dependencies          | Execution Speed  | Coverage |
+| --------------- | --------------------- | --------------------- | ---------------- | -------- |
+| **Unit**        | Isolated logic        | Mocked                | Fast (ms)        | Wide     |
+| **Integration** | Component interaction | Real (Testcontainers) | Medium (seconds) | Deep     |
+| **E2E**         | Full user flows       | Real (all services)   | Slow (minutes)   | Complete |
+
+### 🎯 QUALITY GATES
+
+**All tests must pass these gates before commit:**
+
+1. **Type Safety**: No `any` types in test code
+2. **Cleanup**: Proper resource disposal (`afterAll`, `beforeEach`)
+3. **Isolation**: Tests don't depend on each other
+4. **Assertions**: Clear, specific expectations
+5. **Performance**: Integration tests complete within 30 seconds
+
+**Remember: If you're testing how code interacts with real systems, use real systems!**
+
 ## Task Master AI Instructions
 
 **Import Task Master's development workflow commands and guidelines, treat as if import is in the main CLAUDE.md file.**

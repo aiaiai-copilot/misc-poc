@@ -1,6 +1,7 @@
 {
   "name": "misc-poc",
   "version": "1.0.0",
+  "type": "module",
   "private": true,
   "workspaces": [
     "packages/domain",
@@ -45,7 +46,9 @@
     "db:health:test": "./scripts/db-health-check.sh --test",
     "db:health:monitor": "./scripts/db-health-check.sh --monitor",
     "db:wait": "./scripts/wait-for-db.sh",
-    "db:wait:test": "./scripts/wait-for-db.sh --test"
+    "db:wait:test": "./scripts/wait-for-db.sh --test",
+    "test:validate": "node scripts/validate-test-types.js",
+    "pre-commit:test-validation": "node scripts/validate-test-types.js"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.10.2",
