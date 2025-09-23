@@ -53,6 +53,11 @@ yarn build && yarn typecheck && yarn lint && yarn test
 # Mark task complete FIRST (before final commit)
 tm set-status --id=<id> --status=done
 
+# 🚨 MANDATORY PRE-COMMIT APPROVAL 🚨
+# ASK USER: "Do you want to test manually before committing?"
+# ⚠️ STOP AND WAIT FOR USER RESPONSE - DO NOT PROCEED ⚠️
+# ONLY AFTER EXPLICIT USER APPROVAL:
+
 # Commit final changes INCLUDING task status
 git add .
 git commit -m "feat: implement task #<id> - <brief description>"
@@ -161,10 +166,11 @@ git pull origin main
    - `yarn lint` - Fix any linting errors
    - `yarn test` - Ensure all tests pass
 3. **Ask user**: "Do you want to test manually before committing?"
-4. **Wait for user confirmation**
-5. **ONLY AFTER user approval**: Commit the changes
-6. **Update subtask status**: `tm set-status --id=<subtask-id> --status=done`
-7. **Continue to next subtask or complete main task**
+4. **⚠️ STOP AND WAIT FOR USER RESPONSE - DO NOT PROCEED ⚠️**
+5. **ONLY AFTER EXPLICIT USER APPROVAL**: Commit the changes
+
+**❌ NEVER run `git add` or `git commit` without user approval**
+**✅ ALWAYS wait for user to say "yes" or "proceed" before committing** 6. **Update subtask status**: `tm set-status --id=<subtask-id> --status=done` 7. **Continue to next subtask or complete main task**
 
 **❗ CRITICAL: NEVER commit if ANY of the build validation commands fail. Fix all errors first.**
 
