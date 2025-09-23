@@ -409,6 +409,77 @@ grep -r "integration\.test\.ts" --include="*.ts" | \
 
 **Remember: If you're testing how code interacts with real systems, use real systems!**
 
+## 📚 CRITICAL: Library Documentation and Context
+
+### 🔍 Context7 MCP Integration
+
+**ALWAYS use Context7 MCP to get up-to-date documentation for libraries and tools!**
+
+#### When to Use Context7 MCP
+
+Before implementing any feature using external libraries or frameworks:
+
+1. **□ New library integration** → Use `mcp__context7__resolve-library-id` then `mcp__context7__get-library-docs`
+2. **□ Unfamiliar API patterns** → Get fresh documentation with examples
+3. **□ Version-specific features** → Ensure compatibility with project versions
+4. **□ Complex configurations** → Get authoritative setup guides
+5. **□ Best practices** → Access current recommended patterns
+
+#### Context7 Workflow
+
+```bash
+# Step 1: Resolve library name to Context7-compatible ID
+mcp__context7__resolve-library-id("typeorm")
+
+# Step 2: Get comprehensive documentation
+mcp__context7__get-library-docs("/typeorm/typeorm", {
+  topic: "migrations", // Optional: focus on specific area
+  tokens: 8000        // Optional: more context for complex topics
+})
+```
+
+#### Common Libraries in This Project
+
+Pre-resolved Context7 IDs for quick reference:
+
+- **TypeORM**: `/typeorm/typeorm`
+- **Jest**: `/jestjs/jest`
+- **Testcontainers**: `/testcontainers/testcontainers-node`
+- **Playwright**: `/microsoft/playwright`
+- **Node.js**: `/nodejs/node`
+
+#### Integration with Development Workflow
+
+**Before writing code that uses external libraries:**
+
+1. Get current documentation via Context7 MCP
+2. Review examples and best practices
+3. Implement following authoritative patterns
+4. Avoid assumptions about API behavior
+
+**This ensures:**
+
+- ✅ Current, accurate implementation patterns
+- ✅ Compatibility with project versions
+- ✅ Adherence to documented best practices
+- ✅ Reduced debugging from outdated examples
+
+#### Example Usage
+
+```typescript
+// Before implementing TypeORM migrations:
+// 1. Get TypeORM migration docs via Context7
+// 2. Follow current migration patterns
+// 3. Use up-to-date API methods
+
+// This prevents outdated patterns like:
+// - Deprecated migration methods
+// - Incorrect configuration options
+// - Missing error handling patterns
+```
+
+**Remember: Fresh documentation prevents implementation errors and ensures compatibility!**
+
 ## Task Master AI Instructions
 
 **Import Task Master's development workflow commands and guidelines, treat as if import is in the main CLAUDE.md file.**
