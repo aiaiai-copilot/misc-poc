@@ -123,6 +123,13 @@ yarn test:validate
 
 ### Future Sessions
 
+**Before ANY development using external libraries:**
+
+1. **Use Context7 MCP** to get current documentation (TypeORM, React, Jest, Playwright, etc.)
+2. **For database testing:** Follow the integration test template with Testcontainers
+3. **For all testing:** Use decision matrix to choose appropriate test type
+4. **Validation runs automatically** on commit
+
 Before creating any test file, ask:
 
 - "Does this test interact with a database?" → Use Testcontainers

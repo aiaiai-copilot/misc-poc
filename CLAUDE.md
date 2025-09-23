@@ -417,13 +417,18 @@ grep -r "integration\.test\.ts" --include="*.ts" | \
 
 #### When to Use Context7 MCP
 
-Before implementing any feature using external libraries or frameworks:
+**MANDATORY for ANY external library or framework usage:**
 
-1. **□ New library integration** → Use `mcp__context7__resolve-library-id` then `mcp__context7__get-library-docs`
-2. **□ Unfamiliar API patterns** → Get fresh documentation with examples
-3. **□ Version-specific features** → Ensure compatibility with project versions
-4. **□ Complex configurations** → Get authoritative setup guides
-5. **□ Best practices** → Access current recommended patterns
+1. **□ Frontend Development** → React, Vite, CSS frameworks, UI libraries
+2. **□ Backend Development** → Express, TypeORM, database drivers, authentication
+3. **□ Testing** → Jest, Playwright, Testcontainers, testing utilities
+4. **□ Build Tools** → Webpack, Vite, ESBuild, TypeScript, bundlers
+5. **□ DevOps/Deployment** → Docker, CI/CD tools, deployment platforms
+6. **□ New library integration** → Any package.json dependency
+7. **□ Unfamiliar API patterns** → Get fresh documentation with examples
+8. **□ Version-specific features** → Ensure compatibility with project versions
+9. **□ Complex configurations** → Get authoritative setup guides
+10. **□ Best practices** → Access current recommended patterns
 
 #### Context7 Workflow
 
@@ -442,15 +447,33 @@ mcp__context7__get-library-docs("/typeorm/typeorm", {
 
 Pre-resolved Context7 IDs for quick reference:
 
+**Backend & Database:**
+
 - **TypeORM**: `/typeorm/typeorm`
+- **Node.js**: `/nodejs/node`
+- **Express**: `/expressjs/express` (if used)
+
+**Frontend:**
+
+- **React**: `/facebook/react`
+- **Vite**: `/vitejs/vite`
+- **TypeScript**: `/microsoft/typescript`
+
+**Testing:**
+
 - **Jest**: `/jestjs/jest`
 - **Testcontainers**: `/testcontainers/testcontainers-node`
 - **Playwright**: `/microsoft/playwright`
-- **Node.js**: `/nodejs/node`
+
+**Build & DevOps:**
+
+- **Docker**: `/docker/docker`
+- **ESLint**: `/eslint/eslint`
+- **Prettier**: `/prettier/prettier`
 
 #### Integration with Development Workflow
 
-**Before writing code that uses external libraries:**
+**Before writing code that uses ANY external libraries or frameworks:**
 
 1. Get current documentation via Context7 MCP
 2. Review examples and best practices
@@ -467,15 +490,23 @@ Pre-resolved Context7 IDs for quick reference:
 #### Example Usage
 
 ```typescript
-// Before implementing TypeORM migrations:
-// 1. Get TypeORM migration docs via Context7
-// 2. Follow current migration patterns
-// 3. Use up-to-date API methods
+// Before implementing ANY feature with external libraries:
+// 1. Get library docs via Context7 MCP
+// 2. Follow current API patterns and best practices
+// 3. Use up-to-date methods and configurations
+
+// Examples:
+// - TypeORM migrations → Get TypeORM docs
+// - React components → Get React docs
+// - Jest testing → Get Jest docs
+// - Express routes → Get Express docs
+// - Playwright E2E → Get Playwright docs
 
 // This prevents outdated patterns like:
-// - Deprecated migration methods
+// - Deprecated API methods
 // - Incorrect configuration options
 // - Missing error handling patterns
+// - Incompatible version usage
 ```
 
 **Remember: Fresh documentation prevents implementation errors and ensures compatibility!**
