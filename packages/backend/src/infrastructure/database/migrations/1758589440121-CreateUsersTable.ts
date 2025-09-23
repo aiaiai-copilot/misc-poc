@@ -1,4 +1,4 @@
-import { MigrationInterface, QueryRunner, Table, Index, Check } from 'typeorm';
+import { MigrationInterface, QueryRunner, Table, TableIndex } from 'typeorm';
 
 /**
  * Create Users Table Migration
@@ -17,7 +17,7 @@ export class CreateUsersTable1758589440121 implements MigrationInterface {
   name = 'CreateUsersTable1758589440121';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
-    // Create users table
+    // Create users table with OAuth fields
     await queryRunner.createTable(
       new Table({
         name: 'users',
@@ -28,6 +28,7 @@ export class CreateUsersTable1758589440121 implements MigrationInterface {
             isPrimary: true,
             generationStrategy: 'uuid',
             default: 'gen_random_uuid()',
+            comment: 'Unique identifier for the user',
           },
           {
             name: 'google_id',
@@ -35,30 +36,34 @@ export class CreateUsersTable1758589440121 implements MigrationInterface {
             length: '255',
             isUnique: true,
             isNullable: false,
+            comment: 'Google OAuth unique identifier',
           },
           {
             name: 'email',
             type: 'varchar',
-            length: '255',
+            length: '320', // RFC 5321 compliant email length
             isNullable: false,
+            comment: "User's email address from Google OAuth",
           },
           {
             name: 'name',
             type: 'varchar',
             length: '255',
             isNullable: false,
+            comment: "User's display name from Google OAuth",
           },
           {
             name: 'profile_picture_url',
-            type: 'varchar',
-            length: '500',
+            type: 'text',
             isNullable: true,
+            comment: "URL to user's profile picture from Google",
           },
           {
             name: 'created_at',
             type: 'timestamp',
             default: 'CURRENT_TIMESTAMP',
             isNullable: false,
+            comment: 'Record creation timestamp',
           },
           {
             name: 'updated_at',
@@ -66,16 +71,32 @@ export class CreateUsersTable1758589440121 implements MigrationInterface {
             default: 'CURRENT_TIMESTAMP',
             onUpdate: 'CURRENT_TIMESTAMP',
             isNullable: false,
+            comment: 'Record last update timestamp',
+          },
+        ],
+        checks: [
+          {
+            name: 'CHK_users_email_format',
+            expression:
+              "email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$'",
+          },
+          {
+            name: 'CHK_users_google_id_not_empty',
+            expression: "google_id IS NOT NULL AND google_id != ''",
+          },
+          {
+            name: 'CHK_users_name_not_empty',
+            expression: "name IS NOT NULL AND name != ''",
           },
         ],
       }),
-      true // ifNotExist
+      true
     );
 
-    // Create indexes for performance
+    // Create indexes for optimized queries
     await queryRunner.createIndex(
       'users',
-      new Index({
+      new TableIndex({
         name: 'IDX_users_google_id',
         columnNames: ['google_id'],
         isUnique: true,
@@ -84,7 +105,7 @@ export class CreateUsersTable1758589440121 implements MigrationInterface {
 
     await queryRunner.createIndex(
       'users',
-      new Index({
+      new TableIndex({
         name: 'IDX_users_email',
         columnNames: ['email'],
       })
@@ -92,54 +113,20 @@ export class CreateUsersTable1758589440121 implements MigrationInterface {
 
     await queryRunner.createIndex(
       'users',
-      new Index({
+      new TableIndex({
         name: 'IDX_users_created_at',
         columnNames: ['created_at'],
-      })
-    );
-
-    // Add data integrity constraints
-    await queryRunner.createCheckConstraint(
-      'users',
-      new Check({
-        name: 'CHK_users_email_format',
-        expression:
-          "email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$'",
-      })
-    );
-
-    await queryRunner.createCheckConstraint(
-      'users',
-      new Check({
-        name: 'CHK_users_google_id_not_empty',
-        expression: "google_id != ''",
-      })
-    );
-
-    await queryRunner.createCheckConstraint(
-      'users',
-      new Check({
-        name: 'CHK_users_name_not_empty',
-        expression: "name != ''",
       })
     );
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    // Drop constraints first
-    await queryRunner.dropCheckConstraint('users', 'CHK_users_email_format');
-    await queryRunner.dropCheckConstraint(
-      'users',
-      'CHK_users_google_id_not_empty'
-    );
-    await queryRunner.dropCheckConstraint('users', 'CHK_users_name_not_empty');
-
-    // Drop indexes
-    await queryRunner.dropIndex('users', 'IDX_users_google_id');
-    await queryRunner.dropIndex('users', 'IDX_users_email');
+    // Drop indexes first
     await queryRunner.dropIndex('users', 'IDX_users_created_at');
+    await queryRunner.dropIndex('users', 'IDX_users_email');
+    await queryRunner.dropIndex('users', 'IDX_users_google_id');
 
-    // Drop table
+    // Drop the table
     await queryRunner.dropTable('users');
   }
 }
