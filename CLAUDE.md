@@ -217,6 +217,19 @@ For EVERY UI change, ensure tests cover:
 
 Refer to `e2e/README.md` for detailed guidelines and examples.
 
+## 🚨 CRITICAL REMINDER: Context7 MCP First
+
+**ALWAYS use Context7 MCP before working with ANY external tools/frameworks:**
+
+- GitHub Actions workflows
+- CI/CD tools
+- Testing frameworks
+- Build tools
+- Deployment systems
+- Any external APIs/services
+
+**Pattern: resolve-library-id → get-library-docs → implement with current patterns**
+
 ## Task Master AI Instructions
 
 **Import Task Master's development workflow commands and guidelines, treat as if import is in the main CLAUDE.md file.**

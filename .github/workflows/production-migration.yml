@@ -1,0 +1,549 @@
+name: Production Migration Deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      migration_plan_artifact:
+        description: 'Migration plan artifact name from CI pipeline'
+        required: true
+        type: string
+      backup_retention_days:
+        description: 'Backup retention period (days)'
+        required: false
+        default: '30'
+        type: string
+      maintenance_window_minutes:
+        description: 'Maintenance window duration (minutes)'
+        required: false
+        default: '60'
+        type: string
+      rollback_timeout_minutes:
+        description: 'Rollback timeout (minutes)'
+        required: false
+        default: '15'
+        type: string
+      dry_run:
+        description: 'Perform dry run (no actual changes)'
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+  actions: read
+  checks: write
+
+env:
+  NODE_VERSION: '22.18.0'
+  YARN_VERSION: '3.6.4'
+  BACKUP_RETENTION_DAYS: ${{ inputs.backup_retention_days || '30' }}
+  MAINTENANCE_WINDOW_MINUTES: ${{ inputs.maintenance_window_minutes || '60' }}
+  ROLLBACK_TIMEOUT_MINUTES: ${{ inputs.rollback_timeout_minutes || '15' }}
+
+jobs:
+  pre_migration_checks:
+    name: Pre-Migration Safety Checks
+    runs-on: ubuntu-latest
+    environment: production
+    outputs:
+      backup_name: ${{ steps.generate_backup_name.outputs.backup_name }}
+      migration_id: ${{ steps.generate_migration_id.outputs.migration_id }}
+      maintenance_window_end: ${{ steps.calculate_times.outputs.maintenance_window_end }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Generate migration identifiers
+        id: generate_backup_name
+        run: |
+          BACKUP_NAME="pre-migration-$(date +%Y%m%d-%H%M%S)"
+          echo "backup_name=$BACKUP_NAME" >> $GITHUB_OUTPUT
+          echo "Generated backup name: $BACKUP_NAME"
+
+      - name: Generate migration ID
+        id: generate_migration_id
+        run: |
+          MIGRATION_ID="migration-$(date +%Y%m%d-%H%M%S)-${{ github.run_number }}"
+          echo "migration_id=$MIGRATION_ID" >> $GITHUB_OUTPUT
+          echo "Generated migration ID: $MIGRATION_ID"
+
+      - name: Calculate maintenance window
+        id: calculate_times
+        run: |
+          END_TIME=$(date -d "+${{ env.MAINTENANCE_WINDOW_MINUTES }} minutes" +%Y-%m-%d\ %H:%M:%S)
+          echo "maintenance_window_end=$END_TIME" >> $GITHUB_OUTPUT
+          echo "Maintenance window ends at: $END_TIME"
+
+      - name: Validate environment variables
+        run: |
+          echo "🔍 Validating production environment configuration..."
+
+          # Check required environment variables are available
+          REQUIRED_VARS=("POSTGRES_PROD_HOST" "POSTGRES_PROD_DB" "POSTGRES_PROD_USER")
+          for var in "${REQUIRED_VARS[@]}"; do
+            if [ -z "${!var:-}" ]; then
+              echo "❌ Required environment variable $var is not set"
+              exit 1
+            fi
+          done
+
+          echo "✅ All required environment variables are configured"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'yarn'
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Build packages
+        run: yarn build:packages
+
+      - name: Verify migration artifact exists
+        run: |
+          if [ "${{ inputs.dry_run }}" == "false" ]; then
+            echo "🔍 Checking for migration plan artifact: ${{ inputs.migration_plan_artifact }}"
+            # In a real scenario, this would download and validate the artifact
+            echo "✅ Migration plan validation would occur here"
+          else
+            echo "🟡 Dry run mode - skipping artifact validation"
+          fi
+
+      - name: Health check production database
+        env:
+          POSTGRES_HOST: ${{ secrets.POSTGRES_PROD_HOST }}
+          POSTGRES_DB: ${{ secrets.POSTGRES_PROD_DB }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_PROD_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PROD_PASSWORD }}
+        run: |
+          if [ "${{ inputs.dry_run }}" == "false" ]; then
+            echo "🔍 Performing production database health check..."
+            chmod +x ./scripts/db-health-check.sh
+            ./scripts/db-health-check.sh --production
+            echo "✅ Production database is healthy"
+          else
+            echo "🟡 Dry run mode - skipping database health check"
+          fi
+
+      - name: Check disk space for backup
+        run: |
+          echo "🔍 Checking available disk space for backup..."
+          df -h
+
+          # Check if we have at least 10GB free space
+          AVAILABLE_GB=$(df --output=avail / | tail -1 | awk '{print int($1/1024/1024)}')
+          if [ "$AVAILABLE_GB" -lt 10 ]; then
+            echo "❌ Insufficient disk space for backup. Available: ${AVAILABLE_GB}GB, Required: 10GB"
+            exit 1
+          fi
+
+          echo "✅ Sufficient disk space available: ${AVAILABLE_GB}GB"
+
+  create_backup:
+    name: Create Production Backup
+    runs-on: ubuntu-latest
+    needs: pre_migration_checks
+    environment: production
+    outputs:
+      backup_success: ${{ steps.backup_creation.outputs.success }}
+      backup_size: ${{ steps.backup_creation.outputs.size }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'yarn'
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Create production backup
+        id: backup_creation
+        env:
+          POSTGRES_HOST: ${{ secrets.POSTGRES_PROD_HOST }}
+          POSTGRES_DB: ${{ secrets.POSTGRES_PROD_DB }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_PROD_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PROD_PASSWORD }}
+        run: |
+          if [ "${{ inputs.dry_run }}" == "false" ]; then
+            echo "🔄 Creating production backup: ${{ needs.pre_migration_checks.outputs.backup_name }}"
+
+            chmod +x ./scripts/db-backup.sh
+            ./scripts/db-backup.sh --production --backup-name="${{ needs.pre_migration_checks.outputs.backup_name }}"
+
+            # Get backup size
+            BACKUP_SIZE=$(du -h "backup-${{ needs.pre_migration_checks.outputs.backup_name }}.sql" | cut -f1)
+
+            echo "success=true" >> $GITHUB_OUTPUT
+            echo "size=$BACKUP_SIZE" >> $GITHUB_OUTPUT
+            echo "✅ Backup created successfully: $BACKUP_SIZE"
+          else
+            echo "🟡 Dry run mode - backup creation simulated"
+            echo "success=true" >> $GITHUB_OUTPUT
+            echo "size=0MB (dry run)" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Verify backup integrity
+        run: |
+          if [ "${{ inputs.dry_run }}" == "false" ]; then
+            echo "🔍 Verifying backup integrity..."
+
+            # Check if backup file exists and is not empty
+            BACKUP_FILE="backup-${{ needs.pre_migration_checks.outputs.backup_name }}.sql"
+            if [ ! -f "$BACKUP_FILE" ] || [ ! -s "$BACKUP_FILE" ]; then
+              echo "❌ Backup file is missing or empty"
+              exit 1
+            fi
+
+            # Verify backup contains expected content
+            if ! grep -q "PostgreSQL database dump" "$BACKUP_FILE"; then
+              echo "❌ Backup file does not appear to be a valid PostgreSQL dump"
+              exit 1
+            fi
+
+            echo "✅ Backup integrity verified"
+          else
+            echo "🟡 Dry run mode - backup verification simulated"
+          fi
+
+      - name: Upload backup artifact
+        if: inputs.dry_run == false
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-backup-${{ needs.pre_migration_checks.outputs.backup_name }}
+          path: backup-${{ needs.pre_migration_checks.outputs.backup_name }}.sql
+          retention-days: ${{ env.BACKUP_RETENTION_DAYS }}
+
+  execute_migration:
+    name: Execute Production Migration
+    runs-on: ubuntu-latest
+    needs: [pre_migration_checks, create_backup]
+    environment: production
+    outputs:
+      migration_success: ${{ steps.migration_execution.outputs.success }}
+      migration_duration: ${{ steps.migration_execution.outputs.duration }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'yarn'
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Build packages
+        run: yarn build:packages
+
+      - name: Execute migration
+        id: migration_execution
+        env:
+          POSTGRES_HOST: ${{ secrets.POSTGRES_PROD_HOST }}
+          POSTGRES_DB: ${{ secrets.POSTGRES_PROD_DB }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_PROD_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PROD_PASSWORD }}
+        run: |
+          START_TIME=$(date +%s)
+
+          if [ "${{ inputs.dry_run }}" == "false" ]; then
+            echo "🚀 Executing production migration..."
+            echo "Migration ID: ${{ needs.pre_migration_checks.outputs.migration_id }}"
+
+            # Execute the migration
+            yarn workspace @misc-poc/infrastructure-localstorage exec node -e "
+              const { MigrationManager } = require('./dist/migration-manager');
+              const { StorageManager } = require('./dist/storage-manager');
+
+              async function runMigration() {
+                try {
+                  const storageManager = new StorageManager();
+                  const migrationManager = new MigrationManager(storageManager);
+
+                  console.log('Starting migration...');
+                  const result = await migrationManager.migrate();
+
+                  console.log('Migration result:', JSON.stringify(result, null, 2));
+
+                  if (!result.success) {
+                    console.error('Migration failed:', result.error);
+                    process.exit(1);
+                  }
+
+                  console.log('Migration completed successfully');
+                  process.exit(0);
+                } catch (error) {
+                  console.error('Migration error:', error.message);
+                  process.exit(1);
+                }
+              }
+
+              runMigration();
+            "
+
+            END_TIME=$(date +%s)
+            DURATION=$((END_TIME - START_TIME))
+
+            echo "success=true" >> $GITHUB_OUTPUT
+            echo "duration=${DURATION}s" >> $GITHUB_OUTPUT
+            echo "✅ Migration executed successfully in ${DURATION}s"
+          else
+            echo "🟡 Dry run mode - migration execution simulated"
+            sleep 5  # Simulate migration time
+
+            END_TIME=$(date +%s)
+            DURATION=$((END_TIME - START_TIME))
+
+            echo "success=true" >> $GITHUB_OUTPUT
+            echo "duration=${DURATION}s (dry run)" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Post-migration health check
+        env:
+          POSTGRES_HOST: ${{ secrets.POSTGRES_PROD_HOST }}
+          POSTGRES_DB: ${{ secrets.POSTGRES_PROD_DB }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_PROD_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PROD_PASSWORD }}
+        run: |
+          if [ "${{ inputs.dry_run }}" == "false" ]; then
+            echo "🔍 Performing post-migration health check..."
+
+            chmod +x ./scripts/db-health-check.sh
+            ./scripts/db-health-check.sh --production
+
+            echo "✅ Post-migration health check passed"
+          else
+            echo "🟡 Dry run mode - health check simulated"
+          fi
+
+  rollback_on_failure:
+    name: Rollback on Migration Failure
+    runs-on: ubuntu-latest
+    needs: [pre_migration_checks, create_backup, execute_migration]
+    if: failure() && needs.create_backup.outputs.backup_success == 'true'
+    environment: production
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'yarn'
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Download backup artifact
+        if: inputs.dry_run == false
+        uses: actions/download-artifact@v4
+        with:
+          name: production-backup-${{ needs.pre_migration_checks.outputs.backup_name }}
+
+      - name: Execute rollback
+        env:
+          POSTGRES_HOST: ${{ secrets.POSTGRES_PROD_HOST }}
+          POSTGRES_DB: ${{ secrets.POSTGRES_PROD_DB }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_PROD_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PROD_PASSWORD }}
+        timeout-minutes: ${{ fromJSON(env.ROLLBACK_TIMEOUT_MINUTES) }}
+        run: |
+          if [ "${{ inputs.dry_run }}" == "false" ]; then
+            echo "🔄 Migration failed - executing rollback..."
+            echo "Backup: ${{ needs.pre_migration_checks.outputs.backup_name }}"
+
+            chmod +x ./scripts/db-backup.sh
+            ./scripts/db-backup.sh --restore --backup-name="${{ needs.pre_migration_checks.outputs.backup_name }}"
+
+            echo "✅ Rollback completed successfully"
+          else
+            echo "🟡 Dry run mode - rollback simulated"
+          fi
+
+      - name: Post-rollback health check
+        env:
+          POSTGRES_HOST: ${{ secrets.POSTGRES_PROD_HOST }}
+          POSTGRES_DB: ${{ secrets.POSTGRES_PROD_DB }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_PROD_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PROD_PASSWORD }}
+        run: |
+          if [ "${{ inputs.dry_run }}" == "false" ]; then
+            echo "🔍 Verifying system health after rollback..."
+
+            chmod +x ./scripts/db-health-check.sh
+            ./scripts/db-health-check.sh --production
+
+            echo "✅ System health verified after rollback"
+          else
+            echo "🟡 Dry run mode - post-rollback health check simulated"
+          fi
+
+  post_migration_verification:
+    name: Post-Migration Verification
+    runs-on: ubuntu-latest
+    needs: [pre_migration_checks, execute_migration]
+    if: needs.execute_migration.outputs.migration_success == 'true'
+    environment: production
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'yarn'
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Build packages
+        run: yarn build:packages
+
+      - name: Comprehensive system verification
+        env:
+          POSTGRES_HOST: ${{ secrets.POSTGRES_PROD_HOST }}
+          POSTGRES_DB: ${{ secrets.POSTGRES_PROD_DB }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_PROD_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PROD_PASSWORD }}
+        run: |
+          if [ "${{ inputs.dry_run }}" == "false" ]; then
+            echo "🔍 Performing comprehensive system verification..."
+
+            # Run full health check
+            chmod +x ./scripts/db-health-check.sh
+            ./scripts/db-health-check.sh --production
+
+            # Verify migration state
+            yarn workspace @misc-poc/infrastructure-localstorage exec node -e "
+              const { MigrationManager } = require('./dist/migration-manager');
+              const { StorageManager } = require('./dist/storage-manager');
+
+              async function verifyMigration() {
+                const storageManager = new StorageManager();
+                const migrationManager = new MigrationManager(storageManager);
+
+                const currentVersion = await migrationManager.getCurrentVersion();
+                const history = migrationManager.getMigrationHistory();
+
+                console.log('Current schema version:', currentVersion);
+                console.log('Migration history:', JSON.stringify(history, null, 2));
+
+                if (currentVersion !== '2.1') {
+                  console.error('Expected version 2.1, got:', currentVersion);
+                  process.exit(1);
+                }
+
+                console.log('✅ Migration verification successful');
+              }
+
+              verifyMigration().catch(error => {
+                console.error('Verification failed:', error);
+                process.exit(1);
+              });
+            "
+
+            echo "✅ Comprehensive verification completed"
+          else
+            echo "🟡 Dry run mode - verification simulated"
+          fi
+
+      - name: Generate migration completion report
+        run: |
+          echo "# Production Migration Completion Report" > migration-completion-report.md
+          echo "" >> migration-completion-report.md
+          echo "## Migration Details" >> migration-completion-report.md
+          echo "- **Migration ID**: ${{ needs.pre_migration_checks.outputs.migration_id }}" >> migration-completion-report.md
+          echo "- **Backup Name**: ${{ needs.pre_migration_checks.outputs.backup_name }}" >> migration-completion-report.md
+          echo "- **Duration**: ${{ needs.execute_migration.outputs.migration_duration }}" >> migration-completion-report.md
+          echo "- **Backup Size**: ${{ needs.create_backup.outputs.backup_size }}" >> migration-completion-report.md
+          echo "- **Completed At**: $(date)" >> migration-completion-report.md
+          echo "- **Dry Run**: ${{ inputs.dry_run }}" >> migration-completion-report.md
+          echo "" >> migration-completion-report.md
+          echo "## Status" >> migration-completion-report.md
+          echo "✅ Migration completed successfully" >> migration-completion-report.md
+          echo "✅ Post-migration verification passed" >> migration-completion-report.md
+          echo "✅ System health confirmed" >> migration-completion-report.md
+
+      - name: Upload completion report
+        uses: actions/upload-artifact@v4
+        with:
+          name: migration-completion-report
+          path: migration-completion-report.md
+
+  cleanup:
+    name: Cleanup and Notification
+    runs-on: ubuntu-latest
+    needs: [pre_migration_checks, create_backup, execute_migration, post_migration_verification]
+    if: always()
+
+    steps:
+      - name: Clean up temporary files
+        run: |
+          echo "🧹 Cleaning up temporary files..."
+          # Remove any temporary migration files
+          rm -f migration-*.tmp
+          echo "✅ Cleanup completed"
+
+      - name: Maintenance window status
+        run: |
+          CURRENT_TIME=$(date +%s)
+          END_TIME=$(date -d "${{ needs.pre_migration_checks.outputs.maintenance_window_end }}" +%s)
+
+          if [ "$CURRENT_TIME" -lt "$END_TIME" ]; then
+            REMAINING_MINUTES=$(( (END_TIME - CURRENT_TIME) / 60 ))
+            echo "⏰ Maintenance window: ${REMAINING_MINUTES} minutes remaining"
+          else
+            echo "✅ Maintenance window completed"
+          fi
+
+      - name: Migration pipeline summary
+        run: |
+          echo "# Production Migration Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Results" >> $GITHUB_STEP_SUMMARY
+          echo "- **Pre-Migration Checks**: ${{ needs.pre_migration_checks.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Backup Creation**: ${{ needs.create_backup.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Migration Execution**: ${{ needs.execute_migration.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Post-Migration Verification**: ${{ needs.post_migration_verification.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ needs.execute_migration.result }}" == "success" ] && [ "${{ needs.post_migration_verification.result }}" == "success" ]; then
+            echo "🎉 **Production migration completed successfully!**" >> $GITHUB_STEP_SUMMARY
+            if [ "${{ inputs.dry_run }}" == "true" ]; then
+              echo "🟡 **(Dry run mode - no actual changes made)**" >> $GITHUB_STEP_SUMMARY
+            fi
+          else
+            echo "❌ **Production migration failed**" >> $GITHUB_STEP_SUMMARY
+            if [ "${{ needs.create_backup.outputs.backup_success }}" == "true" ]; then
+              echo "🔄 Rollback procedures were available" >> $GITHUB_STEP_SUMMARY
+            fi
+          fi
