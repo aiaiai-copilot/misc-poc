@@ -16,7 +16,7 @@ gh pr list --state=open
 git checkout main
 git pull origin main
 
-# STEP 3: ONLY NOW check what task to work on
+# STEP 3: Check what task to work on
 tm next
 
 # If there are open PRs from previous tasks:
@@ -27,8 +27,14 @@ tm next
 # If no new changes were pulled in STEP 2, the PR is still unmerged - STOP and notify user
 # Only proceed with next task if the PR has been merged (new changes were pulled)
 
-# Create branch automatically using format: task/<id>-<description>
-git checkout -b task/<id>-<short-description>
+# 🚨 CRITICAL BRANCHING STRATEGY 🚨
+# ONLY create branches for tasks that have their own subtasks
+# NEVER create branches for lowest-level subtasks (leaf tasks)
+# Work on leaf subtasks directly on their parent's task branch
+
+# Check if task has subtasks before creating branch:
+# IF task has subtasks (parent task) → CREATE branch: task/<id>-<description>
+# IF task has NO subtasks (leaf task) → WORK ON PARENT'S BRANCH, no new branch needed
 
 # Set task to in-progress
 tm set-status --id=<id> --status=in-progress
@@ -75,14 +81,41 @@ git pull origin main
 
 **❗ CRITICAL: If ANY build validation command fails, fix all errors before proceeding with task completion.**
 
-### 4. Branch Naming Rules
+### 4. NEW Branching Strategy
+
+**🚨 FUNDAMENTAL CHANGE: Only branch for parent tasks with subtasks**
+
+**HIERARCHICAL BRANCHING RULES:**
+
+1. **Top-level tasks** (e.g., Task 3) with subtasks → Branch from `main`
+2. **Intermediate tasks** (e.g., Task 3.1) with subtasks → Branch from parent task branch
+3. **Leaf tasks** (e.g., Task 3.1.1) with no subtasks → Work on parent branch directly
+
+**BRANCHING EXAMPLES:**
+
+- Task 3 "Database Migration System" (has 3.1, 3.2, 3.3) → CREATE `task/3-database-migration-system` from `main`
+- Task 3.1 "Setup TypeORM" (has 3.1.1, 3.1.2) → CREATE `task/3.1-setup-typeorm` from `task/3-database-migration-system`
+- Task 3.1.1 "Install dependencies" (no subtasks) → WORK ON `task/3.1-setup-typeorm` branch
+- Task 3.2 "Create migrations" (no subtasks) → WORK ON `task/3-database-migration-system` branch
+
+**MERGING HIERARCHY:**
+
+- **Top-level branches** (`task/3-database-migration-system`) → Merge into `main`
+- **Intermediate branches** (`task/3.1-setup-typeorm`) → Merge into parent (`task/3-database-migration-system`)
+- **Leaf tasks** → Already on parent branch (no merge needed)
+
+**Why this prevents integration problems:**
+
+- Clear hierarchy matches TaskMaster structure
+- All related work flows upward to correct parent branch
+- No scattered commits across unrelated branches
+- Complete features assembled hierarchically before reaching main
+
+**Branch Naming (only for parent tasks):**
 
 - Format: `task/<id>-<description>`
 - Use lowercase, hyphens for spaces
 - Keep description under 50 characters
-- Examples:
-  - `task/1-initialize-monorepo-structure`
-  - `task/6-implement-search-query-value-object`
 
 ### 5. When User Says "Work on task X" or "Implement next task"
 
