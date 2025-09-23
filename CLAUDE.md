@@ -47,6 +47,9 @@ tm set-status --id=<id> --status=in-progress
 ### 3. Task Completion (AUTOMATICALLY do ALL of these)
 
 ```bash
+# MANDATORY BUILD VALIDATION BEFORE COMPLETION:
+yarn build && yarn typecheck && yarn lint && yarn test
+
 # Mark task complete FIRST (before final commit)
 tm set-status --id=<id> --status=done
 
@@ -64,6 +67,8 @@ gh pr create --title "Task #<id>: <title>" --body "Implements task #<id>"
 git checkout main
 git pull origin main
 ```
+
+**❗ CRITICAL: If ANY build validation command fails, fix all errors before proceeding with task completion.**
 
 ### 4. Branch Naming Rules
 
@@ -150,13 +155,20 @@ git pull origin main
 ### After Each Subtask Completion:
 
 1. **Complete the subtask implementation**
-2. **Ask user**: "Do you want to test manually before committing?"
-3. **Wait for user confirmation**
-4. **ONLY AFTER user approval**: Commit the changes
-5. **Update subtask status**: `tm set-status --id=<subtask-id> --status=done`
-6. **Continue to next subtask or complete main task**
+2. **MANDATORY BUILD VALIDATION**: Run ALL of these commands and fix any errors:
+   - `yarn build` - Ensure TypeScript compilation succeeds
+   - `yarn typecheck` - Verify type checking passes
+   - `yarn lint` - Fix any linting errors
+   - `yarn test` - Ensure all tests pass
+3. **Ask user**: "Do you want to test manually before committing?"
+4. **Wait for user confirmation**
+5. **ONLY AFTER user approval**: Commit the changes
+6. **Update subtask status**: `tm set-status --id=<subtask-id> --status=done`
+7. **Continue to next subtask or complete main task**
 
-**This workflow applies to EVERY subtask - no exceptions. Never commit without asking for manual testing approval first.**
+**❗ CRITICAL: NEVER commit if ANY of the build validation commands fail. Fix all errors first.**
+
+**This workflow applies to EVERY subtask - no exceptions. Never commit without build validation and manual testing approval.**
 
 ## E2E Test Requirements for UI/UX Changes
 
