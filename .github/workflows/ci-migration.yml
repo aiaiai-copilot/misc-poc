@@ -1,0 +1,394 @@
+name: CI/CD - Database Migration Pipeline
+
+on:
+  push:
+    branches: [$default-branch, develop]
+    paths:
+      - 'packages/infrastructure/localStorage/src/migration-manager.ts'
+      - 'packages/infrastructure/localStorage/src/storage-schema.ts'
+      - 'scripts/db-*.sh'
+      - 'scripts/validate-sql.sh'
+      - 'docker-compose.test.yml'
+      - '.github/workflows/ci-migration.yml'
+  pull_request:
+    branches: [$default-branch, develop]
+    paths:
+      - 'packages/infrastructure/localStorage/src/migration-manager.ts'
+      - 'packages/infrastructure/localStorage/src/storage-schema.ts'
+      - 'scripts/db-*.sh'
+      - 'scripts/validate-sql.sh'
+      - 'docker-compose.test.yml'
+      - '.github/workflows/ci-migration.yml'
+  workflow_dispatch:
+    inputs:
+      skip_migration_tests:
+        description: 'Skip migration tests'
+        required: false
+        default: 'false'
+        type: boolean
+      environment:
+        description: 'Target environment'
+        required: false
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+
+permissions:
+  contents: read
+  actions: read
+  checks: write
+  pull-requests: write
+
+env:
+  NODE_VERSION: '22.18.0'
+  YARN_VERSION: '3.6.4'
+  # Test database configuration
+  POSTGRES_TEST_DB: misc_poc_test
+  POSTGRES_TEST_USER: postgres_test
+  POSTGRES_TEST_PASSWORD: test_password
+  POSTGRES_TEST_HOST: localhost
+  POSTGRES_TEST_PORT: 5433
+
+jobs:
+  setup:
+    name: Setup and Validate Environment
+    runs-on: ubuntu-latest
+    outputs:
+      should_run_migrations: ${{ steps.check_changes.outputs.should_run }}
+      test_matrix: ${{ steps.test_matrix.outputs.matrix }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 2
+
+      - name: Check for migration-related changes
+        id: check_changes
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "should_run=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD)
+          echo "Changed files: $CHANGED_FILES"
+
+          if echo "$CHANGED_FILES" | grep -E "(migration|schema|db-)" > /dev/null; then
+            echo "should_run=true" >> $GITHUB_OUTPUT
+          else
+            echo "should_run=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Setup test matrix
+        id: test_matrix
+        run: |
+          echo 'matrix={"include":[{"name":"unit","command":"test"},{"name":"integration","command":"test:strict"},{"name":"e2e","command":"test:e2e"}]}' >> $GITHUB_OUTPUT
+
+  pre_migration_validation:
+    name: Pre-Migration Validation
+    runs-on: ubuntu-latest
+    needs: setup
+    if: needs.setup.outputs.should_run_migrations == 'true'
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: ${{ env.POSTGRES_TEST_DB }}
+          POSTGRES_USER: ${{ env.POSTGRES_TEST_USER }}
+          POSTGRES_PASSWORD: ${{ env.POSTGRES_TEST_PASSWORD }}
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'yarn'
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Build packages
+        run: yarn build:packages
+
+      - name: Validate SQL scripts
+        run: |
+          if [ -f "./scripts/validate-sql.sh" ]; then
+            chmod +x ./scripts/validate-sql.sh
+            ./scripts/validate-sql.sh
+          else
+            echo "No SQL validation script found, skipping"
+          fi
+
+      - name: Wait for database
+        run: |
+          chmod +x ./scripts/wait-for-db.sh
+          ./scripts/wait-for-db.sh --test
+
+      - name: Run database health check
+        run: |
+          chmod +x ./scripts/db-health-check.sh
+          ./scripts/db-health-check.sh --test
+
+      - name: Lint migration-related code
+        run: |
+          yarn workspace @misc-poc/infrastructure-localstorage exec eslint src --ext .ts
+          yarn workspace @misc-poc/shared exec eslint src --ext .ts
+
+      - name: Type check migration code
+        run: |
+          yarn workspace @misc-poc/infrastructure-localstorage typecheck
+          yarn workspace @misc-poc/shared typecheck
+
+      - name: Test migration manager unit tests
+        run: |
+          yarn workspace @misc-poc/infrastructure-localstorage test --testPathPattern=migration-manager
+
+  migration_testing:
+    name: Migration Testing (${{ matrix.test_type }})
+    runs-on: ubuntu-latest
+    needs: [setup, pre_migration_validation]
+    if: needs.setup.outputs.should_run_migrations == 'true' && inputs.skip_migration_tests != 'true'
+    strategy:
+      matrix:
+        test_type: ['forward_migration', 'rollback_test', 'data_integrity']
+        storage_version: ['2.0', '2.1']
+      fail-fast: false
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'yarn'
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Build packages
+        run: yarn build:packages
+
+      - name: Setup test database
+        run: |
+          chmod +x ./scripts/test-db-setup.sh
+          ./scripts/test-db-setup.sh start
+
+      - name: Wait for test database
+        run: |
+          chmod +x ./scripts/wait-for-db.sh
+          ./scripts/wait-for-db.sh --test
+
+      - name: Run migration tests - ${{ matrix.test_type }}
+        run: |
+          case "${{ matrix.test_type }}" in
+            "forward_migration")
+              echo "Testing forward migration from ${{ matrix.storage_version }}"
+              yarn workspace @misc-poc/infrastructure-localstorage test --testNamePattern="forward.*migration" --testTimeout=30000
+              ;;
+            "rollback_test")
+              echo "Testing rollback capabilities for ${{ matrix.storage_version }}"
+              yarn workspace @misc-poc/infrastructure-localstorage test --testNamePattern="rollback" --testTimeout=30000
+              ;;
+            "data_integrity")
+              echo "Testing data integrity for ${{ matrix.storage_version }}"
+              yarn workspace @misc-poc/infrastructure-localstorage test --testNamePattern="integrity" --testTimeout=30000
+              ;;
+          esac
+
+      - name: Clean up test database
+        if: always()
+        run: |
+          chmod +x ./scripts/test-db-setup.sh
+          ./scripts/test-db-setup.sh stop || true
+
+  staging_migration_test:
+    name: Staging Migration Test
+    runs-on: ubuntu-latest
+    needs: [migration_testing]
+    if: needs.setup.outputs.should_run_migrations == 'true' && (github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch')
+    environment: staging
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'yarn'
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Build packages
+        run: yarn build:packages
+
+      - name: Setup staging-like test environment
+        run: |
+          chmod +x ./scripts/test-db-setup.sh
+          ./scripts/test-db-setup.sh start
+
+      - name: Create staging backup before migration
+        run: |
+          chmod +x ./scripts/db-backup.sh
+          ./scripts/db-backup.sh --test --backup-name="pre-migration-$(date +%Y%m%d-%H%M%S)"
+
+      - name: Run staging migration test
+        run: |
+          echo "Running migration in staging-like environment..."
+          yarn workspace @misc-poc/infrastructure-localstorage test --testNamePattern="migration.*integration" --testTimeout=60000
+
+      - name: Verify staging migration integrity
+        run: |
+          echo "Verifying migration completed successfully..."
+          chmod +x ./scripts/db-health-check.sh
+          ./scripts/db-health-check.sh --test
+
+      - name: Generate migration report
+        run: |
+          echo "Migration test completed successfully on $(date)" > migration-report.txt
+          echo "Environment: Staging-like" >> migration-report.txt
+          echo "Node version: ${{ env.NODE_VERSION }}" >> migration-report.txt
+          echo "Yarn version: ${{ env.YARN_VERSION }}" >> migration-report.txt
+
+      - name: Upload migration report
+        uses: actions/upload-artifact@v4
+        with:
+          name: staging-migration-report
+          path: migration-report.txt
+
+      - name: Clean up staging test environment
+        if: always()
+        run: |
+          chmod +x ./scripts/test-db-setup.sh
+          ./scripts/test-db-setup.sh stop || true
+
+  production_migration_ready:
+    name: Production Migration Ready
+    runs-on: ubuntu-latest
+    needs: [staging_migration_test]
+    if: needs.setup.outputs.should_run_migrations == 'true' && github.ref == 'refs/heads/main'
+    environment: production
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Download staging migration report
+        uses: actions/download-artifact@v4
+        with:
+          name: staging-migration-report
+
+      - name: Validate staging migration report
+        run: |
+          if [ ! -f "migration-report.txt" ]; then
+            echo "❌ Staging migration report not found"
+            exit 1
+          fi
+
+          echo "✅ Staging migration completed successfully"
+          cat migration-report.txt
+
+      - name: Create production migration plan
+        run: |
+          echo "# Production Migration Plan" > MIGRATION_PLAN.md
+          echo "" >> MIGRATION_PLAN.md
+          echo "## Pre-Migration Checklist" >> MIGRATION_PLAN.md
+          echo "- [ ] Database backup completed" >> MIGRATION_PLAN.md
+          echo "- [ ] Application maintenance window scheduled" >> MIGRATION_PLAN.md
+          echo "- [ ] Rollback plan prepared" >> MIGRATION_PLAN.md
+          echo "- [ ] Team notified" >> MIGRATION_PLAN.md
+          echo "" >> MIGRATION_PLAN.md
+          echo "## Migration Commands" >> MIGRATION_PLAN.md
+          echo '```bash' >> MIGRATION_PLAN.md
+          echo "# 1. Create production backup" >> MIGRATION_PLAN.md
+          echo "./scripts/db-backup.sh --production --backup-name=\"pre-migration-$(date +%Y%m%d-%H%M%S)\"" >> MIGRATION_PLAN.md
+          echo "" >> MIGRATION_PLAN.md
+          echo "# 2. Run migration" >> MIGRATION_PLAN.md
+          echo "yarn workspace @misc-poc/infrastructure-localstorage exec node -e \"" >> MIGRATION_PLAN.md
+          echo "  const { MigrationManager } = require('./dist/migration-manager');" >> MIGRATION_PLAN.md
+          echo "  const { StorageManager } = require('./dist/storage-manager');" >> MIGRATION_PLAN.md
+          echo "  const manager = new MigrationManager(new StorageManager());" >> MIGRATION_PLAN.md
+          echo "  manager.migrate().then(console.log).catch(console.error);" >> MIGRATION_PLAN.md
+          echo "\"" >> MIGRATION_PLAN.md
+          echo "" >> MIGRATION_PLAN.md
+          echo "# 3. Verify migration" >> MIGRATION_PLAN.md
+          echo "./scripts/db-health-check.sh --production" >> MIGRATION_PLAN.md
+          echo '```' >> MIGRATION_PLAN.md
+          echo "" >> MIGRATION_PLAN.md
+          echo "## Rollback Plan" >> MIGRATION_PLAN.md
+          echo "If migration fails:" >> MIGRATION_PLAN.md
+          echo '```bash' >> MIGRATION_PLAN.md
+          echo "./scripts/db-backup.sh --restore --backup-name=\"pre-migration-TIMESTAMP\"" >> MIGRATION_PLAN.md
+          echo '```' >> MIGRATION_PLAN.md
+
+      - name: Upload production migration plan
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-migration-plan
+          path: MIGRATION_PLAN.md
+
+      - name: Production deployment notification
+        run: |
+          echo "🚀 Migration is ready for production deployment!"
+          echo "📋 Migration plan has been generated and uploaded as an artifact"
+          echo "⚠️  Manual approval required for production migration execution"
+          echo ""
+          echo "To execute the migration in production:"
+          echo "1. Download the migration plan artifact"
+          echo "2. Follow the pre-migration checklist"
+          echo "3. Execute migration commands in production environment"
+          echo "4. Verify migration success"
+          echo "5. Monitor application health"
+
+  notification:
+    name: Migration Pipeline Notification
+    runs-on: ubuntu-latest
+    needs: [setup, pre_migration_validation, migration_testing, staging_migration_test, production_migration_ready]
+    if: always() && needs.setup.outputs.should_run_migrations == 'true'
+
+    steps:
+      - name: Migration pipeline summary
+        run: |
+          echo "# Migration Pipeline Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Pipeline Results" >> $GITHUB_STEP_SUMMARY
+          echo "- Pre-Migration Validation: ${{ needs.pre_migration_validation.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Migration Testing: ${{ needs.migration_testing.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Staging Migration Test: ${{ needs.staging_migration_test.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Production Migration Ready: ${{ needs.production_migration_ready.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ needs.production_migration_ready.result }}" == "success" ]; then
+            echo "✅ **Migration pipeline completed successfully!**" >> $GITHUB_STEP_SUMMARY
+            echo "📦 Production migration plan available in artifacts" >> $GITHUB_STEP_SUMMARY
+          elif [ "${{ needs.staging_migration_test.result }}" == "success" ]; then
+            echo "⚠️ **Staging tests passed, production deployment pending**" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Migration pipeline failed**" >> $GITHUB_STEP_SUMMARY
+            echo "🔍 Check failed jobs for details" >> $GITHUB_STEP_SUMMARY
+          fi
