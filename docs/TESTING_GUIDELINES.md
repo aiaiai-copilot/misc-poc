@@ -125,15 +125,15 @@ yarn test:validate
 
 **Before ANY development using external libraries:**
 
-1. **Use Context7 MCP** to get current documentation (TypeORM, React, Jest, Playwright, etc.)
-2. **For database testing:** Follow the integration test template with Testcontainers
+1. **Use Context7 MCP** to get current documentation for your chosen frameworks/tools
+2. **For database testing:** Follow the integration test template with container testing
 3. **For all testing:** Use decision matrix to choose appropriate test type
 4. **Validation runs automatically** on commit
 
 Before creating any test file, ask:
 
-- "Does this test interact with a database?" → Use Testcontainers
-- "Am I testing real system behavior?" → Use Testcontainers
+- "Does this test interact with a database?" → Use container testing
+- "Am I testing real system behavior?" → Use real dependencies
 - "Am I testing isolated logic only?" → Use mocks
 
 **Remember: If you're testing how code interacts with real systems, use real systems!**

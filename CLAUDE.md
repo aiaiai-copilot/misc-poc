@@ -419,12 +419,12 @@ grep -r "integration\.test\.ts" --include="*.ts" | \
 
 **MANDATORY for ANY external library or framework usage:**
 
-1. **□ Frontend Development** → React, Vite, CSS frameworks, UI libraries
-2. **□ Backend Development** → Express, TypeORM, database drivers, authentication
-3. **□ Testing** → Jest, Playwright, Testcontainers, testing utilities
-4. **□ Build Tools** → Webpack, Vite, ESBuild, TypeScript, bundlers
-5. **□ DevOps/Deployment** → Docker, CI/CD tools, deployment platforms
-6. **□ New library integration** → Any package.json dependency
+1. **□ Frontend Development** → UI frameworks, styling libraries, state management
+2. **□ Backend Development** → Web frameworks, ORMs, database drivers, authentication libraries
+3. **□ Testing** → Test runners, E2E frameworks, container testing, mocking utilities
+4. **□ Build Tools** → Bundlers, transpilers, type checkers, linters
+5. **□ DevOps/Deployment** → Containerization, CI/CD platforms, cloud services
+6. **□ New library integration** → Any external dependency
 7. **□ Unfamiliar API patterns** → Get fresh documentation with examples
 8. **□ Version-specific features** → Ensure compatibility with project versions
 9. **□ Complex configurations** → Get authoritative setup guides
@@ -434,42 +434,41 @@ grep -r "integration\.test\.ts" --include="*.ts" | \
 
 ```bash
 # Step 1: Resolve library name to Context7-compatible ID
-mcp__context7__resolve-library-id("typeorm")
+mcp__context7__resolve-library-id("library-name")
 
 # Step 2: Get comprehensive documentation
-mcp__context7__get-library-docs("/typeorm/typeorm", {
-  topic: "migrations", // Optional: focus on specific area
-  tokens: 8000        // Optional: more context for complex topics
+mcp__context7__get-library-docs("/org/library-name", {
+  topic: "specific-feature", // Optional: focus on specific area
+  tokens: 8000              // Optional: more context for complex topics
 })
 ```
 
-#### Common Libraries in This Project
+#### Example Library Resolutions
 
-Pre-resolved Context7 IDs for quick reference:
+Context7 ID examples for reference (resolve each library as needed):
 
-**Backend & Database:**
+**Backend & Database Examples:**
 
-- **TypeORM**: `/typeorm/typeorm`
-- **Node.js**: `/nodejs/node`
-- **Express**: `/expressjs/express` (if used)
+- ORMs: TypeORM → `/typeorm/typeorm`, Prisma → `/prisma/prisma`
+- Runtime: Node.js → `/nodejs/node`
+- Web Frameworks: Express → `/expressjs/express`
 
-**Frontend:**
+**Frontend Examples:**
 
-- **React**: `/facebook/react`
-- **Vite**: `/vitejs/vite`
-- **TypeScript**: `/microsoft/typescript`
+- UI Frameworks: React → `/facebook/react`, Vue → `/vuejs/vue`
+- Build Tools: Vite → `/vitejs/vite`, Webpack → `/webpack/webpack`
+- Languages: TypeScript → `/microsoft/typescript`
 
-**Testing:**
+**Testing Examples:**
 
-- **Jest**: `/jestjs/jest`
-- **Testcontainers**: `/testcontainers/testcontainers-node`
-- **Playwright**: `/microsoft/playwright`
+- Test Runners: Jest → `/jestjs/jest`, Vitest → `/vitest/vitest`
+- E2E Testing: Playwright → `/microsoft/playwright`, Cypress → `/cypress/cypress`
+- Container Testing: Testcontainers → `/testcontainers/testcontainers-node`
 
-**Build & DevOps:**
+**Development Tools Examples:**
 
-- **Docker**: `/docker/docker`
-- **ESLint**: `/eslint/eslint`
-- **Prettier**: `/prettier/prettier`
+- Containerization: Docker → `/docker/docker`
+- Code Quality: ESLint → `/eslint/eslint`, Prettier → `/prettier/prettier`
 
 #### Integration with Development Workflow
 
@@ -495,12 +494,12 @@ Pre-resolved Context7 IDs for quick reference:
 // 2. Follow current API patterns and best practices
 // 3. Use up-to-date methods and configurations
 
-// Examples:
-// - TypeORM migrations → Get TypeORM docs
-// - React components → Get React docs
-// - Jest testing → Get Jest docs
-// - Express routes → Get Express docs
-// - Playwright E2E → Get Playwright docs
+// Examples (use whatever frameworks/tools are appropriate):
+// - ORM migrations → Get ORM docs (TypeORM, Prisma, etc.)
+// - UI components → Get framework docs (React, Vue, Angular, etc.)
+// - Testing → Get test framework docs (Jest, Vitest, etc.)
+// - API routes → Get web framework docs (Express, Fastify, etc.)
+// - E2E testing → Get E2E framework docs (Playwright, Cypress, etc.)
 
 // This prevents outdated patterns like:
 // - Deprecated API methods
