@@ -71,7 +71,11 @@ git commit -m "feat: implement task #<id> - <brief description>"
 # Push branch
 git push -u origin task/<id>-<description>
 
-# Create PR
+# Create PR ONLY for top-level and intermediate tasks (NOT leaf tasks)
+# Check task hierarchy before creating PR:
+# - Top-level task → gh pr create to merge into main
+# - Intermediate task → gh pr create to merge into parent branch
+# - Leaf task → NO PR (already on parent branch)
 gh pr create --title "Task #<id>: <title>" --body "Implements task #<id>"
 
 # Return to main
@@ -103,6 +107,12 @@ git pull origin main
 - **Top-level branches** (`task/3-database-migration-system`) → Merge into `main`
 - **Intermediate branches** (`task/3.1-setup-typeorm`) → Merge into parent (`task/3-database-migration-system`)
 - **Leaf tasks** → Already on parent branch (no merge needed)
+
+**PULL REQUEST RULES:**
+
+- **Top-level tasks** → CREATE Pull Request to merge into `main`
+- **Intermediate tasks** → CREATE Pull Request to merge into parent task branch
+- **Leaf tasks** → NO Pull Request (work is already on parent branch)
 
 **Why this prevents integration problems:**
 
