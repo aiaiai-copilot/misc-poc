@@ -20,7 +20,16 @@ export const AppDataSource = new DataSource({
   database: process.env.POSTGRES_DB || 'misc_poc_dev',
 
   // Migration-specific configuration
-  migrations: [join(__dirname, 'migrations', '*.{ts,js}')],
+  migrations: [
+    join(
+      process.cwd(),
+      'src',
+      'infrastructure',
+      'database',
+      'migrations',
+      '*.{ts,js}'
+    ),
+  ],
   migrationsTableName: 'migration_history',
   migrationsRun: false, // Do not auto-run migrations
 
@@ -63,7 +72,16 @@ export const TestDataSource = new DataSource({
   database: process.env.POSTGRES_TEST_DB || 'misc_poc_test',
 
   // Migration-specific configuration for testing
-  migrations: [join(__dirname, 'migrations', '*.{ts,js}')],
+  migrations: [
+    join(
+      process.cwd(),
+      'src',
+      'infrastructure',
+      'database',
+      'migrations',
+      '*.{ts,js}'
+    ),
+  ],
   migrationsTableName: 'migration_history',
   migrationsRun: false,
 
