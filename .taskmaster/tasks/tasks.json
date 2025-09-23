@@ -27,7 +27,7 @@
             "dependencies": ["1.1"],
             "details": "Install Express, @types/express, TypeScript, ts-node, and essential middleware (cors, helmet, morgan). Create tsconfig.json with proper module resolution and build configuration. Setup basic Express server structure with middleware initialization.",
             "status": "done",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 3,
@@ -36,7 +36,7 @@
             "dependencies": ["1.1"],
             "details": "Install pg, @types/pg for PostgreSQL client, node-pg-migrate for database migrations, and connection pooling configuration. Setup database connection utilities and environment variable configuration for database credentials.",
             "status": "done",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 4,
@@ -45,7 +45,7 @@
             "dependencies": ["1.1"],
             "details": "Install passport, passport-google-oauth20, passport-jwt, jsonwebtoken, and related types. Setup OAuth configuration utilities, JWT token generation/validation, and session management middleware. Configure environment variables for OAuth credentials.",
             "status": "done",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 5,
@@ -54,7 +54,7 @@
             "dependencies": ["1.2", "1.3", "1.4"],
             "details": "Install Joi or Zod for request validation, Jest and supertest for testing, and configure build scripts (build, test, dev, start). Setup test configuration with database mocking, validation schemas structure, and ensure scripts follow monorepo conventions.",
             "status": "done",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           }
         ]
       },
@@ -75,7 +75,7 @@
             "dependencies": [],
             "details": "Create docker-compose.yml file with PostgreSQL 15+ official image, expose port 5432, configure service name as 'postgres', set up basic PostgreSQL configuration including shared_preload_libraries for extensions, and configure restart policies. Include development-specific settings for easier debugging.",
             "status": "done",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 2,
@@ -84,7 +84,7 @@
             "dependencies": ["2.1"],
             "details": "Create .env.example and .env files with PostgreSQL environment variables (POSTGRES_DB, POSTGRES_USER, POSTGRES_PASSWORD, DATABASE_URL). Set up secure password generation, configure connection pool settings, and document all environment variables. Ensure .env is properly gitignored.",
             "status": "done",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 3,
@@ -93,7 +93,7 @@
             "dependencies": ["2.1"],
             "details": "Configure named Docker volumes for PostgreSQL data persistence, set up proper volume mounting paths, configure custom network for service communication, and ensure data survives container restarts. Include volume backup considerations and proper permissions setup.",
             "status": "done",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 4,
@@ -102,7 +102,7 @@
             "dependencies": ["2.2", "2.3"],
             "details": "Create docker-compose.test.yml or test-specific configuration for isolated test database, configure separate test database name and credentials, set up test data cleanup procedures, and ensure test database doesn't interfere with development data. Include fast startup options for CI/CD.",
             "status": "done",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 5,
@@ -111,7 +111,7 @@
             "dependencies": ["2.2", "2.3"],
             "details": "Configure Docker health checks using pg_isready command, set up proper health check intervals and timeouts, create connection validation scripts for application startup, and implement retry logic for database connections. Include monitoring and logging for health check failures.",
             "status": "done",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 6,
@@ -120,7 +120,7 @@
             "dependencies": ["2.4", "2.5"],
             "details": "Create init.sql scripts for database setup, user permissions, and initial schema if needed. Write comprehensive README with setup instructions, troubleshooting guide, and common Docker commands. Include scripts for database reset, backup procedures, and development workflow documentation.",
             "status": "done",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           }
         ]
       },
@@ -159,7 +159,7 @@
             "dependencies": ["3.2"],
             "details": "Create migration with fields: id (UUID), user_id (foreign key), original_content, normalized_content, tags (array/JSONB), created_at, updated_at. Add indexes on user_id, tags (GIN index for PostgreSQL), created_at, and composite indexes for common query patterns.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 4,
@@ -168,7 +168,7 @@
             "dependencies": ["3.2"],
             "details": "Create migration with fields: id (UUID), user_id (foreign key), normalization_enabled (boolean), custom_tags (JSONB), preferences (JSONB), created_at, updated_at. Add unique constraint on user_id and indexes for efficient settings retrieval.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 5,
@@ -177,7 +177,7 @@
             "dependencies": ["3.3", "3.4"],
             "details": "Implement migration runner that can execute pending migrations, perform rollbacks to specific versions, and handle migration failures gracefully. Include transaction wrapping, error logging, and state tracking. Create CLI commands for migration operations.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 6,
@@ -186,7 +186,7 @@
             "dependencies": ["3.5"],
             "details": "Add checksum generation for migration files to detect unauthorized changes. Implement version tracking in migrations table with timestamps and checksums. Create validation logic to ensure migration history integrity and prevent corruption.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 7,
@@ -195,7 +195,7 @@
             "dependencies": ["3.6"],
             "details": "Setup GitHub Actions or similar CI/CD pipeline to run migrations automatically during deployment. Include pre-deployment migration validation, staging environment testing, and production migration execution with proper error handling and rollback procedures.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           }
         ]
       },
@@ -225,7 +225,7 @@
             "dependencies": [],
             "details": "Create GoogleId value object with string validation, immutability, and proper equals/hashCode implementation. Include format validation for Google OAuth2 subject identifiers and error handling for invalid formats. Ensure type safety and domain-specific validation rules.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 3,
@@ -234,7 +234,7 @@
             "dependencies": [],
             "details": "Define UserSettings value object with normalization preferences, UI settings, and notification preferences. Implement immutable structure with builder pattern for updates. Include validation for preference values and default configuration handling.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 4,
@@ -243,7 +243,7 @@
             "dependencies": ["4.2"],
             "details": "Create AuthenticationContext value object containing session token, expiration, user roles, and authentication method. Implement session validation logic, token refresh mechanisms, and security-related business rules for authentication state management.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 5,
@@ -252,7 +252,7 @@
             "dependencies": ["4.1", "4.2", "4.3"],
             "details": "Create User factory methods for creating new users from Google OAuth, updating profiles, and managing settings. Define and enforce domain invariants such as unique email constraints, valid profile data, and consistent authentication state. Include validation logic and error handling.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 6,
@@ -261,7 +261,7 @@
             "dependencies": ["4.1", "4.4", "4.5"],
             "details": "Review and test integration between User aggregate and existing Record entities. Ensure consistent domain patterns, proper aggregate boundaries, and maintained contracts. Update any necessary interfaces and verify no breaking changes to existing Record functionality.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           }
         ]
       },
@@ -282,7 +282,7 @@
             "dependencies": [],
             "details": "Create Google Cloud Console project, enable Google+ API, configure OAuth consent screen, generate client ID and secret, setup redirect URLs, and configure environment variables for secure credential storage",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 2,
@@ -291,7 +291,7 @@
             "dependencies": ["5.1"],
             "details": "Install passport and passport-google-oauth20 packages, configure Google OAuth strategy with client credentials, implement user profile serialization/deserialization, and setup strategy callback handling",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 3,
@@ -300,7 +300,7 @@
             "dependencies": ["5.2"],
             "details": "Install jsonwebtoken package, implement JWT signing with secure secret, create token validation middleware, implement token payload structure with user data, and add token expiration handling",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 4,
@@ -309,7 +309,7 @@
             "dependencies": ["5.3"],
             "details": "Design refresh token database schema, implement token generation with cryptographic randomness, create token rotation on refresh, implement token blacklisting for security, and add automatic cleanup of expired tokens",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 5,
@@ -318,7 +318,7 @@
             "dependencies": ["5.4"],
             "details": "Install cookie-parser middleware, configure httpOnly, secure, and sameSite cookie attributes, implement cookie signing for integrity, setup domain and path restrictions, and add CSRF protection considerations",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 6,
@@ -327,7 +327,7 @@
             "dependencies": ["5.5"],
             "details": "Implement session validation middleware, create automatic token refresh logic, add session timeout handling, implement concurrent session management, and create session cleanup on logout",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 7,
@@ -336,7 +336,7 @@
             "dependencies": ["5.6"],
             "details": "Handle OAuth consent denied scenarios, implement network failure retry logic, add invalid token error responses, create rate limiting error handling, implement account linking error scenarios, and add comprehensive logging for debugging",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 8,
@@ -345,7 +345,7 @@
             "dependencies": ["5.7"],
             "details": "Create end-to-end OAuth flow tests, implement JWT token validation tests, test refresh token rotation scenarios, verify cookie security settings, test error handling scenarios, and add performance tests for authentication endpoints",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           }
         ]
       },
@@ -366,7 +366,7 @@
             "dependencies": [],
             "details": "Create PostgreSQLUserRepository class implementing the User repository interface. Set up basic class structure with constructor for database connection, implement skeleton methods for findByGoogleId, create, updateSettings, and updateLastLogin. Establish TypeScript types and ensure interface compatibility.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 2,
@@ -375,7 +375,7 @@
             "dependencies": ["6.1"],
             "details": "Implement findByGoogleId method using prepared statements with proper SQL query optimization. Create database index on google_id column for performance. Add proper error handling for database connection issues and implement result mapping to User domain objects.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 3,
@@ -384,7 +384,7 @@
             "dependencies": ["6.1"],
             "details": "Implement create method for inserting new users with Google OAuth data. Add profile management capabilities including user metadata handling. Implement proper data validation, duplicate prevention, and return proper User domain objects with generated IDs.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 4,
@@ -393,7 +393,7 @@
             "dependencies": ["6.2", "6.3"],
             "details": "Implement updateSettings method with JSON schema validation for user preferences. Add proper error handling for invalid settings, implement atomic updates using transactions, and ensure backward compatibility with existing settings format. Include updateLastLogin method implementation.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 5,
@@ -402,7 +402,7 @@
             "dependencies": ["6.2", "6.3"],
             "details": "Set up PostgreSQL connection pooling for performance and scalability. Convert all SQL queries to use prepared statements for SQL injection prevention. Implement connection health checks, timeout handling, and connection recycling. Add database transaction management.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 6,
@@ -411,7 +411,7 @@
             "dependencies": ["6.4", "6.5"],
             "details": "Implement comprehensive error handling for database connection failures, constraint violations, and query timeouts. Add structured logging for debugging and monitoring. Create custom error types for different failure scenarios and implement retry logic for transient failures.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           }
         ]
       },
@@ -432,7 +432,7 @@
             "dependencies": [],
             "details": "Create JWT validation middleware that verifies token signature, checks expiration, extracts user payload, and handles invalid tokens. Include proper error responses and integration with Express.js middleware chain.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 2,
@@ -441,7 +441,7 @@
             "dependencies": ["7.1"],
             "details": "Implement /auth/google endpoint that handles OAuth callback, exchanges authorization code for tokens, validates Google user information, creates/updates user records, and generates JWT tokens for session management.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 3,
@@ -450,7 +450,7 @@
             "dependencies": ["7.1"],
             "details": "Create /auth/refresh endpoint that validates refresh tokens, generates new access tokens, handles token rotation, and manages refresh token expiration with proper security measures.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 4,
@@ -459,7 +459,7 @@
             "dependencies": ["7.1"],
             "details": "Implement /auth/logout endpoint that invalidates JWT tokens, clears refresh tokens from database, removes session cookies, and handles cleanup for both client and server-side session data.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 5,
@@ -468,7 +468,7 @@
             "dependencies": ["7.2", "7.3", "7.4"],
             "details": "Add comprehensive request validation using Joi or Zod for all authentication endpoints, implement input sanitization to prevent injection attacks, and create consistent error response formatting.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 6,
@@ -477,7 +477,7 @@
             "dependencies": [],
             "details": "Configure CORS middleware to allow frontend SPA access, set appropriate origins, headers, and methods for authentication routes, and handle preflight requests for cross-origin authentication flows.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 7,
@@ -486,7 +486,7 @@
             "dependencies": ["7.5", "7.6"],
             "details": "Add security headers (HSTS, CSP, X-Frame-Options), implement rate limiting for authentication endpoints to prevent brute force attacks, and configure additional security middleware for production deployment.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           }
         ]
       },
@@ -507,7 +507,7 @@
             "dependencies": [],
             "details": "Implement save() method with INSERT/UPDATE logic, findById() with user isolation, and delete() with soft delete option. Ensure exact return types and error handling match existing localStorage contract. Include prepared statements and connection pooling.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 2,
@@ -516,7 +516,7 @@
             "dependencies": [],
             "details": "Create records table with user_id, data JSONB column, created_at, updated_at. Create normalized tags table with many-to-many relationship. Add GIN indexes on tags and JSONB data. Include foreign key constraints and user isolation.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 3,
@@ -525,7 +525,7 @@
             "dependencies": ["8.2"],
             "details": "Implement findByTags() method using GIN indexes for fast tag queries. Support AND/OR logic, tag filtering, and pagination. Optimize queries for large datasets with proper indexing strategy and query planning.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 4,
@@ -534,7 +534,7 @@
             "dependencies": ["8.2"],
             "details": "Implement user_id filtering in all queries, add row-level security policies, validate user permissions on all operations. Include SQL injection prevention and prepared statement usage throughout.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 5,
@@ -543,7 +543,7 @@
             "dependencies": ["8.2", "8.3"],
             "details": "Implement getTagStatistics() method with COUNT, GROUP BY queries on normalized tag data. Include tag frequency, usage over time, and user-specific statistics. Optimize with proper indexing and caching strategies.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 6,
@@ -552,7 +552,7 @@
             "dependencies": ["8.1", "8.3"],
             "details": "Create saveBatch() and deleteBatch() methods for efficient bulk operations. Use transactions, batch inserts, and proper error handling. Support progress reporting and rollback capabilities for large datasets.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 7,
@@ -561,7 +561,7 @@
             "dependencies": ["8.1", "8.3", "8.4", "8.5", "8.6"],
             "details": "Run existing repository tests against PostgreSQL implementation, ensure exact method signatures and return types. Performance tune queries, add connection pooling, and implement caching where appropriate. Document any performance improvements.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           }
         ]
       },
@@ -582,7 +582,7 @@
             "dependencies": [],
             "details": "Create GET /api/records endpoint with pagination support (limit, offset), sorting, and POST /api/records for record creation. Include proper HTTP status codes, response formatting, and pagination metadata in responses.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 2,
@@ -591,7 +591,7 @@
             "dependencies": ["9.1"],
             "details": "Implement GET /api/records/:id for single record retrieval, PUT /api/records/:id for updates, and DELETE /api/records/:id for deletion. Include proper 404 handling for non-existent records and optimistic locking for updates.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 3,
@@ -600,7 +600,7 @@
             "dependencies": ["9.1", "9.2"],
             "details": "Create validation schemas for record creation and update requests using Joi or Zod. Validate required fields, data types, format constraints, and business rules. Return detailed validation error messages with field-specific feedback.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 4,
@@ -609,7 +609,7 @@
             "dependencies": ["9.1"],
             "details": "Implement query parameters for text search, field-based filtering, date ranges, and tag filtering. Use database indexes for performance and support partial matches and case-insensitive search.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 5,
@@ -618,7 +618,7 @@
             "dependencies": ["9.1", "9.2"],
             "details": "Apply authentication middleware to all record endpoints, implement rate limiting per user/IP, and add proper authorization checks. Include different rate limits for read vs write operations and handle rate limit exceeded responses.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 6,
@@ -627,7 +627,7 @@
             "dependencies": ["9.1", "9.3"],
             "details": "Create duplicate detection algorithm based on record content similarity, implement deduplication checks during record creation, and provide options for handling potential duplicates (merge, skip, or flag for review).",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 7,
@@ -636,7 +636,7 @@
             "dependencies": ["9.1", "9.2", "9.3", "9.4", "9.5", "9.6"],
             "details": "Add structured error responses, implement request/response logging, add performance monitoring, handle database connection errors, and create proper error categorization (client vs server errors) with appropriate HTTP status codes.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           }
         ]
       },
@@ -657,7 +657,7 @@
             "dependencies": [],
             "details": "Create GET /api/tags endpoint that returns tag frequency statistics for tag cloud visualization. Include tag names, usage counts, and percentage calculations. Implement proper request validation, error handling, and response formatting according to OpenAPI specification.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 2,
@@ -666,7 +666,7 @@
             "dependencies": [],
             "details": "Implement GET /api/tags/suggest endpoint that accepts query parameters for prefix matching and returns relevant tag suggestions. Include configurable result limits, case-insensitive matching, and proper response formatting for frontend integration.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 3,
@@ -675,7 +675,7 @@
             "dependencies": ["10.1", "10.2"],
             "details": "Design and implement efficient PostgreSQL queries for tag statistics and suggestions. Create appropriate indexes on tag columns for prefix matching and frequency calculations. Optimize query performance for large datasets and ensure scalability.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 4,
@@ -684,7 +684,7 @@
             "dependencies": ["10.1", "10.2"],
             "details": "Add user authentication verification and data filtering to ensure users only see their own tags in statistics and suggestions. Implement proper WHERE clauses and security measures to prevent data leakage between users.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 5,
@@ -693,7 +693,7 @@
             "dependencies": ["10.3", "10.4"],
             "details": "Implement Redis-based caching for tag statistics and suggestion results. Design cache invalidation strategies for when tags are added/modified. Include cache warming, TTL configuration, and cache hit/miss monitoring.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 6,
@@ -702,7 +702,7 @@
             "dependencies": ["10.2", "10.3"],
             "details": "Develop algorithms for intelligent prefix matching that handles partial words and typos. Implement frequency-based sorting that prioritizes commonly used tags while maintaining relevance to user input. Include configurable ranking factors and result relevance scoring.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           }
         ]
       },
@@ -723,7 +723,7 @@
             "dependencies": [],
             "details": "Create GET /api/user/profile endpoint that returns authenticated user's profile data including name, email, avatar, and account creation date. Include proper authentication middleware integration and response formatting following OpenAPI specification.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 2,
@@ -732,7 +732,7 @@
             "dependencies": ["11.1"],
             "details": "Implement GET /api/user/settings endpoint that returns user's current settings including normalization preferences, display options, and system configurations. Include default value handling for missing settings and proper JSON response structure.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 3,
@@ -741,7 +741,7 @@
             "dependencies": ["11.2"],
             "details": "Implement PUT /api/user/settings endpoint that accepts settings updates with comprehensive input validation using Joi/Zod. Include partial update support, validation error responses, and proper conflict handling for concurrent updates.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 4,
@@ -750,7 +750,7 @@
             "dependencies": ["11.3"],
             "details": "Create robust settings validation schema covering all supported settings types, implement default value resolution logic, and add settings migration support for schema changes. Include validation for normalization settings and their impact on tag processing.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 5,
@@ -759,7 +759,7 @@
             "dependencies": ["11.4"],
             "details": "Implement integration between normalization setting updates and tag processing system. Include comprehensive input validation, error handling for invalid configurations, rollback mechanisms for failed updates, and proper error responses following API specification.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           }
         ]
       },
@@ -780,7 +780,7 @@
             "dependencies": [],
             "details": "Create comprehensive JSON schemas supporting both localStorage and PostgreSQL data formats. Include field validation, type checking, and version compatibility rules. Define schema migration paths between v1.0 and v2.0 formats.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 2,
@@ -789,7 +789,7 @@
             "dependencies": ["12.1"],
             "details": "Build REST endpoint supporting query parameters for format version (v1.0/v2.0), user data filtering, and export scope selection. Implement data serialization logic for both localStorage and PostgreSQL formats.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 3,
@@ -798,7 +798,7 @@
             "dependencies": ["12.1"],
             "details": "Build POST endpoint accepting multipart/form-data uploads. Implement JSON validation against schemas, automatic format version detection, and preliminary data structure verification before processing.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 4,
@@ -807,7 +807,7 @@
             "dependencies": ["12.3"],
             "details": "Create duplicate detection algorithms comparing record IDs, timestamps, and content hashes. Implement conflict resolution strategies (skip, overwrite, merge) with user preference configuration and detailed conflict reporting.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 5,
@@ -816,7 +816,7 @@
             "dependencies": ["12.2", "12.3"],
             "details": "Implement WebSocket or Server-Sent Events for real-time progress updates. Include processing statistics, estimated completion time, and detailed operation logs for large dataset handling.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 6,
@@ -825,7 +825,7 @@
             "dependencies": ["12.3"],
             "details": "Add configurable file size limits, streaming JSON parsing for memory efficiency, and chunked processing for large datasets. Implement temporary file handling and cleanup mechanisms.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 7,
@@ -834,7 +834,7 @@
             "dependencies": ["12.4", "12.5", "12.6"],
             "details": "Build error recovery mechanisms supporting transaction rollback, partial import continuation, detailed error logging, and user-friendly error messages. Include validation error reporting and data repair suggestions.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           }
         ]
       },
@@ -855,7 +855,7 @@
             "dependencies": [],
             "details": "Implement rate limiting middleware using express-rate-limit with Redis store for distributed rate limiting. Configure different limits for authentication endpoints vs general API. Include bypass mechanisms for trusted sources and proper error responses when limits exceeded.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 2,
@@ -864,7 +864,7 @@
             "dependencies": [],
             "details": "Add DOMPurify for HTML sanitization, implement input validation middleware to sanitize all request data, configure XSS protection headers, and create utility functions for safe data handling across the application.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 3,
@@ -873,7 +873,7 @@
             "dependencies": [],
             "details": "Configure helmet.js middleware with HSTS, Content Security Policy, X-Frame-Options, X-Content-Type-Options, and other security headers. Create environment-specific CSP configurations and implement proper CORS policies.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 4,
@@ -882,7 +882,7 @@
             "dependencies": [],
             "details": "Design standardized error response schema with error codes, messages, and metadata. Create global error handler middleware, implement custom error classes for different error types, and ensure consistent error formatting across all endpoints.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 5,
@@ -891,7 +891,7 @@
             "dependencies": [],
             "details": "Implement Joi/Zod schema validation for all API endpoints, ensure parameterized queries for all database operations, add input validation middleware, and create validation schemas for all request bodies and parameters.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 6,
@@ -900,7 +900,7 @@
             "dependencies": ["13.1", "13.4"],
             "details": "Implement Winston logger with structured logging format, add request/response logging middleware, create security event monitoring for failed auth attempts and rate limit breaches, setup health check endpoints, and configure log rotation.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 7,
@@ -909,7 +909,7 @@
             "dependencies": ["13.1", "13.2", "13.3", "13.4", "13.5"],
             "details": "Create automated security tests for XSS, CSRF, SQL injection attempts, rate limiting verification, authentication bypass attempts, and security header validation. Setup penetration testing scripts and security audit checklist.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           }
         ]
       },
@@ -930,7 +930,7 @@
             "dependencies": [],
             "details": "Create HTTP client service using fetch or axios with base URL configuration, request/response interceptors for headers, content-type handling, and basic error parsing. Include TypeScript interfaces for API responses.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 2,
@@ -939,7 +939,7 @@
             "dependencies": ["14.1"],
             "details": "Integrate authentication token storage, automatic header injection for authenticated requests, token validation, and logout handling when tokens are invalid or expired.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 3,
@@ -948,7 +948,7 @@
             "dependencies": ["14.2"],
             "details": "Add token refresh interceptor that detects 401 responses, refreshes tokens automatically, and retries original requests. Include request queuing during refresh process to prevent multiple refresh attempts.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 4,
@@ -957,7 +957,7 @@
             "dependencies": ["14.3"],
             "details": "Replace localStorage repository methods (create, read, update, delete) with corresponding API endpoints. Update all components and services to use the new API client instead of localStorage.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 5,
@@ -966,7 +966,7 @@
             "dependencies": ["14.4"],
             "details": "Add loading state management for async operations, error boundary components, specific error handling for different HTTP status codes, and user-friendly error messages with retry options.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 6,
@@ -975,7 +975,7 @@
             "dependencies": ["14.5"],
             "details": "Implement optimistic updates for create/update operations, cache invalidation strategies, rollback mechanisms for failed optimistic updates, and cache synchronization with server state.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 7,
@@ -984,7 +984,7 @@
             "dependencies": ["14.6"],
             "details": "Add exponential backoff retry logic for network failures, differentiate between retryable and non-retryable errors, implement request timeout handling, and provide user feedback for persistent network issues.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 8,
@@ -993,7 +993,7 @@
             "dependencies": ["14.7"],
             "details": "Add network connectivity detection, offline state management, graceful degradation to read-only mode when offline, and background sync when connection is restored. Ensure compatibility with existing state management.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           }
         ]
       },
@@ -1023,7 +1023,7 @@
             "dependencies": ["15.1"],
             "details": "Design and implement login button component with Google branding, create logout functionality, add loading states and error handling, implement redirect handling after authentication, and ensure accessibility compliance.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 3,
@@ -1032,7 +1032,7 @@
             "dependencies": ["15.1"],
             "details": "Create AuthContext with user state, authentication status, login/logout actions, token management, and error state handling. Include TypeScript interfaces for authentication state and provide custom hooks for consuming auth context.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 4,
@@ -1041,7 +1041,7 @@
             "dependencies": ["15.3"],
             "details": "Implement ProtectedRoute component that checks authentication status, handles redirects to login page for unauthenticated users, preserves intended destination URLs, and provides fallback UI for authentication loading states.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 5,
@@ -1050,7 +1050,7 @@
             "dependencies": ["15.3"],
             "details": "Create session storage utilities for persisting authentication tokens, implement automatic session restoration on app initialization, handle token expiration and refresh logic, and provide secure storage practices for sensitive data.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 6,
@@ -1059,7 +1059,7 @@
             "dependencies": ["15.3", "15.5"],
             "details": "Create user profile display component showing user info from Google OAuth, implement profile settings management UI, add user avatar display, create profile editing capabilities, and integrate with user settings API endpoints.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 7,
@@ -1068,7 +1068,7 @@
             "dependencies": ["15.2", "15.4", "15.6"],
             "details": "Write E2E tests for login/logout flows, test protected route access and redirects, verify session persistence across browser sessions, test error scenarios and edge cases, and create integration tests for authentication state management.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           }
         ]
       },
@@ -1089,7 +1089,7 @@
             "dependencies": [],
             "details": "Implement ErrorBoundary component using componentDidCatch lifecycle method or error boundary hook. Create fallback UI components for different error scenarios. Add error logging and reporting. Wrap key application sections with error boundaries to prevent complete app crashes.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 2,
@@ -1098,7 +1098,7 @@
             "dependencies": [],
             "details": "Create reusable loading spinner components, progress bars, and skeleton screens. Implement loading state management in React components and API calls. Add loading overlays for page transitions and form submissions. Ensure accessibility with proper ARIA labels and screen reader support.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 3,
@@ -1107,7 +1107,7 @@
             "dependencies": [],
             "details": "Create toast notification component with different variants (success, error, warning, info). Implement toast queue management and auto-dismiss functionality. Add toast positioning and animation. Integrate with API calls to show operation results. Ensure notifications are accessible and keyboard navigable.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 4,
@@ -1116,7 +1116,7 @@
             "dependencies": [],
             "details": "Implement HTTP interceptors for request/response error handling. Add exponential backoff retry strategy for transient failures. Create network error classification (timeout, connection, server errors). Implement circuit breaker pattern for repeated failures. Add user-friendly error messages for different network scenarios.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 5,
@@ -1125,7 +1125,7 @@
             "dependencies": [],
             "details": "Implement browser online/offline event listeners. Create offline indicator UI component. Add offline queue for failed requests to retry when online. Implement service worker for offline functionality if needed. Show appropriate messaging when app functionality is limited due to connectivity.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 6,
@@ -1134,7 +1134,7 @@
             "dependencies": ["16.1", "16.3", "16.4"],
             "details": "Create fallback UI states for when API endpoints are unavailable. Implement local storage fallbacks where appropriate. Add server health check endpoints and monitoring. Create maintenance mode UI. Ensure critical app functions remain usable with degraded backend availability.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           }
         ]
       },
@@ -1155,7 +1155,7 @@
             "dependencies": [],
             "details": "Create production Dockerfile with multi-stage builds separating build and runtime environments. Include dependency caching, security hardening with non-root user, and minimal runtime image. Optimize for layer caching and build speed.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 2,
@@ -1164,7 +1164,7 @@
             "dependencies": ["17.1"],
             "details": "Create Nginx configuration files for reverse proxy to backend services. Include load balancing configuration, upstream server definitions, proxy headers, and connection pooling. Configure gzip compression and static file serving.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 3,
@@ -1173,7 +1173,7 @@
             "dependencies": ["17.2"],
             "details": "Configure SSL/TLS certificates with Let's Encrypt automation using certbot. Include automatic certificate renewal, HTTPS redirection, SSL security headers, and certificate validation. Setup Docker volumes for certificate persistence.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 4,
@@ -1182,7 +1182,7 @@
             "dependencies": ["17.1"],
             "details": "Create environment variable management system with Docker secrets or external secret management. Include configuration for database credentials, API keys, SSL certificates, and application settings. Implement secrets rotation and validation.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 5,
@@ -1191,7 +1191,7 @@
             "dependencies": ["17.1", "17.2"],
             "details": "Add Docker health checks for all services, implement /health and /metrics endpoints for application monitoring. Configure Nginx health checks, database connection monitoring, and service dependency verification.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 6,
@@ -1200,7 +1200,7 @@
             "dependencies": ["17.3", "17.4", "17.5"],
             "details": "Create comprehensive documentation for production deployment including docker-compose configuration, deployment scripts, performance tuning guidelines, security considerations, and troubleshooting guide. Include backup and disaster recovery procedures.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           }
         ]
       },
@@ -1221,7 +1221,7 @@
             "dependencies": [],
             "details": "Develop shell scripts for automated PostgreSQL backups using pg_dump with compression, proper connection handling, environment variable configuration, and cron job scheduling. Include backup file naming conventions with timestamps and database identification.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 2,
@@ -1230,7 +1230,7 @@
             "dependencies": ["18.1"],
             "details": "Create backup rotation logic to manage storage space by implementing retention policies (daily, weekly, monthly backups), automatic cleanup of old backup files, and configurable retention periods. Include disk space monitoring and cleanup procedures.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 3,
@@ -1239,7 +1239,7 @@
             "dependencies": ["18.1"],
             "details": "Create backup verification scripts that check file integrity using checksums, validate backup file structure, perform test restores to verify backup completeness, and log verification results with status reporting.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 4,
@@ -1248,7 +1248,7 @@
             "dependencies": ["18.1"],
             "details": "Configure PostgreSQL WAL archiving for point-in-time recovery, create recovery scripts and procedures, document recovery processes, and implement recovery testing procedures. Include recovery.conf template generation and recovery verification steps.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 5,
@@ -1257,7 +1257,7 @@
             "dependencies": ["18.3", "18.4"],
             "details": "Create automated restore testing scripts that perform regular restore validations to test environments, verify data integrity after restore, measure recovery time objectives (RTO), and validate restore procedures. Include restore documentation and runbooks.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 6,
@@ -1266,7 +1266,7 @@
             "dependencies": ["18.2", "18.3"],
             "details": "Setup monitoring for backup job success/failure, disk space usage, backup file integrity, and recovery testing results. Implement alerting mechanisms (email, Slack, etc.) for backup failures, configure health checks, and create backup status dashboard with metrics and reporting.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           }
         ]
       },
@@ -1287,7 +1287,7 @@
             "dependencies": [],
             "details": "Create CLI tool structure with commander.js or similar, define command arguments (source, target, options), design configuration file format, establish logging framework, and create help documentation. Define migration modes (dry-run, full, incremental) and command validation.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 2,
@@ -1296,7 +1296,7 @@
             "dependencies": ["19.1"],
             "details": "Implement localStorage data parser for JSON exports, create data validation schemas, handle malformed data gracefully, detect data format versions (v1.0, v2.0), and create data structure mapping. Include support for different browser export formats.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 3,
@@ -1305,7 +1305,7 @@
             "dependencies": ["19.1"],
             "details": "Create user registration workflow for migrated data, implement Google OAuth integration for new users, handle existing user detection, create user mapping from localStorage to PostgreSQL format, and establish user session management for CLI operations.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 4,
@@ -1314,7 +1314,7 @@
             "dependencies": ["19.2"],
             "details": "Create tag normalization rules (case sensitivity, special characters), implement data transformation from localStorage format to PostgreSQL schema, handle nested data structures, create mapping for record metadata, and ensure data type consistency.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 5,
@@ -1323,7 +1323,7 @@
             "dependencies": ["19.3", "19.4"],
             "details": "Implement record deduplication algorithms based on content similarity, create conflict resolution strategies (merge, skip, overwrite), handle timestamp conflicts, provide user choice for resolution methods, and maintain audit trail of resolution decisions.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 6,
@@ -1332,7 +1332,7 @@
             "dependencies": ["19.5"],
             "details": "Create batch processing engine with configurable batch sizes, implement memory management for large datasets, add database transaction management, create checkpoint/resume functionality, and optimize database connection pooling for batch operations.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 7,
@@ -1341,7 +1341,7 @@
             "dependencies": ["19.6"],
             "details": "Create progress bar and status reporting, implement detailed error logging with categorization, add migration statistics reporting, create rollback capability documentation, generate migration summary reports, and implement email notifications for completion status.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           }
         ]
       },
@@ -1362,7 +1362,7 @@
             "dependencies": [],
             "details": "Setup Playwright configuration for authentication testing, create test utilities for OAuth flow mocking, configure test data isolation, and setup authentication state management for tests. Include environment variables for test OAuth credentials and mock server configuration.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 2,
@@ -1371,7 +1371,7 @@
             "dependencies": ["20.1"],
             "details": "Implement Playwright tests for complete OAuth flow: login initiation, Google consent screen handling, callback processing, JWT token validation, refresh token rotation, and logout. Include error scenarios like denied consent and expired tokens.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 3,
@@ -1380,7 +1380,7 @@
             "dependencies": ["20.1"],
             "details": "Create comprehensive API tests for all endpoints: authentication routes, record CRUD operations, tag management, user settings, and data export/import. Include request/response validation, error handling verification, and API contract compliance testing.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 4,
@@ -1389,7 +1389,7 @@
             "dependencies": ["20.2", "20.3"],
             "details": "Implement E2E tests with multiple user sessions to verify data isolation: records, tags, settings, and export data. Test concurrent user operations, data leakage prevention, and user-specific data access controls.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 5,
@@ -1398,7 +1398,7 @@
             "dependencies": ["20.3"],
             "details": "Setup performance testing with Playwright metrics collection, implement load testing for authentication flow, API operations, and data export/import. Include response time benchmarks, concurrent user testing, and database performance under load.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 6,
@@ -1407,7 +1407,7 @@
             "dependencies": ["20.2", "20.3"],
             "details": "Create tests for error scenarios: network failures, invalid tokens, database connection issues, malformed API requests, rate limiting, and unexpected server responses. Include recovery testing and graceful degradation verification.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
             "id": 7,
@@ -1416,7 +1416,7 @@
             "dependencies": ["20.4"],
             "details": "Implement E2E tests for complete export/import cycle: data export in various formats, file integrity validation, import process verification, data consistency checks, and error handling for corrupted imports. Include large dataset testing and format compatibility verification.",
             "status": "pending",
-            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation"
+            "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           }
         ]
       }
