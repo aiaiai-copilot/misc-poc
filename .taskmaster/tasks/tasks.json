@@ -149,7 +149,7 @@
             "description": "Generate migration file for users table with Google OAuth integration fields",
             "dependencies": ["3.1"],
             "details": "Create migration with fields: id (UUID primary key), google_id (unique), email, name, profile_picture_url, created_at, updated_at. Add proper indexes on google_id and email. Include constraints for required OAuth fields and email validation.",
-            "status": "in-progress",
+            "status": "done",
             "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test migration execution, schema validation, index creation, and constraint enforcement"
           },
           {
@@ -158,7 +158,7 @@
             "description": "Generate migration file for records table with optimized indexing strategy",
             "dependencies": ["3.2"],
             "details": "Create migration with fields: id (UUID), user_id (foreign key), original_content, normalized_content, tags (array/JSONB), created_at, updated_at. Add indexes on user_id, tags (GIN index for PostgreSQL), created_at, and composite indexes for common query patterns.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
@@ -1423,7 +1423,7 @@
     ],
     "metadata": {
       "created": "2025-09-21T07:42:47.545Z",
-      "updated": "2025-09-22T16:59:54.898Z",
+      "updated": "2025-09-23T02:09:51.814Z",
       "description": "Tasks for mvp context"
     }
   }
