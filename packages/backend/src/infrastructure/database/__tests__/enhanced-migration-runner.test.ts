@@ -448,4 +448,264 @@ describe('Enhanced Migration Runner Contract Tests', () => {
       );
     });
   });
+
+  describe('Checksum Validation Integration', () => {
+    beforeEach(() => {
+      // Mock MigrationChecksumValidator methods
+      jest.doMock('../migration-checksum-validator.js', () => ({
+        MigrationChecksumValidator: jest.fn().mockImplementation(() => ({
+          analyzeMigrationFile: jest.fn(),
+          validateMigrationChecksum: jest.fn(),
+          generateChecksumForFile: jest.fn(),
+        })),
+      }));
+    });
+
+    it('should validate migration checksums before execution', async () => {
+      // Arrange
+      const mockMigrations = [{ name: 'Migration1' }];
+      (mockDataSource as any).isInitialized = false;
+      (mockDataSource.initialize as jest.Mock).mockResolvedValue(undefined);
+      (mockDataSource.runMigrations as jest.Mock).mockResolvedValue(
+        mockMigrations
+      );
+
+      // Mock checksum validation to pass
+      const mockValidateChecksums = jest.fn().mockResolvedValue({
+        isValid: true,
+        validationResults: [
+          {
+            migrationName: 'Migration1',
+            filePath: '/path/to/Migration1.ts',
+            isValid: true,
+            actualChecksum: 'abc123',
+          },
+        ],
+        totalChecked: 1,
+        validCount: 1,
+        invalidCount: 0,
+      });
+      migrationRunner.validateMigrationChecksums = mockValidateChecksums;
+
+      const progressCallback = jest.fn();
+
+      // Act
+      const result = await migrationRunner.runMigrationsWithTransaction({
+        progressCallback,
+      });
+
+      // Assert
+      expect(mockValidateChecksums).toHaveBeenCalled();
+      expect(progressCallback).toHaveBeenCalledWith(
+        expect.objectContaining({
+          phase: 'validating',
+          message: 'Validating migration file integrity...',
+        })
+      );
+      expect(result.success).toBe(true);
+    });
+
+    it('should fail migration execution if checksum validation fails', async () => {
+      // Arrange
+      (mockDataSource as any).isInitialized = false;
+      (mockDataSource.initialize as jest.Mock).mockResolvedValue(undefined);
+
+      // Mock checksum validation to fail
+      const mockValidateChecksums = jest.fn().mockResolvedValue({
+        isValid: false,
+        validationResults: [
+          {
+            migrationName: 'Migration1',
+            filePath: '/path/to/Migration1.ts',
+            isValid: false,
+            expectedChecksum: 'abc123',
+            actualChecksum: 'def456',
+            error: 'checksum mismatch',
+          },
+        ],
+        totalChecked: 1,
+        validCount: 0,
+        invalidCount: 1,
+      });
+      migrationRunner.validateMigrationChecksums = mockValidateChecksums;
+
+      // Act
+      const result = await migrationRunner.runMigrationsWithTransaction();
+
+      // Assert
+      expect(mockValidateChecksums).toHaveBeenCalled();
+      expect(result.success).toBe(false);
+      expect(result.errors[0]).toContain('Migration integrity check failed');
+      expect(mockDataSource.runMigrations).not.toHaveBeenCalled();
+    });
+
+    it('should update checksums after successful migration execution', async () => {
+      // Arrange
+      const mockMigrations = [{ name: 'Migration1' }, { name: 'Migration2' }];
+      (mockDataSource as any).isInitialized = false;
+      (mockDataSource.initialize as jest.Mock).mockResolvedValue(undefined);
+      (mockDataSource.runMigrations as jest.Mock).mockResolvedValue(
+        mockMigrations
+      );
+
+      // Mock checksum validation and update methods
+      const mockValidateChecksums = jest.fn().mockResolvedValue({
+        isValid: true,
+        validationResults: [],
+        totalChecked: 0,
+        validCount: 0,
+        invalidCount: 0,
+      });
+      const mockUpdateChecksums = jest.fn().mockResolvedValue(undefined);
+      migrationRunner.validateMigrationChecksums = mockValidateChecksums;
+      migrationRunner.updateMigrationChecksums = mockUpdateChecksums;
+
+      const progressCallback = jest.fn();
+
+      // Act
+      const result = await migrationRunner.runMigrationsWithTransaction({
+        progressCallback,
+      });
+
+      // Assert
+      expect(mockUpdateChecksums).toHaveBeenCalledWith([
+        'Migration1',
+        'Migration2',
+      ]);
+      expect(progressCallback).toHaveBeenCalledWith(
+        expect.objectContaining({
+          phase: 'updating-checksums',
+          message: 'Updating migration checksums...',
+        })
+      );
+      expect(result.success).toBe(true);
+    });
+
+    it('should not fail migration if checksum update fails', async () => {
+      // Arrange
+      const mockMigrations = [{ name: 'Migration1' }];
+      (mockDataSource as any).isInitialized = false;
+      (mockDataSource.initialize as jest.Mock).mockResolvedValue(undefined);
+      (mockDataSource.runMigrations as jest.Mock).mockResolvedValue(
+        mockMigrations
+      );
+
+      // Mock checksum validation to pass but update to fail
+      const mockValidateChecksums = jest.fn().mockResolvedValue({
+        isValid: true,
+        validationResults: [],
+        totalChecked: 0,
+        validCount: 0,
+        invalidCount: 0,
+      });
+      const mockUpdateChecksums = jest
+        .fn()
+        .mockRejectedValue(new Error('Update failed'));
+      migrationRunner.validateMigrationChecksums = mockValidateChecksums;
+      migrationRunner.updateMigrationChecksums = mockUpdateChecksums;
+
+      const consoleWarnSpy = jest
+        .spyOn(console, 'warn')
+        .mockImplementation(() => {});
+
+      // Act
+      const result = await migrationRunner.runMigrationsWithTransaction();
+
+      // Assert
+      expect(result.success).toBe(true); // Migration should still succeed
+      expect(consoleWarnSpy).toHaveBeenCalledWith(
+        'Failed to update migration checksums:',
+        expect.any(Error)
+      );
+
+      consoleWarnSpy.mockRestore();
+    });
+
+    it('should validate individual migration checksums against stored values', async () => {
+      // Arrange
+      (mockDataSource as any).isInitialized = false;
+      (mockDataSource.initialize as jest.Mock).mockResolvedValue(undefined);
+
+      // Mock filesystem and database calls
+      const mockGetMigrationFiles = jest
+        .fn()
+        .mockResolvedValue([
+          '/path/to/Migration1.ts',
+          '/path/to/Migration2.ts',
+        ]);
+      const mockGetStoredChecksums = jest.fn().mockResolvedValue(
+        new Map([
+          ['Migration1', 'abc123'],
+          ['Migration2', 'def456'],
+        ])
+      );
+
+      migrationRunner['getMigrationFiles'] = mockGetMigrationFiles;
+      migrationRunner['getStoredChecksums'] = mockGetStoredChecksums;
+
+      // Mock checksum validator
+      const mockAnalyzeMigrationFile = jest
+        .fn()
+        .mockResolvedValueOnce({
+          name: 'Migration1',
+          checksum: 'abc123',
+        })
+        .mockResolvedValueOnce({
+          name: 'Migration2',
+          checksum: 'def456',
+        });
+      const mockValidateChecksum = jest.fn().mockResolvedValue(true);
+
+      migrationRunner['checksumValidator'] = {
+        analyzeMigrationFile: mockAnalyzeMigrationFile,
+        validateMigrationChecksum: mockValidateChecksum,
+      } as any;
+
+      // Act
+      const result = await migrationRunner.validateMigrationChecksums();
+
+      // Assert
+      expect(result.isValid).toBe(true);
+      expect(result.totalChecked).toBe(2);
+      expect(result.validCount).toBe(2);
+      expect(result.invalidCount).toBe(0);
+      expect(mockValidateChecksum).toHaveBeenCalledTimes(2);
+    });
+
+    it('should handle checksum validation errors gracefully', async () => {
+      // Arrange
+      (mockDataSource as any).isInitialized = false;
+      (mockDataSource.initialize as jest.Mock).mockResolvedValue(undefined);
+
+      // Mock filesystem call to return files
+      const mockGetMigrationFiles = jest
+        .fn()
+        .mockResolvedValue(['/path/to/Migration1.ts']);
+      const mockGetStoredChecksums = jest
+        .fn()
+        .mockResolvedValue(new Map([['Migration1', 'abc123']]));
+
+      migrationRunner['getMigrationFiles'] = mockGetMigrationFiles;
+      migrationRunner['getStoredChecksums'] = mockGetStoredChecksums;
+
+      // Mock checksum validator to throw error
+      const mockAnalyzeMigrationFile = jest
+        .fn()
+        .mockRejectedValue(new Error('File not readable'));
+
+      migrationRunner['checksumValidator'] = {
+        analyzeMigrationFile: mockAnalyzeMigrationFile,
+      } as any;
+
+      // Act
+      const result = await migrationRunner.validateMigrationChecksums();
+
+      // Assert
+      expect(result.isValid).toBe(false);
+      expect(result.totalChecked).toBe(1);
+      expect(result.validCount).toBe(0);
+      expect(result.invalidCount).toBe(1);
+      expect(result.validationResults[0].error).toBe('File not readable');
+    });
+  });
 });

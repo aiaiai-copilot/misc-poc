@@ -1,5 +1,8 @@
 import { DataSource } from 'typeorm';
 import { getDataSource } from './data-source.js';
+import { MigrationChecksumValidator } from './migration-checksum-validator.js';
+import { glob } from 'glob';
+import { join } from 'path';
 
 /**
  * Enhanced Migration Runner with rollback capability and error handling
@@ -87,6 +90,21 @@ export interface ValidationResult {
   issues: string[];
 }
 
+export interface ChecksumValidationResult {
+  isValid: boolean;
+  validationResults: Array<{
+    migrationName: string;
+    filePath: string;
+    isValid: boolean;
+    expectedChecksum?: string;
+    actualChecksum?: string;
+    error?: string;
+  }>;
+  totalChecked: number;
+  validCount: number;
+  invalidCount: number;
+}
+
 export interface ConnectionValidation {
   isValid: boolean;
   error: string | null;
@@ -94,9 +112,11 @@ export interface ConnectionValidation {
 
 export class EnhancedMigrationRunner {
   private dataSource: DataSource;
+  private checksumValidator: MigrationChecksumValidator;
 
   constructor(dataSource?: DataSource) {
     this.dataSource = dataSource || getDataSource();
+    this.checksumValidator = new MigrationChecksumValidator();
   }
 
   /**
@@ -138,6 +158,33 @@ export class EnhancedMigrationRunner {
 
       console.log('Starting migration execution...');
 
+      // Validate migration checksums before execution
+      if (options.progressCallback) {
+        options.progressCallback({
+          phase: 'validating',
+          message: 'Validating migration file integrity...',
+        });
+      }
+
+      const checksumValidation = await this.validateMigrationChecksums();
+      if (!checksumValidation.isValid) {
+        const invalidMigrations = checksumValidation.validationResults
+          .filter((r) => !r.isValid)
+          .map((r) => `${r.migrationName}: ${r.error || 'checksum mismatch'}`)
+          .join(', ');
+
+        return {
+          success: false,
+          executedMigrations: [],
+          errors: [`Migration integrity check failed: ${invalidMigrations}`],
+          state: {
+            executionStartTime: startTime,
+            executionEndTime: new Date(),
+            totalDuration: 0,
+          },
+        };
+      }
+
       // Dry run mode - analyze what would be executed
       if (options.dryRun) {
         const pendingMigrations = await this.getPendingMigrations();
@@ -166,6 +213,23 @@ export class EnhancedMigrationRunner {
         endTime.getTime() - startTime.getTime()
       ); // Ensure minimum 1ms for tests
       const executedMigrations = migrations.map((migration) => migration.name);
+
+      // Update checksums for executed migrations
+      if (executedMigrations.length > 0) {
+        if (options.progressCallback) {
+          options.progressCallback({
+            phase: 'updating-checksums',
+            message: 'Updating migration checksums...',
+          });
+        }
+
+        try {
+          await this.updateMigrationChecksums(executedMigrations);
+        } catch (error) {
+          console.warn('Failed to update migration checksums:', error);
+          // Don't fail the migration for checksum update failures
+        }
+      }
 
       console.log('Migration completed successfully');
 
@@ -409,6 +473,171 @@ export class EnhancedMigrationRunner {
           `Validation failed: ${error instanceof Error ? error.message : String(error)}`,
         ],
       };
+    }
+  }
+
+  /**
+   * Validate migration file checksums for integrity checking
+   * Following PRD section 4.2.2 - Checksum validation requirements
+   */
+  async validateMigrationChecksums(): Promise<ChecksumValidationResult> {
+    try {
+      await this.initialize();
+
+      // Get migration files from the filesystem
+      const migrationFiles = await this.getMigrationFiles();
+
+      // Get stored checksums from database
+      const storedChecksums = await this.getStoredChecksums();
+
+      const validationResults: ChecksumValidationResult['validationResults'] =
+        [];
+
+      for (const filePath of migrationFiles) {
+        try {
+          const migrationInfo =
+            await this.checksumValidator.analyzeMigrationFile(filePath);
+          const storedChecksum = storedChecksums.get(migrationInfo.name);
+
+          if (storedChecksum) {
+            // Validate against stored checksum
+            const isValid =
+              await this.checksumValidator.validateMigrationChecksum(
+                filePath,
+                storedChecksum
+              );
+
+            validationResults.push({
+              migrationName: migrationInfo.name,
+              filePath,
+              isValid,
+              expectedChecksum: storedChecksum,
+              actualChecksum: migrationInfo.checksum,
+            });
+          } else {
+            // No stored checksum found - consider this valid for new migrations
+            validationResults.push({
+              migrationName: migrationInfo.name,
+              filePath,
+              isValid: true,
+              actualChecksum: migrationInfo.checksum,
+            });
+          }
+        } catch (error) {
+          const errorMessage =
+            error instanceof Error ? error.message : String(error);
+          validationResults.push({
+            migrationName: 'unknown',
+            filePath,
+            isValid: false,
+            error: errorMessage,
+          });
+        }
+      }
+
+      const validCount = validationResults.filter((r) => r.isValid).length;
+      const invalidCount = validationResults.length - validCount;
+
+      return {
+        isValid: invalidCount === 0,
+        validationResults,
+        totalChecked: validationResults.length,
+        validCount,
+        invalidCount,
+      };
+    } catch {
+      return {
+        isValid: false,
+        validationResults: [],
+        totalChecked: 0,
+        validCount: 0,
+        invalidCount: 0,
+      };
+    }
+  }
+
+  /**
+   * Update migration checksums in database after successful migration
+   */
+  async updateMigrationChecksums(migrationNames: string[]): Promise<void> {
+    await this.initialize();
+
+    const migrationFiles = await this.getMigrationFiles();
+    const queryRunner = this.dataSource.createQueryRunner();
+
+    try {
+      for (const migrationName of migrationNames) {
+        // Find the corresponding file
+        const filePath = migrationFiles.find(
+          (file) =>
+            file.includes(migrationName) ||
+            migrationName.includes(file.split('/').pop()?.split('.')[0] || '')
+        );
+
+        if (filePath) {
+          const checksum =
+            await this.checksumValidator.generateChecksumForFile(filePath);
+
+          // Update the migrations table with checksum
+          await queryRunner.query(
+            `
+            UPDATE ${this.dataSource.options.migrationsTableName || 'migrations'}
+            SET checksum = $1, file_path = $2, version = $3
+            WHERE name = $4
+          `,
+            [checksum, filePath, '1.0.0', migrationName]
+          );
+        }
+      }
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
+  /**
+   * Get migration files from the filesystem
+   */
+  private async getMigrationFiles(): Promise<string[]> {
+    // Use a more robust approach that works in both Node and Jest
+    const currentDir = process.cwd();
+    const migrationsDir = join(
+      currentDir,
+      'packages/backend/src/infrastructure/database/migrations'
+    );
+
+    try {
+      const files = await glob('*.ts', { cwd: migrationsDir });
+      return files.map((file) => join(migrationsDir, file));
+    } catch (error) {
+      console.warn('Could not read migration files directory:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Get stored checksums from database
+   */
+  private async getStoredChecksums(): Promise<Map<string, string>> {
+    const queryRunner = this.dataSource.createQueryRunner();
+    try {
+      const checksums = await queryRunner.query(`
+        SELECT name, checksum
+        FROM ${this.dataSource.options.migrationsTableName || 'migrations'}
+        WHERE checksum IS NOT NULL
+      `);
+
+      const checksumMap = new Map<string, string>();
+      for (const row of checksums) {
+        if (row.name && row.checksum) {
+          checksumMap.set(row.name, row.checksum);
+        }
+      }
+      return checksumMap;
+    } catch {
+      // Table might not exist or checksum column might not exist
+      return new Map();
+    } finally {
+      await queryRunner.release();
     }
   }
 

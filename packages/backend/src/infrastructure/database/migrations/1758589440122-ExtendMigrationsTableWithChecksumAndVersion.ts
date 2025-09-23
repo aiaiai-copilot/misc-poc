@@ -1,4 +1,9 @@
-import { MigrationInterface, QueryRunner, TableColumn, Index } from 'typeorm';
+import {
+  MigrationInterface,
+  QueryRunner,
+  TableColumn,
+  TableIndex,
+} from 'typeorm';
 
 /**
  * Extend Migrations Table with Checksum and Version Control
@@ -17,21 +22,22 @@ export class ExtendMigrationsTableWithChecksumAndVersion1758589440122
   name = 'ExtendMigrationsTableWithChecksumAndVersion1758589440122';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
-    // Check if migrations table exists (TypeORM creates it automatically)
-    const migrationsTableExists = await queryRunner.hasTable('migrations');
+    // Check if migration_history table exists (configured as migrationsTableName)
+    const migrationsTableExists =
+      await queryRunner.hasTable('migration_history');
 
     if (!migrationsTableExists) {
-      // If migrations table doesn't exist, TypeORM will create it automatically
+      // If migration_history table doesn't exist, TypeORM will create it automatically
       // when the first migration runs. We'll run this after that happens.
       console.log(
-        'Migrations table does not exist yet, will be created by TypeORM'
+        'Migration history table does not exist yet, will be created by TypeORM'
       );
       return;
     }
 
     // Add checksum column for file integrity validation
     await queryRunner.addColumn(
-      'migrations',
+      'migration_history',
       new TableColumn({
         name: 'checksum',
         type: 'varchar',
@@ -44,7 +50,7 @@ export class ExtendMigrationsTableWithChecksumAndVersion1758589440122
 
     // Add version column for migration version tracking
     await queryRunner.addColumn(
-      'migrations',
+      'migration_history',
       new TableColumn({
         name: 'version',
         type: 'varchar',
@@ -57,7 +63,7 @@ export class ExtendMigrationsTableWithChecksumAndVersion1758589440122
 
     // Add executed_at timestamp for better audit trail
     await queryRunner.addColumn(
-      'migrations',
+      'migration_history',
       new TableColumn({
         name: 'executed_at',
         type: 'timestamp',
@@ -69,7 +75,7 @@ export class ExtendMigrationsTableWithChecksumAndVersion1758589440122
 
     // Add file_path for tracking source file location
     await queryRunner.addColumn(
-      'migrations',
+      'migration_history',
       new TableColumn({
         name: 'file_path',
         type: 'varchar',
@@ -81,8 +87,8 @@ export class ExtendMigrationsTableWithChecksumAndVersion1758589440122
 
     // Create index on checksum for fast integrity validation
     await queryRunner.createIndex(
-      'migrations',
-      new Index({
+      'migration_history',
+      new TableIndex({
         name: 'IDX_migrations_checksum',
         columnNames: ['checksum'],
       })
@@ -90,8 +96,8 @@ export class ExtendMigrationsTableWithChecksumAndVersion1758589440122
 
     // Create index on executed_at for audit queries
     await queryRunner.createIndex(
-      'migrations',
-      new Index({
+      'migration_history',
+      new TableIndex({
         name: 'IDX_migrations_executed_at',
         columnNames: ['executed_at'],
       })
@@ -99,8 +105,8 @@ export class ExtendMigrationsTableWithChecksumAndVersion1758589440122
 
     // Create composite index for version tracking
     await queryRunner.createIndex(
-      'migrations',
-      new Index({
+      'migration_history',
+      new TableIndex({
         name: 'IDX_migrations_name_version',
         columnNames: ['name', 'version'],
       })
@@ -108,10 +114,10 @@ export class ExtendMigrationsTableWithChecksumAndVersion1758589440122
 
     // Update existing migration records with default values
     await queryRunner.query(`
-      UPDATE migrations
+      UPDATE migration_history
       SET
         version = '1.0.0',
-        executed_at = COALESCE(timestamp::timestamp, CURRENT_TIMESTAMP)
+        executed_at = COALESCE(TO_TIMESTAMP(timestamp / 1000), CURRENT_TIMESTAMP)
       WHERE version IS NULL
     `);
 
@@ -122,15 +128,21 @@ export class ExtendMigrationsTableWithChecksumAndVersion1758589440122
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     // Drop indexes first
-    await queryRunner.dropIndex('migrations', 'IDX_migrations_checksum');
-    await queryRunner.dropIndex('migrations', 'IDX_migrations_executed_at');
-    await queryRunner.dropIndex('migrations', 'IDX_migrations_name_version');
+    await queryRunner.dropIndex('migration_history', 'IDX_migrations_checksum');
+    await queryRunner.dropIndex(
+      'migration_history',
+      'IDX_migrations_executed_at'
+    );
+    await queryRunner.dropIndex(
+      'migration_history',
+      'IDX_migrations_name_version'
+    );
 
     // Drop added columns
-    await queryRunner.dropColumn('migrations', 'checksum');
-    await queryRunner.dropColumn('migrations', 'version');
-    await queryRunner.dropColumn('migrations', 'executed_at');
-    await queryRunner.dropColumn('migrations', 'file_path');
+    await queryRunner.dropColumn('migration_history', 'checksum');
+    await queryRunner.dropColumn('migration_history', 'version');
+    await queryRunner.dropColumn('migration_history', 'executed_at');
+    await queryRunner.dropColumn('migration_history', 'file_path');
 
     console.log('✅ Reverted migrations table to original TypeORM structure');
   }

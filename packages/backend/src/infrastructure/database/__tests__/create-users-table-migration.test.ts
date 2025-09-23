@@ -40,6 +40,21 @@ describe('Database Migration Contract: CreateUsersTable', () => {
     mockGetTable = queryRunner.getTable as jest.Mock;
     mockQuery = queryRunner.query as jest.Mock;
 
+    // Configure default mock behavior
+    mockHasTable.mockResolvedValue(false); // Default: table doesn't exist
+    mockGetTable.mockResolvedValue({
+      name: 'users',
+      columns: [
+        { name: 'id' },
+        { name: 'google_id' },
+        { name: 'email' },
+        { name: 'name' },
+        { name: 'profile_picture_url' },
+        { name: 'created_at' },
+        { name: 'updated_at' },
+      ],
+    });
+
     jest.clearAllMocks();
   });
 
@@ -117,19 +132,17 @@ describe('Database Migration Contract: CreateUsersTable', () => {
       // Act: Run the migration
       await migration.up(queryRunner);
 
-      // Assert: Should create 3 indexes
-      expect(mockCreateIndex).toHaveBeenCalledTimes(3);
+      // Assert: Should create 2 explicit indexes (google_id is auto-created by unique constraint)
+      expect(mockCreateIndex).toHaveBeenCalledTimes(2);
 
       // Verify all calls are made with 'users' table
       const calls = mockCreateIndex.mock.calls;
       expect(calls[0][0]).toBe('users');
       expect(calls[1][0]).toBe('users');
-      expect(calls[2][0]).toBe('users');
 
       // Verify TableIndex objects are passed
       expect(calls[0][1]).toBeInstanceOf(TableIndex);
       expect(calls[1][1]).toBeInstanceOf(TableIndex);
-      expect(calls[2][1]).toBeInstanceOf(TableIndex);
     });
 
     it('should create constraints for OAuth fields and email validation', async () => {
@@ -170,7 +183,7 @@ describe('Database Migration Contract: CreateUsersTable', () => {
 
       // Assert: Should create table and indexes in correct sequence
       expect(mockCreateTable).toHaveBeenCalledTimes(1);
-      expect(mockCreateIndex).toHaveBeenCalledTimes(3);
+      expect(mockCreateIndex).toHaveBeenCalledTimes(2);
 
       // Table creation should happen before index creation
       const createTableCallOrder = mockCreateTable.mock.invocationCallOrder[0];
@@ -181,23 +194,22 @@ describe('Database Migration Contract: CreateUsersTable', () => {
 
   describe('Migration Rollback', () => {
     it('should drop the table and all indexes on rollback', async () => {
+      // Arrange: Setup mock to indicate table exists
+      mockHasTable.mockResolvedValue(true);
+
       // Act: Run rollback
       await migration.down(queryRunner);
 
-      // Assert: Should drop indexes first, then table
-      expect(mockDropIndex).toHaveBeenCalledTimes(3);
+      // Assert: Should drop explicitly created indexes first, then table
+      expect(mockDropIndex).toHaveBeenCalledTimes(2);
       expect(mockDropTable).toHaveBeenCalledTimes(1);
 
-      // Check index drops
+      // Check index drops (only explicit indexes, google_id constraint is auto-dropped)
       expect(mockDropIndex).toHaveBeenCalledWith(
         'users',
         'IDX_users_created_at'
       );
       expect(mockDropIndex).toHaveBeenCalledWith('users', 'IDX_users_email');
-      expect(mockDropIndex).toHaveBeenCalledWith(
-        'users',
-        'IDX_users_google_id'
-      );
 
       // Check table drop
       expect(mockDropTable).toHaveBeenCalledWith('users');

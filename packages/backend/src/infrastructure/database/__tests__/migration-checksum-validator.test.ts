@@ -47,7 +47,7 @@ describe('Migration Checksum Validator - TDD Contract Tests', () => {
         }
       `;
 
-      mockReadFileSync.mockReturnValue(Buffer.from(migrationContent));
+      mockReadFileSync.mockReturnValue(migrationContent);
       mockJoin.mockReturnValue('/path/to/migration.ts');
 
       // Act
@@ -71,8 +71,8 @@ describe('Migration Checksum Validator - TDD Contract Tests', () => {
       const content2 = 'CREATE TABLE posts (id SERIAL PRIMARY KEY)';
 
       mockReadFileSync
-        .mockReturnValueOnce(Buffer.from(content1))
-        .mockReturnValueOnce(Buffer.from(content2));
+        .mockReturnValueOnce(content1)
+        .mockReturnValueOnce(content2);
       mockJoin.mockReturnValue('/path/to/migration.ts');
 
       // Act
@@ -90,7 +90,7 @@ describe('Migration Checksum Validator - TDD Contract Tests', () => {
     it('should generate same checksum for identical content', async () => {
       // Arrange
       const content = 'CREATE TABLE users (id SERIAL PRIMARY KEY)';
-      mockReadFileSync.mockReturnValue(Buffer.from(content));
+      mockReadFileSync.mockReturnValue(content);
       mockJoin.mockReturnValue('/path/to/migration.ts');
 
       // Act
@@ -130,7 +130,7 @@ describe('Migration Checksum Validator - TDD Contract Tests', () => {
         }
       `;
 
-      mockReadFileSync.mockReturnValue(Buffer.from(migrationContent));
+      mockReadFileSync.mockReturnValue(migrationContent);
 
       // Act
       const migrationInfo = await validator.analyzeMigrationFile(
@@ -151,7 +151,7 @@ describe('Migration Checksum Validator - TDD Contract Tests', () => {
         }
       `;
 
-      mockReadFileSync.mockReturnValue(Buffer.from(migrationContent));
+      mockReadFileSync.mockReturnValue(migrationContent);
 
       // Act
       const migrationInfo = await validator.analyzeMigrationFile(
@@ -166,7 +166,7 @@ describe('Migration Checksum Validator - TDD Contract Tests', () => {
     it('should detect invalid migration file format', async () => {
       // Arrange
       const invalidContent = 'console.log("not a migration");';
-      mockReadFileSync.mockReturnValue(Buffer.from(invalidContent));
+      mockReadFileSync.mockReturnValue(invalidContent);
 
       // Act & Assert
       await expect(
@@ -182,7 +182,7 @@ describe('Migration Checksum Validator - TDD Contract Tests', () => {
       const expectedChecksum =
         await validator.generateChecksumForContent(migrationContent);
 
-      mockReadFileSync.mockReturnValue(Buffer.from(migrationContent));
+      mockReadFileSync.mockReturnValue(migrationContent);
 
       // Act
       const isValid = await validator.validateMigrationChecksum(
@@ -219,7 +219,7 @@ describe('Migration Checksum Validator - TDD Contract Tests', () => {
       const content = 'CREATE TABLE test (id SERIAL PRIMARY KEY)';
       const wrongChecksum = 'invalid_checksum';
 
-      mockReadFileSync.mockReturnValue(Buffer.from(content));
+      mockReadFileSync.mockReturnValue(content);
 
       // Act
       const result = await validator.validateMigrationWithDetails(
@@ -244,7 +244,7 @@ describe('Migration Checksum Validator - TDD Contract Tests', () => {
         }
       `;
 
-      mockReadFileSync.mockReturnValue(Buffer.from(migrationContent));
+      mockReadFileSync.mockReturnValue(migrationContent);
 
       // Act
       const metadata = await validator.generateMigrationMetadata(
@@ -261,8 +261,12 @@ describe('Migration Checksum Validator - TDD Contract Tests', () => {
 
     it('should allow custom version specification', async () => {
       // Arrange
-      const migrationContent = 'CREATE TABLE test (id SERIAL)';
-      mockReadFileSync.mockReturnValue(Buffer.from(migrationContent));
+      const migrationContent = `
+        export class CreateTestTable implements MigrationInterface {
+          async up(queryRunner: QueryRunner): Promise<void> {}
+        }
+      `;
+      mockReadFileSync.mockReturnValue(migrationContent);
 
       // Act
       const metadata = await validator.generateMigrationMetadata(

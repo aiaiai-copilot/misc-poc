@@ -85,10 +85,16 @@ export class MigrationChecksumValidator {
       }
 
       const migrationName = classMatch[1];
+      if (!migrationName) {
+        throw new Error(
+          'Invalid migration file format: Could not extract migration name'
+        );
+      }
 
       // Extract timestamp if present in migration name
       const timestampMatch = migrationName.match(/(\d{13})$/); // 13-digit timestamp
-      const timestamp = timestampMatch ? timestampMatch[1] : null;
+      const timestamp =
+        timestampMatch && timestampMatch[1] ? timestampMatch[1] : null;
 
       return {
         name: migrationName,
@@ -206,13 +212,23 @@ export class MigrationChecksumValidator {
    */
   extractTimestamp(migrationIdentifier: string): string | null {
     const timestampMatch = migrationIdentifier.match(/(\d{13})/);
-    return timestampMatch ? timestampMatch[1] : null;
+    return timestampMatch && timestampMatch[1] ? timestampMatch[1] : null;
   }
 
   /**
    * Generate migration history entry with checksum
    */
-  async generateHistoryEntry(filePath: string, executedAt: Date = new Date()) {
+  async generateHistoryEntry(
+    filePath: string,
+    executedAt: Date = new Date()
+  ): Promise<{
+    id: number;
+    timestamp: number;
+    name: string;
+    checksum: string;
+    version: string;
+    filePath: string;
+  }> {
     const migrationInfo = await this.analyzeMigrationFile(filePath);
 
     return {

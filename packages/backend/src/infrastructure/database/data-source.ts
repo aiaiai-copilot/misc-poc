@@ -16,7 +16,7 @@ export const AppDataSource = new DataSource({
   host: process.env.DB_HOST || 'localhost',
   port: parseInt(process.env.DB_PORT || '5432'),
   username: process.env.POSTGRES_USER || 'postgres',
-  password: process.env.POSTGRES_PASSWORD,
+  password: process.env.POSTGRES_PASSWORD || 'postgres',
   database: process.env.POSTGRES_DB || 'misc_poc_dev',
 
   // Migration-specific configuration

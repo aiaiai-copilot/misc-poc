@@ -19,10 +19,14 @@
     "migration:revert": "yarn exec typeorm migration:revert -d src/infrastructure/database/typeorm.config.ts",
     "migration:show": "yarn exec typeorm migration:show -d src/infrastructure/database/typeorm.config.ts",
     "schema:drop": "yarn exec typeorm schema:drop -d src/infrastructure/database/typeorm.config.ts",
+    "db:create-db": "node --loader ts-node/esm src/infrastructure/database/cli.ts create-db",
     "db:status": "node --loader ts-node/esm src/infrastructure/database/cli.ts status",
     "db:run": "node --loader ts-node/esm src/infrastructure/database/cli.ts run",
     "db:revert": "node --loader ts-node/esm src/infrastructure/database/cli.ts revert",
-    "db:validate": "node --loader ts-node/esm src/infrastructure/database/cli.ts validate"
+    "db:validate": "node --loader ts-node/esm src/infrastructure/database/cli.ts validate",
+    "db:validate-checksums": "node --loader ts-node/esm src/infrastructure/database/cli.ts validate-checksums",
+    "db:export-history": "node --loader ts-node/esm src/infrastructure/database/cli.ts export-history",
+    "db:validate-history": "node --loader ts-node/esm src/infrastructure/database/cli.ts validate-history"
   },
   "dependencies": {
     "@misc-poc/application": "workspace:*",
