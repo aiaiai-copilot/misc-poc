@@ -26,6 +26,16 @@ export function createDataSource(config: PostgresConfig): DataSource {
     ],
     migrationsTableName: 'schema_migrations',
     migrationsTransactionMode: 'each',
+    // Connection pooling configuration for production performance
+    extra: {
+      max: 20, // Maximum pool size
+      min: 5, // Minimum pool size
+      idleTimeoutMillis: 30000, // Close idle connections after 30 seconds
+      connectionTimeoutMillis: 2000, // Connection timeout
+      acquireTimeoutMillis: 60000, // Pool acquire timeout
+    },
+    // Query optimization settings
+    maxQueryExecutionTime: 10000, // 10 second query timeout
   });
 }
 

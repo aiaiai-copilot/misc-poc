@@ -320,7 +320,8 @@ export class PostgreSQLRecordRepository implements RecordRepository {
       // Use executeWithUserContext for RLS policies
       const records = await this.executeWithUserContext(async (queryRunner) => {
         return await queryRunner.query(
-          `SELECT * FROM records
+          `SELECT id, user_id, content, tags, normalized_tags, created_at, updated_at
+           FROM records
            WHERE user_id = $1 AND normalized_tags @> $2
            ORDER BY ${sortColumn} ${order}
            LIMIT $3 OFFSET $4`,
@@ -336,7 +337,7 @@ export class PostgreSQLRecordRepository implements RecordRepository {
       const totalQuery = await this.executeWithUserContext(
         async (queryRunner) => {
           return await queryRunner.query(
-            `SELECT COUNT(*) FROM records
+            `SELECT COUNT(*) as count FROM records
            WHERE user_id = $1 AND normalized_tags @> $2`,
             [this.userId, validatedTags]
           );
@@ -733,16 +734,16 @@ export class PostgreSQLRecordRepository implements RecordRepository {
     try {
       const result = await this.executeWithUserContext(async (queryRunner) => {
         return await queryRunner.query(
-          `SELECT
-             tag,
-             COUNT(*) as count
-           FROM (
+          `WITH tag_counts AS (
              SELECT UNNEST(normalized_tags) as tag
              FROM records
              WHERE user_id = $1
-           ) AS tag_counts
+           )
+           SELECT tag, COUNT(*) as count
+           FROM tag_counts
            GROUP BY tag
-           ORDER BY COUNT(*) DESC, tag ASC`,
+           ORDER BY COUNT(*) DESC, tag ASC
+           LIMIT 1000`,
           [this.userId]
         );
       });
