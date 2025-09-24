@@ -415,12 +415,13 @@ export class PostgreSQLRecordRepository implements RecordRepository {
           );
         }
 
-        // Insert new record
+        // Insert new record with specific ID
         const result = await queryRunner.query(
-          `INSERT INTO records (user_id, content, tags, normalized_tags, created_at, updated_at)
-           VALUES ($1, $2, $3, $4, $5, $6)
+          `INSERT INTO records (id, user_id, content, tags, normalized_tags, created_at, updated_at)
+           VALUES ($1, $2, $3, $4, $5, $6, $7)
            RETURNING *`,
           [
+            record.id.toString(),
             this.userId,
             record.content.toString(),
             normalizedTags,
@@ -536,20 +537,63 @@ export class PostgreSQLRecordRepository implements RecordRepository {
   }
 
   async saveBatch(records: Record[]): Promise<Result<Record[], DomainError>> {
+    if (records.length === 0) {
+      return Ok([]);
+    }
+
     try {
       const queryRunner = this.dataSource.createQueryRunner();
       await queryRunner.startTransaction();
 
       try {
+        // Set user context for RLS policies
+        await this.setUserContext(queryRunner);
+
         const savedRecords: Record[] = [];
 
         for (const record of records) {
-          const saveResult = await this.save(record);
-          if (saveResult.isErr()) {
+          const normalizedTags = Array.from(record.tagIds).map((tagId) =>
+            tagId.toString()
+          );
+
+          // Check for duplicates (same normalized_tags for same user)
+          const existingRecord = await queryRunner.query(
+            'SELECT id FROM records WHERE user_id = $1 AND normalized_tags = $2',
+            [this.userId, normalizedTags]
+          );
+
+          if (existingRecord.length > 0) {
             await queryRunner.rollbackTransaction();
-            return Err(saveResult.unwrapErr());
+            return Err(
+              new DomainError(
+                'DUPLICATE_RECORD',
+                'Record with same tags already exists'
+              )
+            );
           }
-          savedRecords.push(saveResult.unwrap());
+
+          // Insert new record with specific ID
+          const result = await queryRunner.query(
+            `INSERT INTO records (id, user_id, content, tags, normalized_tags, created_at, updated_at)
+             VALUES ($1, $2, $3, $4, $5, $6, $7)
+             RETURNING *`,
+            [
+              record.id.toString(),
+              this.userId,
+              record.content.toString(),
+              normalizedTags,
+              normalizedTags,
+              record.createdAt.toISOString(),
+              record.updatedAt.toISOString(),
+            ]
+          );
+
+          const savedRecord = this.mapDatabaseRowToRecord(result[0]);
+          if (!savedRecord) {
+            await queryRunner.rollbackTransaction();
+            return Err(new DomainError('SAVE_FAILED', 'Failed to save record'));
+          }
+          savedRecords.push(savedRecord);
         }
 
         await queryRunner.commitTransaction();
@@ -562,6 +606,72 @@ export class PostgreSQLRecordRepository implements RecordRepository {
       }
     } catch (error) {
       return this.handleError('Failed to save record batch', error);
+    }
+  }
+
+  async deleteBatch(recordIds: RecordId[]): Promise<Result<void, DomainError>> {
+    if (recordIds.length === 0) {
+      return Ok(undefined);
+    }
+
+    try {
+      // Validate all record IDs format first
+      for (const id of recordIds) {
+        if (!this.isValidUUID(id.toString())) {
+          return Err(new DomainError('RECORD_NOT_FOUND', 'Record not found'));
+        }
+      }
+
+      const queryRunner = this.dataSource.createQueryRunner();
+      await queryRunner.startTransaction();
+
+      try {
+        // Set user context for RLS policies
+        await this.setUserContext(queryRunner);
+
+        const recordIdStrings = recordIds.map((id) => id.toString());
+
+        // First, verify all records exist and belong to the user
+        const existingRecords = await queryRunner.query(
+          'SELECT id FROM records WHERE id = ANY($1) AND user_id = $2',
+          [recordIdStrings, this.userId]
+        );
+
+        if (existingRecords.length !== recordIds.length) {
+          await queryRunner.rollbackTransaction();
+          return Err(
+            new DomainError('RECORD_NOT_FOUND', 'One or more records not found')
+          );
+        }
+
+        // Delete all records in a single query for better performance
+        const result = await queryRunner.query(
+          'DELETE FROM records WHERE id = ANY($1) AND user_id = $2',
+          [recordIdStrings, this.userId]
+        );
+
+        // For PostgreSQL DELETE queries, the result format is [[], affectedRows]
+        const deletedRows = Array.isArray(result)
+          ? result[1]
+          : (result.rowCount ?? 0);
+
+        if (deletedRows !== recordIds.length) {
+          await queryRunner.rollbackTransaction();
+          return Err(
+            new DomainError('DELETE_FAILED', 'Failed to delete all records')
+          );
+        }
+
+        await queryRunner.commitTransaction();
+        return Ok(undefined);
+      } catch (error) {
+        await queryRunner.rollbackTransaction();
+        throw error;
+      } finally {
+        await queryRunner.release();
+      }
+    } catch (error) {
+      return this.handleError('Failed to delete record batch', error);
     }
   }
 

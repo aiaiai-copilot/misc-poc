@@ -304,6 +304,28 @@ export class LocalStorageRecordRepository implements RecordRepository {
     }
   }
 
+  async deleteBatch(recordIds: RecordId[]): Promise<Result<void, DomainError>> {
+    try {
+      const schema = await this.loadAndValidateSchema();
+
+      for (const recordId of recordIds) {
+        const recordIdStr = recordId.toString();
+        if (!schema.records[recordIdStr]) {
+          return Err(new DomainError('RECORD_NOT_FOUND', 'Record not found'));
+        }
+        delete schema.records[recordIdStr];
+      }
+
+      // Rebuild indexes to ensure consistency
+      const updatedSchema = this.indexManager.rebuildIndexes(schema);
+      await this.storageManager.save(updatedSchema);
+
+      return Ok(undefined);
+    } catch (error) {
+      return this.handleError('Failed to delete record batch', error);
+    }
+  }
+
   async deleteAll(): Promise<Result<void, DomainError>> {
     try {
       const schema = await this.loadAndValidateSchema();

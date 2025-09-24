@@ -85,6 +85,11 @@ export interface RecordRepository {
   saveBatch(records: Record[]): Promise<Result<Record[], DomainError>>;
 
   /**
+   * Bulk delete multiple records by ID (for export/import operations)
+   */
+  deleteBatch(recordIds: RecordId[]): Promise<Result<void, DomainError>>;
+
+  /**
    * Delete all records (for import operations that replace data)
    */
   deleteAll(): Promise<Result<void, DomainError>>;
