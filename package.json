@@ -8,6 +8,7 @@
     "packages/application",
     "packages/backend",
     "packages/infrastructure/localStorage",
+    "packages/infrastructure/postgresql",
     "packages/presentation/web",
     "packages/presentation/cli",
     "packages/shared"
