@@ -1,4 +1,4 @@
-import { DataSource } from 'typeorm';
+import { DataSource, QueryRunner } from 'typeorm';
 import {
   Result,
   Ok,
@@ -29,27 +29,99 @@ export class PostgreSQLRecordRepository implements RecordRepository {
   constructor(
     private readonly dataSource: DataSource,
     private readonly userId: string
-  ) {}
+  ) {
+    // Validate userId format to prevent SQL injection
+    this.validateUserId(userId);
+  }
+
+  private validateUserId(userId: string): void {
+    // Validate UUID format to prevent SQL injection
+    const uuidRegex =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(userId)) {
+      throw new Error('Invalid user ID format');
+    }
+  }
+
+  private async setUserContext(queryRunner: QueryRunner): Promise<void> {
+    try {
+      // Set the current user context for RLS policies
+      await queryRunner.query('SELECT set_current_user_id($1)', [this.userId]);
+    } catch (error) {
+      // If RLS functions are not available, continue without setting context
+      // This allows the repository to work with both RLS-enabled and non-RLS databases
+      console.warn(
+        'RLS function not available, continuing without user context:',
+        error
+      );
+    }
+  }
+
+  private isValidUUID(uuid: string): boolean {
+    const uuidRegex =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    return uuidRegex.test(uuid);
+  }
+
+  private validateStringArray(
+    arr: string[],
+    maxLength: number = 1000
+  ): string[] {
+    // Validate and sanitize string array inputs to prevent SQL injection
+    return arr
+      .filter((str) => typeof str === 'string')
+      .map((str) => str.slice(0, maxLength)) // Truncate excessively long strings
+      .filter((str) => str.length > 0); // Remove empty strings
+  }
+
+  private validateSearchParameters(
+    options: RecordSearchOptions
+  ): RecordSearchOptions {
+    const { limit, offset, sortBy, sortOrder } = options;
+
+    return {
+      limit:
+        limit && limit > 0 ? Math.min(limit, 10000) : Number.MAX_SAFE_INTEGER,
+      offset: offset && offset >= 0 ? offset : 0,
+      sortBy: sortBy === 'updatedAt' ? 'updatedAt' : 'createdAt',
+      sortOrder: sortOrder === 'asc' ? 'asc' : 'desc',
+    };
+  }
+
+  private async executeWithUserContext<T>(
+    operation: (queryRunner: QueryRunner) => Promise<T>
+  ): Promise<T> {
+    const queryRunner = this.dataSource.createQueryRunner();
+    try {
+      // Set user context for RLS policies
+      await this.setUserContext(queryRunner);
+      return await operation(queryRunner);
+    } finally {
+      await queryRunner.release();
+    }
+  }
 
   async findById(id: RecordId): Promise<Result<Record | null, DomainError>> {
     try {
-      const queryRunner = this.dataSource.createQueryRunner();
-      try {
-        const result = await queryRunner.query(
+      // Validate record ID format
+      if (!this.isValidUUID(id.toString())) {
+        return Ok(null);
+      }
+
+      const result = await this.executeWithUserContext(async (queryRunner) => {
+        return await queryRunner.query(
           'SELECT * FROM records WHERE id = $1 AND user_id = $2',
           [id.toString(), this.userId]
         );
+      });
 
-        if (result.length === 0) {
-          return Ok(null);
-        }
-
-        const recordData = result[0];
-        const record = this.mapDatabaseRowToRecord(recordData);
-        return Ok(record);
-      } finally {
-        await queryRunner.release();
+      if (result.length === 0) {
+        return Ok(null);
       }
+
+      const recordData = result[0];
+      const record = this.mapDatabaseRowToRecord(recordData);
+      return Ok(record);
     } catch (error) {
       return this.handleError('Failed to find record by ID', error);
     }
@@ -61,6 +133,8 @@ export class PostgreSQLRecordRepository implements RecordRepository {
     try {
       const queryRunner = this.dataSource.createQueryRunner();
       try {
+        // Set user context for RLS policies
+        await this.setUserContext(queryRunner);
         const {
           limit = Number.MAX_SAFE_INTEGER,
           offset = 0,
@@ -229,57 +303,56 @@ export class PostgreSQLRecordRepository implements RecordRepository {
     options: RecordSearchOptions = {}
   ): Promise<Result<RecordSearchResult, DomainError>> {
     try {
-      const queryRunner = this.dataSource.createQueryRunner();
-      try {
-        if (tags.length === 0) {
-          return this.findAll(options);
-        }
+      // Validate and sanitize input tags
+      const validatedTags = this.validateStringArray(tags, 200);
+      if (validatedTags.length === 0) {
+        return this.findAll(options);
+      }
 
-        const {
-          limit = Number.MAX_SAFE_INTEGER,
-          offset = 0,
-          sortBy = 'createdAt',
-          sortOrder = 'desc',
-        } = options;
+      // Validate search parameters
+      const validatedOptions = this.validateSearchParameters(options);
+      const { limit, offset, sortBy, sortOrder } = validatedOptions;
 
-        const sortColumn = sortBy === 'createdAt' ? 'created_at' : 'updated_at';
-        const order = sortOrder.toUpperCase();
+      const sortColumn = sortBy === 'createdAt' ? 'created_at' : 'updated_at';
+      const order = (sortOrder || 'desc').toUpperCase();
 
-        // Use @> operator for AND logic with GIN index
-        // normalized_tags @> $2 means normalized_tags contains ALL elements in $2
-        const records = await queryRunner.query(
+      // Use executeWithUserContext for RLS policies
+      const records = await this.executeWithUserContext(async (queryRunner) => {
+        return await queryRunner.query(
           `SELECT * FROM records
            WHERE user_id = $1 AND normalized_tags @> $2
            ORDER BY ${sortColumn} ${order}
            LIMIT $3 OFFSET $4`,
           [
             this.userId,
-            tags,
+            validatedTags,
             limit === Number.MAX_SAFE_INTEGER ? null : limit,
             offset,
           ]
         );
+      });
 
-        const totalQuery = await queryRunner.query(
-          `SELECT COUNT(*) FROM records
+      const totalQuery = await this.executeWithUserContext(
+        async (queryRunner) => {
+          return await queryRunner.query(
+            `SELECT COUNT(*) FROM records
            WHERE user_id = $1 AND normalized_tags @> $2`,
-          [this.userId, tags]
-        );
+            [this.userId, validatedTags]
+          );
+        }
+      );
 
-        const total = parseInt(totalQuery[0].count);
+      const total = parseInt(totalQuery[0].count);
 
-        const mappedRecords = records
-          .map((row: DatabaseRow) => this.mapDatabaseRowToRecord(row))
-          .filter((record: Record | null): record is Record => record !== null);
+      const mappedRecords = records
+        .map((row: DatabaseRow) => this.mapDatabaseRowToRecord(row))
+        .filter((record: Record | null): record is Record => record !== null);
 
-        return Ok({
-          records: mappedRecords,
-          total,
-          hasMore: offset + mappedRecords.length < total,
-        });
-      } finally {
-        await queryRunner.release();
-      }
+      return Ok({
+        records: mappedRecords,
+        total,
+        hasMore: offset + mappedRecords.length < total,
+      });
     } catch (error) {
       return this.handleError('Failed to find records by tags', error);
     }
@@ -370,24 +443,32 @@ export class PostgreSQLRecordRepository implements RecordRepository {
 
   async update(record: Record): Promise<Result<Record, DomainError>> {
     try {
-      const queryRunner = this.dataSource.createQueryRunner();
-      try {
-        const normalizedTags = Array.from(record.tagIds).map((tagId) =>
-          tagId.toString()
-        );
+      // Validate record ID format
+      if (!this.isValidUUID(record.id.toString())) {
+        return Err(new DomainError('RECORD_NOT_FOUND', 'Record not found'));
+      }
 
-        // Check if record exists and belongs to user
-        const existingRecord = await queryRunner.query(
-          'SELECT id FROM records WHERE id = $1 AND user_id = $2',
-          [record.id.toString(), this.userId]
-        );
+      const normalizedTags = Array.from(record.tagIds).map((tagId) =>
+        tagId.toString()
+      );
 
-        if (existingRecord.length === 0) {
-          return Err(new DomainError('RECORD_NOT_FOUND', 'Record not found'));
+      // Check if record exists and belongs to user
+      const existingRecord = await this.executeWithUserContext(
+        async (queryRunner) => {
+          return await queryRunner.query(
+            'SELECT id FROM records WHERE id = $1 AND user_id = $2',
+            [record.id.toString(), this.userId]
+          );
         }
+      );
 
-        // Update record
-        const result = await queryRunner.query(
+      if (existingRecord.length === 0) {
+        return Err(new DomainError('RECORD_NOT_FOUND', 'Record not found'));
+      }
+
+      // Update record
+      const result = await this.executeWithUserContext(async (queryRunner) => {
+        return await queryRunner.query(
           `UPDATE records
            SET content = $1, tags = $2, normalized_tags = $3, updated_at = $4
            WHERE id = $5 AND user_id = $6
@@ -401,14 +482,25 @@ export class PostgreSQLRecordRepository implements RecordRepository {
             this.userId,
           ]
         );
+      });
 
-        const updatedRecord = this.mapDatabaseRowToRecord(result[0]);
-        return updatedRecord
-          ? Ok(updatedRecord)
-          : Err(new DomainError('UPDATE_FAILED', 'Failed to update record'));
-      } finally {
-        await queryRunner.release();
+      // Handle the result format properly - PostgreSQL returns [[rows], affectedCount]
+      const resultRow =
+        Array.isArray(result) &&
+        result.length > 0 &&
+        Array.isArray(result[0]) &&
+        result[0].length > 0
+          ? result[0][0]
+          : null;
+
+      if (!resultRow) {
+        return Err(new DomainError('UPDATE_FAILED', 'Failed to update record'));
       }
+
+      const updatedRecord = this.mapDatabaseRowToRecord(resultRow);
+      return updatedRecord
+        ? Ok(updatedRecord)
+        : Err(new DomainError('UPDATE_FAILED', 'Failed to update record'));
     } catch (error) {
       return this.handleError('Failed to update record', error);
     }
@@ -416,21 +508,27 @@ export class PostgreSQLRecordRepository implements RecordRepository {
 
   async delete(id: RecordId): Promise<Result<void, DomainError>> {
     try {
-      const queryRunner = this.dataSource.createQueryRunner();
-      try {
-        const result = await queryRunner.query(
+      // Validate record ID format
+      if (!this.isValidUUID(id.toString())) {
+        return Err(new DomainError('RECORD_NOT_FOUND', 'Record not found'));
+      }
+
+      const result = await this.executeWithUserContext(async (queryRunner) => {
+        return await queryRunner.query(
           'DELETE FROM records WHERE id = $1 AND user_id = $2',
           [id.toString(), this.userId]
         );
+      });
 
-        if (result.rowCount === 0) {
-          return Err(new DomainError('RECORD_NOT_FOUND', 'Record not found'));
-        }
-
-        return Ok(undefined);
-      } finally {
-        await queryRunner.release();
+      // For PostgreSQL DELETE queries, the result format is [[], affectedRows]
+      const deletedRows = Array.isArray(result)
+        ? result[1]
+        : (result.rowCount ?? 0);
+      if (deletedRows === 0) {
+        return Err(new DomainError('RECORD_NOT_FOUND', 'Record not found'));
       }
+
+      return Ok(undefined);
     } catch (error) {
       return this.handleError('Failed to delete record', error);
     }
