@@ -44,6 +44,14 @@ export interface RecordRepository {
   ): Promise<Result<RecordSearchResult, DomainError>>;
 
   /**
+   * Find records that contain ALL of the specified tags (AND logic)
+   */
+  findByTags(
+    tags: string[],
+    options?: RecordSearchOptions
+  ): Promise<Result<RecordSearchResult, DomainError>>;
+
+  /**
    * Find records that match the exact same tag set (for duplicate checking)
    */
   findByTagSet(

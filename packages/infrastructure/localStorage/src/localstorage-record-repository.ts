@@ -133,6 +133,62 @@ export class LocalStorageRecordRepository implements RecordRepository {
     }
   }
 
+  async findByTags(
+    tags: string[],
+    options: RecordSearchOptions = {}
+  ): Promise<Result<RecordSearchResult, DomainError>> {
+    try {
+      const schema = await this.loadAndValidateSchema();
+
+      if (tags.length === 0) {
+        return this.findAll(options);
+      }
+
+      // Find tag IDs that match the provided tags using normalized index
+      const matchingTagIds = new Set<string>();
+      for (const tag of tags) {
+        // Tags are already normalized when passed to this method
+        const tagId = schema.indexes.normalizedToTagId[tag];
+        if (tagId) {
+          matchingTagIds.add(tagId);
+        }
+      }
+
+      if (matchingTagIds.size === 0) {
+        return Ok({
+          records: [],
+          total: 0,
+          hasMore: false,
+        });
+      }
+
+      // Find records that contain ALL matching tags (AND logic)
+      const recordSets = Array.from(matchingTagIds).map(
+        (tagId) => new Set(schema.indexes.tagToRecords[tagId] || [])
+      );
+
+      // Intersection of all sets (AND logic)
+      let matchingRecordIds = recordSets[0] || new Set<string>();
+      for (let i = 1; i < recordSets.length; i++) {
+        const currentSet = recordSets[i] || new Set<string>();
+        matchingRecordIds = new Set(
+          Array.from(matchingRecordIds).filter((id) => currentSet.has(id))
+        );
+      }
+
+      const matchingRecords = Array.from(matchingRecordIds)
+        .map((recordId) => {
+          const recordData = schema.records[recordId];
+          return recordData ? this.mapStorageDataToRecord(recordData) : null;
+        })
+        .filter((record): record is Record => record !== null);
+
+      return this.buildSearchResult(matchingRecords, options);
+    } catch (error) {
+      return this.handleError('Failed to find records by tags', error);
+    }
+  }
+
   async findByTagSet(
     tagIds: Set<TagId>,
     excludeRecordId?: RecordId

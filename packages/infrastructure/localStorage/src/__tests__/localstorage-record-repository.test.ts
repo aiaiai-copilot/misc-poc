@@ -710,4 +710,180 @@ describe('LocalStorageRecordRepository', () => {
       expect(record!.updatedAt).toBeInstanceOf(Date);
     });
   });
+
+  describe('findByTags', () => {
+    beforeEach(() => {
+      // Set up test data
+      mockSchema.records = {
+        [testRecordId1]: {
+          id: testRecordId1,
+          content: 'First record',
+          tagIds: [testTagId1, testTagId2, testTagId3],
+          createdAt: '2023-01-01T00:00:00.000Z',
+          updatedAt: '2023-01-01T00:00:00.000Z',
+        },
+        [testRecordId2]: {
+          id: testRecordId2,
+          content: 'Second record',
+          tagIds: [testTagId1, testTagId2],
+          createdAt: '2023-01-02T00:00:00.000Z',
+          updatedAt: '2023-01-02T00:00:00.000Z',
+        },
+        [testRecordId3]: {
+          id: testRecordId3,
+          content: 'Third record',
+          tagIds: [testTagId2, testTagId3],
+          createdAt: '2023-01-03T00:00:00.000Z',
+          updatedAt: '2023-01-03T00:00:00.000Z',
+        },
+      };
+
+      mockSchema.tags = {
+        [testTagId1]: {
+          id: testTagId1,
+          name: 'Tag1',
+          normalizedName: 'tag1',
+        },
+        [testTagId2]: {
+          id: testTagId2,
+          name: 'Tag2',
+          normalizedName: 'tag2',
+        },
+        [testTagId3]: {
+          id: testTagId3,
+          name: 'Tag3',
+          normalizedName: 'tag3',
+        },
+      };
+
+      mockSchema.indexes = {
+        normalizedToTagId: {
+          tag1: testTagId1,
+          tag2: testTagId2,
+          tag3: testTagId3,
+        },
+        tagToRecords: {
+          [testTagId1]: [testRecordId1, testRecordId2],
+          [testTagId2]: [testRecordId1, testRecordId2, testRecordId3],
+          [testTagId3]: [testRecordId1, testRecordId3],
+        },
+      };
+
+      mockStorageManager.load.mockResolvedValue(mockSchema);
+    });
+
+    it('should find records matching all specified tags (AND logic)', async () => {
+      // Search for records with both tag1 and tag2 (should match records 1 and 2)
+      const result = await repository.findByTags(['tag1', 'tag2']);
+
+      expect(result.isOk()).toBe(true);
+      const searchResult = result.unwrap();
+
+      expect(searchResult.records).toHaveLength(2);
+      expect(searchResult.total).toBe(2);
+      expect(searchResult.hasMore).toBe(false);
+
+      const recordIds = searchResult.records.map((r) => r.id.toString()).sort();
+      expect(recordIds).toEqual([testRecordId1, testRecordId2]);
+    });
+
+    it('should return empty array when no matches', async () => {
+      const result = await repository.findByTags(['nonexistent']);
+
+      expect(result.isOk()).toBe(true);
+      const searchResult = result.unwrap();
+
+      expect(searchResult.records).toHaveLength(0);
+      expect(searchResult.total).toBe(0);
+      expect(searchResult.hasMore).toBe(false);
+    });
+
+    it('should return all records when tags array is empty', async () => {
+      const result = await repository.findByTags([]);
+
+      expect(result.isOk()).toBe(true);
+      const searchResult = result.unwrap();
+
+      expect(searchResult.records).toHaveLength(3);
+      expect(searchResult.total).toBe(3);
+    });
+
+    it('should handle AND logic correctly with multiple tags', async () => {
+      // Search for records with tag1, tag2, and tag3 (should only match record 1)
+      const result = await repository.findByTags(['tag1', 'tag2', 'tag3']);
+
+      expect(result.isOk()).toBe(true);
+      const searchResult = result.unwrap();
+
+      expect(searchResult.records).toHaveLength(1);
+      expect(searchResult.records[0].id.toString()).toBe(testRecordId1);
+    });
+
+    it('should return empty when no matching tag IDs found', async () => {
+      // Mock scenario where normalized tags don't exist in index
+      mockSchema.indexes.normalizedToTagId = {};
+
+      const result = await repository.findByTags(['tag1', 'tag2']);
+
+      expect(result.isOk()).toBe(true);
+      const searchResult = result.unwrap();
+
+      expect(searchResult.records).toHaveLength(0);
+      expect(searchResult.total).toBe(0);
+      expect(searchResult.hasMore).toBe(false);
+    });
+
+    it('should support pagination options', async () => {
+      const result = await repository.findByTags(['tag2'], {
+        limit: 2,
+        offset: 1,
+        sortBy: 'createdAt',
+        sortOrder: 'desc',
+      });
+
+      expect(result.isOk()).toBe(true);
+      const searchResult = result.unwrap();
+
+      expect(searchResult.records).toHaveLength(2);
+      expect(searchResult.total).toBe(3);
+      expect(searchResult.hasMore).toBe(false);
+    });
+
+    it('should handle storage manager errors', async () => {
+      mockStorageManager.load.mockRejectedValue(new Error('Storage error'));
+
+      const result = await repository.findByTags(['tag1']);
+
+      expect(result.isErr()).toBe(true);
+      expect(result.unwrapErr().code).toBe('STORAGE_ERROR');
+    });
+
+    it('should filter invalid record data gracefully', async () => {
+      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
+
+      // Add invalid record data
+      mockSchema.records['invalid'] = {
+        id: null as any,
+        content: 'invalid',
+        tagIds: [testTagId1],
+        createdAt: '2023-01-01T00:00:00.000Z',
+        updatedAt: '2023-01-01T00:00:00.000Z',
+      };
+
+      mockSchema.indexes.tagToRecords[testTagId1].push('invalid');
+
+      const result = await repository.findByTags(['tag1']);
+
+      expect(result.isOk()).toBe(true);
+      const searchResult = result.unwrap();
+
+      // Should only return valid records
+      expect(searchResult.records).toHaveLength(2);
+      expect(
+        searchResult.records.every((r) => r.id.toString() !== 'invalid')
+      ).toBe(true);
+
+      consoleSpy.mockRestore();
+    });
+  });
 });

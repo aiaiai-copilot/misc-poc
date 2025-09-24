@@ -224,6 +224,67 @@ export class PostgreSQLRecordRepository implements RecordRepository {
     }
   }
 
+  async findByTags(
+    tags: string[],
+    options: RecordSearchOptions = {}
+  ): Promise<Result<RecordSearchResult, DomainError>> {
+    try {
+      const queryRunner = this.dataSource.createQueryRunner();
+      try {
+        if (tags.length === 0) {
+          return this.findAll(options);
+        }
+
+        const {
+          limit = Number.MAX_SAFE_INTEGER,
+          offset = 0,
+          sortBy = 'createdAt',
+          sortOrder = 'desc',
+        } = options;
+
+        const sortColumn = sortBy === 'createdAt' ? 'created_at' : 'updated_at';
+        const order = sortOrder.toUpperCase();
+
+        // Use @> operator for AND logic with GIN index
+        // normalized_tags @> $2 means normalized_tags contains ALL elements in $2
+        const records = await queryRunner.query(
+          `SELECT * FROM records
+           WHERE user_id = $1 AND normalized_tags @> $2
+           ORDER BY ${sortColumn} ${order}
+           LIMIT $3 OFFSET $4`,
+          [
+            this.userId,
+            tags,
+            limit === Number.MAX_SAFE_INTEGER ? null : limit,
+            offset,
+          ]
+        );
+
+        const totalQuery = await queryRunner.query(
+          `SELECT COUNT(*) FROM records
+           WHERE user_id = $1 AND normalized_tags @> $2`,
+          [this.userId, tags]
+        );
+
+        const total = parseInt(totalQuery[0].count);
+
+        const mappedRecords = records
+          .map((row: DatabaseRow) => this.mapDatabaseRowToRecord(row))
+          .filter((record: Record | null): record is Record => record !== null);
+
+        return Ok({
+          records: mappedRecords,
+          total,
+          hasMore: offset + mappedRecords.length < total,
+        });
+      } finally {
+        await queryRunner.release();
+      }
+    } catch (error) {
+      return this.handleError('Failed to find records by tags', error);
+    }
+  }
+
   async findByTagSet(
     tagIds: Set<TagId>,
     excludeRecordId?: RecordId

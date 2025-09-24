@@ -4,6 +4,9 @@ export default {
   extensionsToTreatAsEsm: ['.ts'],
   moduleNameMapper: {
     '^(\\.{1,2}/.*)\\.js$': '$1',
+    '^@misc-poc/shared$': '<rootDir>/../../shared/src/index.ts',
+    '^@misc-poc/domain$': '<rootDir>/../../domain/src/index.ts',
+    '^@misc-poc/application$': '<rootDir>/../../application/src/index.ts',
   },
   transform: {
     '^.+\\.ts$': ['ts-jest', {
