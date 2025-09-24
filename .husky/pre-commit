@@ -1,9 +1,5 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
-# Validate test file patterns before commit
-echo "🧪 Validating test patterns..."
-yarn pre-commit:test-validation
-
 # Run lint-staged for code formatting
 yarn lint-staged

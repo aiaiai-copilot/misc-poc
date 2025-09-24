@@ -12,6 +12,7 @@ import {
   RecordRepository,
   RecordSearchOptions,
   RecordSearchResult,
+  TagStatistic,
 } from '@misc-poc/application';
 import { StorageManager } from './storage-manager';
 import { IndexManager } from './index-manager';
@@ -133,6 +134,62 @@ export class LocalStorageRecordRepository implements RecordRepository {
     }
   }
 
+  async findByTags(
+    tags: string[],
+    options: RecordSearchOptions = {}
+  ): Promise<Result<RecordSearchResult, DomainError>> {
+    try {
+      const schema = await this.loadAndValidateSchema();
+
+      if (tags.length === 0) {
+        return this.findAll(options);
+      }
+
+      // Find tag IDs that match the provided tags using normalized index
+      const matchingTagIds = new Set<string>();
+      for (const tag of tags) {
+        // Tags are already normalized when passed to this method
+        const tagId = schema.indexes.normalizedToTagId[tag];
+        if (tagId) {
+          matchingTagIds.add(tagId);
+        }
+      }
+
+      if (matchingTagIds.size === 0) {
+        return Ok({
+          records: [],
+          total: 0,
+          hasMore: false,
+        });
+      }
+
+      // Find records that contain ALL matching tags (AND logic)
+      const recordSets = Array.from(matchingTagIds).map(
+        (tagId) => new Set(schema.indexes.tagToRecords[tagId] || [])
+      );
+
+      // Intersection of all sets (AND logic)
+      let matchingRecordIds = recordSets[0] || new Set<string>();
+      for (let i = 1; i < recordSets.length; i++) {
+        const currentSet = recordSets[i] || new Set<string>();
+        matchingRecordIds = new Set(
+          Array.from(matchingRecordIds).filter((id) => currentSet.has(id))
+        );
+      }
+
+      const matchingRecords = Array.from(matchingRecordIds)
+        .map((recordId) => {
+          const recordData = schema.records[recordId];
+          return recordData ? this.mapStorageDataToRecord(recordData) : null;
+        })
+        .filter((record): record is Record => record !== null);
+
+      return this.buildSearchResult(matchingRecords, options);
+    } catch (error) {
+      return this.handleError('Failed to find records by tags', error);
+    }
+  }
+
   async findByTagSet(
     tagIds: Set<TagId>,
     excludeRecordId?: RecordId
@@ -247,6 +304,28 @@ export class LocalStorageRecordRepository implements RecordRepository {
     }
   }
 
+  async deleteBatch(recordIds: RecordId[]): Promise<Result<void, DomainError>> {
+    try {
+      const schema = await this.loadAndValidateSchema();
+
+      for (const recordId of recordIds) {
+        const recordIdStr = recordId.toString();
+        if (!schema.records[recordIdStr]) {
+          return Err(new DomainError('RECORD_NOT_FOUND', 'Record not found'));
+        }
+        delete schema.records[recordIdStr];
+      }
+
+      // Rebuild indexes to ensure consistency
+      const updatedSchema = this.indexManager.rebuildIndexes(schema);
+      await this.storageManager.save(updatedSchema);
+
+      return Ok(undefined);
+    } catch (error) {
+      return this.handleError('Failed to delete record batch', error);
+    }
+  }
+
   async deleteAll(): Promise<Result<void, DomainError>> {
     try {
       const schema = await this.loadAndValidateSchema();
@@ -279,6 +358,37 @@ export class LocalStorageRecordRepository implements RecordRepository {
       return Ok(exists);
     } catch (error) {
       return this.handleError('Failed to check record existence', error);
+    }
+  }
+
+  async getTagStatistics(): Promise<Result<TagStatistic[], DomainError>> {
+    try {
+      const schema = await this.loadAndValidateSchema();
+      const tagCounts = new Map<string, number>();
+
+      // Count occurrences of each tag across all records
+      Object.values(schema.records).forEach((recordData) => {
+        recordData.tagIds.forEach((tagId) => {
+          tagCounts.set(tagId, (tagCounts.get(tagId) || 0) + 1);
+        });
+      });
+
+      // Convert to TagStatistic array and sort by count descending, then by tag name
+      const statistics: TagStatistic[] = Array.from(tagCounts.entries())
+        .map(([tag, count]) => ({ tag, count }))
+        .sort((a, b) => {
+          // First sort by count descending
+          const countDiff = b.count - a.count;
+          if (countDiff !== 0) {
+            return countDiff;
+          }
+          // If counts are equal, sort by tag name ascending
+          return a.tag.localeCompare(b.tag);
+        });
+
+      return Ok(statistics);
+    } catch (error) {
+      return this.handleError('Failed to get tag statistics', error);
     }
   }
 

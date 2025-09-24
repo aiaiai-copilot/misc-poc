@@ -14,14 +14,20 @@
 - User may request fixes - implement them before asking again
 - Only commit after user explicitly says "yes", "proceed", or gives clear approval
 
-### 2. TDD APPROACH RULE
+### 2. TDD WITH PRD.TXT RULE
 
-**ALWAYS use Test-Driven Development**
+**ALWAYS use Test-Driven Development with specifications from prd.txt**
 
-- Write tests FIRST, implementation SECOND
-- Test specifications are in: `.taskmaster/docs/prd.txt`
-- Find relevant test spec for current task section
-- Workflow: Write tests → Run (expect fail) → Implement feature → Run (expect pass)
+- **⚠️ CRITICAL SEQUENCE:**
+  1. **OPEN** `~/projects/misc-poc/.taskmaster/docs/prd.txt`
+  2. **FIND** the test specification for your current task/subtask
+  3. **READ** the complete test requirements
+  4. **COPY** test cases exactly as specified (DO NOT create your own)
+  5. **WRITE** tests following the prd.txt specification
+  6. **RUN** tests (expect failure)
+  7. **IMPLEMENT** feature to make tests pass
+  8. **RUN** tests again (expect success)
+- **NEVER write tests based on assumptions - ONLY from prd.txt specifications**
 
 ### 3. DATABASE TESTING RULE
 
@@ -58,8 +64,10 @@
 
 Before starting ANY task, verify understanding of:
 
-- [ ] TDD approach will be used
-- [ ] Test specs location: `.taskmaster/docs/prd.txt`
+- [ ] **I will open `~/projects/misc-poc/.taskmaster/docs/prd.txt` FIRST**
+- [ ] I will find and read the test specification for this exact task
+- [ ] I will copy test cases from prd.txt, not create my own
+- [ ] TDD approach will be used (tests from prd.txt first)
 - [ ] Manual testing approval required before commits
 - [ ] Testcontainers for database tests
 - [ ] Context7 for library documentation
@@ -129,8 +137,9 @@ tm set-status --id=<id> --status=in-progress
 
 **For EACH task/subtask:**
 
-- [ ] Check test specifications in `prd.txt`
-- [ ] Write tests first (TDD approach)
+- [ ] **FIRST: Open `~/projects/misc-poc/.taskmaster/docs/prd.txt` and find test spec for current task**
+- [ ] Copy exact test requirements from prd.txt (don't improvise)
+- [ ] Write tests exactly as specified in prd.txt
 - [ ] Use Context7 for library documentation
 - [ ] Use Testcontainers for database tests
 - [ ] Implement feature to pass tests
@@ -152,7 +161,8 @@ After completing each subtask:
 
 **Remember:**
 
-- 📍 TDD - Write tests first (specs in prd.txt)
+- 📍 **ALWAYS read `~/projects/misc-poc/.taskmaster/docs/prd.txt` BEFORE writing any test**
+- 📍 TDD - Write tests from prd.txt specifications (never improvise test cases)
 - 📍 Use Context7 for library docs
 - 📍 Database tests need Testcontainers
 - 📍 Ask for manual testing approval before EVERY commit
@@ -486,11 +496,13 @@ mcp__context7__get -
 
 ## 📁 Project Structure References
 
-- Test specifications: `.taskmaster/docs/prd.txt`
+- **TEST SPECIFICATIONS (MANDATORY):** `~/projects/misc-poc/.taskmaster/docs/prd.txt`
 - Task definitions: `.taskmaster/tasks/tasks.json`
 - E2E tests: `e2e/`
 - E2E guidelines: `e2e/README.md`
 - Additional TaskMaster instructions: `.taskmaster/CLAUDE.md`
+
+**⚠️ CRITICAL: Always read test specifications from prd.txt BEFORE writing any tests!**
 
 ---
 

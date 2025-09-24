@@ -14,6 +14,11 @@ export interface RecordSearchResult {
   readonly hasMore: boolean;
 }
 
+export interface TagStatistic {
+  readonly tag: string;
+  readonly count: number;
+}
+
 export interface RecordRepository {
   /**
    * Find a record by its unique identifier
@@ -40,6 +45,14 @@ export interface RecordRepository {
    */
   findByTagIds(
     tagIds: TagId[],
+    options?: RecordSearchOptions
+  ): Promise<Result<RecordSearchResult, DomainError>>;
+
+  /**
+   * Find records that contain ALL of the specified tags (AND logic)
+   */
+  findByTags(
+    tags: string[],
     options?: RecordSearchOptions
   ): Promise<Result<RecordSearchResult, DomainError>>;
 
@@ -72,6 +85,11 @@ export interface RecordRepository {
   saveBatch(records: Record[]): Promise<Result<Record[], DomainError>>;
 
   /**
+   * Bulk delete multiple records by ID (for export/import operations)
+   */
+  deleteBatch(recordIds: RecordId[]): Promise<Result<void, DomainError>>;
+
+  /**
    * Delete all records (for import operations that replace data)
    */
   deleteAll(): Promise<Result<void, DomainError>>;
@@ -85,4 +103,9 @@ export interface RecordRepository {
    * Check if a record exists by ID
    */
   exists(id: RecordId): Promise<Result<boolean, DomainError>>;
+
+  /**
+   * Get tag usage statistics with frequency counts ordered by frequency descending
+   */
+  getTagStatistics(): Promise<Result<TagStatistic[], DomainError>>;
 }
