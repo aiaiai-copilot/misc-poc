@@ -16,3 +16,10 @@ export {
   DuplicateRecordError,
   TagLimitExceededError,
 } from './domain-errors';
+
+// User domain entities and value objects
+export { User } from './user';
+export { GoogleId } from './google-id';
+export { UserSettings } from './user-settings';
+export { AuthenticationContext } from './authentication-context';
+export { UserFactory } from './user-factory';
