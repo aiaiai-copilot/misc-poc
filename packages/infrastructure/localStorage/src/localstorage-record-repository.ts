@@ -12,6 +12,7 @@ import {
   RecordRepository,
   RecordSearchOptions,
   RecordSearchResult,
+  TagStatistic,
 } from '@misc-poc/application';
 import { StorageManager } from './storage-manager';
 import { IndexManager } from './index-manager';
@@ -335,6 +336,37 @@ export class LocalStorageRecordRepository implements RecordRepository {
       return Ok(exists);
     } catch (error) {
       return this.handleError('Failed to check record existence', error);
+    }
+  }
+
+  async getTagStatistics(): Promise<Result<TagStatistic[], DomainError>> {
+    try {
+      const schema = await this.loadAndValidateSchema();
+      const tagCounts = new Map<string, number>();
+
+      // Count occurrences of each tag across all records
+      Object.values(schema.records).forEach((recordData) => {
+        recordData.tagIds.forEach((tagId) => {
+          tagCounts.set(tagId, (tagCounts.get(tagId) || 0) + 1);
+        });
+      });
+
+      // Convert to TagStatistic array and sort by count descending, then by tag name
+      const statistics: TagStatistic[] = Array.from(tagCounts.entries())
+        .map(([tag, count]) => ({ tag, count }))
+        .sort((a, b) => {
+          // First sort by count descending
+          const countDiff = b.count - a.count;
+          if (countDiff !== 0) {
+            return countDiff;
+          }
+          // If counts are equal, sort by tag name ascending
+          return a.tag.localeCompare(b.tag);
+        });
+
+      return Ok(statistics);
+    } catch (error) {
+      return this.handleError('Failed to get tag statistics', error);
     }
   }
 

@@ -14,6 +14,11 @@ export interface RecordSearchResult {
   readonly hasMore: boolean;
 }
 
+export interface TagStatistic {
+  readonly tag: string;
+  readonly count: number;
+}
+
 export interface RecordRepository {
   /**
    * Find a record by its unique identifier
@@ -93,4 +98,9 @@ export interface RecordRepository {
    * Check if a record exists by ID
    */
   exists(id: RecordId): Promise<Result<boolean, DomainError>>;
+
+  /**
+   * Get tag usage statistics with frequency counts ordered by frequency descending
+   */
+  getTagStatistics(): Promise<Result<TagStatistic[], DomainError>>;
 }

@@ -13,6 +13,7 @@ import {
   RecordRepository,
   RecordSearchOptions,
   RecordSearchResult,
+  TagStatistic,
 } from '@misc-poc/application';
 
 interface DatabaseRow {
@@ -615,6 +616,37 @@ export class PostgreSQLRecordRepository implements RecordRepository {
       }
     } catch (error) {
       return this.handleError('Failed to check record existence', error);
+    }
+  }
+
+  async getTagStatistics(): Promise<Result<TagStatistic[], DomainError>> {
+    try {
+      const result = await this.executeWithUserContext(async (queryRunner) => {
+        return await queryRunner.query(
+          `SELECT
+             tag,
+             COUNT(*) as count
+           FROM (
+             SELECT UNNEST(normalized_tags) as tag
+             FROM records
+             WHERE user_id = $1
+           ) AS tag_counts
+           GROUP BY tag
+           ORDER BY COUNT(*) DESC, tag ASC`,
+          [this.userId]
+        );
+      });
+
+      const statistics: TagStatistic[] = result.map(
+        (row: { tag: string; count: string }) => ({
+          tag: row.tag,
+          count: parseInt(row.count),
+        })
+      );
+
+      return Ok(statistics);
+    } catch (error) {
+      return this.handleError('Failed to get tag statistics', error);
     }
   }
 

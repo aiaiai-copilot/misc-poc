@@ -239,7 +239,7 @@ describe('PostgreSQL Record Repository findByTags Integration Tests', () => {
         await queryRunner.query(
           'INSERT INTO records (id, user_id, content, tags, normalized_tags, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7)',
           [
-            '88888888-8888-8888-8888-888888888888',
+            'bbbb8888-8888-8888-8888-888888888888',
             otherUserId,
             'User 2 record',
             [tagId],
@@ -420,6 +420,302 @@ describe('PostgreSQL Record Repository findByTags Integration Tests', () => {
       } finally {
         await queryRunner.release();
       }
+    });
+  });
+
+  describe('getTagStatistics', () => {
+    it('should count frequency for each unique tag', async () => {
+      // Insert test records with various tags to test frequency counting
+      const queryRunner = dataSource.createQueryRunner();
+      try {
+        // Tag IDs for testing
+        const tag1Id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
+        const tag2Id = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb';
+        const tag3Id = 'cccccccc-cccc-cccc-cccc-cccccccccccc';
+
+        // Record 1: has tag1 and tag2
+        await queryRunner.query(
+          'INSERT INTO records (id, user_id, content, tags, normalized_tags, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7)',
+          [
+            '11111111-1111-1111-1111-111111111111',
+            testUserId,
+            'First record',
+            [tag1Id, tag2Id],
+            [tag1Id, tag2Id],
+            new Date('2023-01-01'),
+            new Date('2023-01-01'),
+          ]
+        );
+
+        // Record 2: has tag1 and tag3
+        await queryRunner.query(
+          'INSERT INTO records (id, user_id, content, tags, normalized_tags, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7)',
+          [
+            '22222222-2222-2222-2222-222222222222',
+            testUserId,
+            'Second record',
+            [tag1Id, tag3Id],
+            [tag1Id, tag3Id],
+            new Date('2023-01-02'),
+            new Date('2023-01-02'),
+          ]
+        );
+
+        // Record 3: has only tag2
+        await queryRunner.query(
+          'INSERT INTO records (id, user_id, content, tags, normalized_tags, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7)',
+          [
+            '33333333-3333-3333-3333-333333333333',
+            testUserId,
+            'Third record',
+            [tag2Id],
+            [tag2Id],
+            new Date('2023-01-03'),
+            new Date('2023-01-03'),
+          ]
+        );
+
+        // Test the getTagStatistics method
+        const result = await repository.getTagStatistics();
+
+        expect(result.isOk()).toBe(true);
+        const statistics = result.unwrap();
+
+        expect(statistics).toHaveLength(3);
+
+        // Find statistics by tag
+        const tag1Stats = statistics.find((s) => s.tag === tag1Id);
+        const tag2Stats = statistics.find((s) => s.tag === tag2Id);
+        const tag3Stats = statistics.find((s) => s.tag === tag3Id);
+
+        expect(tag1Stats).toBeDefined();
+        expect(tag1Stats!.count).toBe(2); // appears in records 1 and 2
+
+        expect(tag2Stats).toBeDefined();
+        expect(tag2Stats!.count).toBe(2); // appears in records 1 and 3
+
+        expect(tag3Stats).toBeDefined();
+        expect(tag3Stats!.count).toBe(1); // appears in record 2 only
+      } finally {
+        await queryRunner.release();
+      }
+    });
+
+    it('should include only user tags', async () => {
+      // Create another user to test data isolation
+      const queryRunner = dataSource.createQueryRunner();
+      try {
+        const [otherUserResult] = await queryRunner.query(
+          'INSERT INTO users (email, google_id) VALUES ($1, $2) RETURNING id',
+          ['other-stats@example.com', 'other_stats_google_id']
+        );
+        const otherUserId = otherUserResult.id;
+
+        const tag1Id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
+        const tag2Id = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb';
+
+        // Insert record for test user
+        await queryRunner.query(
+          'INSERT INTO records (id, user_id, content, tags, normalized_tags, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7)',
+          [
+            '44444444-4444-4444-4444-444444444444',
+            testUserId,
+            'Test user record',
+            [tag1Id],
+            [tag1Id],
+            new Date(),
+            new Date(),
+          ]
+        );
+
+        // Insert record for other user with same and different tags
+        await queryRunner.query(
+          'INSERT INTO records (id, user_id, content, tags, normalized_tags, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7)',
+          [
+            '55555555-5555-5555-5555-555555555555',
+            otherUserId,
+            'Other user record',
+            [tag1Id, tag2Id],
+            [tag1Id, tag2Id],
+            new Date(),
+            new Date(),
+          ]
+        );
+
+        // Repository should only return statistics for the initialized user
+        const result = await repository.getTagStatistics();
+
+        expect(result.isOk()).toBe(true);
+        const statistics = result.unwrap();
+
+        // Should only show tag1 with count 1 (from test user's record)
+        expect(statistics).toHaveLength(1);
+        expect(statistics[0].tag).toBe(tag1Id);
+        expect(statistics[0].count).toBe(1);
+
+        // Should not include tag2 which only exists in other user's record
+        const tag2Stats = statistics.find((s) => s.tag === tag2Id);
+        expect(tag2Stats).toBeUndefined();
+      } finally {
+        await queryRunner.release();
+      }
+    });
+
+    it('should use normalized tags for counting', async () => {
+      // Test that statistics are calculated using normalized_tags column
+      const queryRunner = dataSource.createQueryRunner();
+      try {
+        const normalizedTagId = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
+
+        // Insert record with normalized tags
+        await queryRunner.query(
+          'INSERT INTO records (id, user_id, content, tags, normalized_tags, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7)',
+          [
+            '66666666-6666-6666-6666-666666666666',
+            testUserId,
+            'Normalized test record',
+            [normalizedTagId], // original tags
+            [normalizedTagId], // normalized tags (same in this case)
+            new Date(),
+            new Date(),
+          ]
+        );
+
+        const result = await repository.getTagStatistics();
+
+        expect(result.isOk()).toBe(true);
+        const statistics = result.unwrap();
+
+        // Should count based on normalized tags
+        expect(statistics).toHaveLength(1);
+        expect(statistics[0].tag).toBe(normalizedTagId);
+        expect(statistics[0].count).toBe(1);
+      } finally {
+        await queryRunner.release();
+      }
+    });
+
+    it('should order by frequency descending', async () => {
+      // Test that statistics are ordered by count in descending order
+      const queryRunner = dataSource.createQueryRunner();
+      try {
+        const tag1Id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'; // will appear 3 times
+        const tag2Id = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb'; // will appear 2 times
+        const tag3Id = 'cccccccc-cccc-cccc-cccc-cccccccccccc'; // will appear 1 time
+
+        // Record 1: tag1 + tag2
+        await queryRunner.query(
+          'INSERT INTO records (id, user_id, content, tags, normalized_tags, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7)',
+          [
+            '77777777-7777-7777-7777-777777777777',
+            testUserId,
+            'First record',
+            [tag1Id, tag2Id],
+            [tag1Id, tag2Id],
+            new Date('2023-01-01'),
+            new Date('2023-01-01'),
+          ]
+        );
+
+        // Record 2: tag1 only (different combination)
+        await queryRunner.query(
+          'INSERT INTO records (id, user_id, content, tags, normalized_tags, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7)',
+          [
+            'aaaa8888-8888-8888-8888-888888888888',
+            testUserId,
+            'Second record',
+            [tag1Id],
+            [tag1Id],
+            new Date('2023-01-02'),
+            new Date('2023-01-02'),
+          ]
+        );
+
+        // Record 3: tag1 + tag3
+        await queryRunner.query(
+          'INSERT INTO records (id, user_id, content, tags, normalized_tags, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7)',
+          [
+            '99999999-9999-9999-9999-999999999999',
+            testUserId,
+            'Third record',
+            [tag1Id, tag3Id],
+            [tag1Id, tag3Id],
+            new Date('2023-01-03'),
+            new Date('2023-01-03'),
+          ]
+        );
+
+        const result = await repository.getTagStatistics();
+
+        expect(result.isOk()).toBe(true);
+        const statistics = result.unwrap();
+
+        expect(statistics).toHaveLength(3);
+
+        // Should be ordered by frequency descending: tag1 (3), tag2 (1), tag3 (1)
+        expect(statistics[0].tag).toBe(tag1Id);
+        expect(statistics[0].count).toBe(3);
+
+        // tag2 and tag3 both have count 1, so order by tag name (ascending)
+        expect(statistics[1].tag).toBe(tag2Id);
+        expect(statistics[1].count).toBe(1);
+
+        expect(statistics[2].tag).toBe(tag3Id);
+        expect(statistics[2].count).toBe(1);
+      } finally {
+        await queryRunner.release();
+      }
+    });
+
+    it('should handle tags with special characters', async () => {
+      // Test that the method handles various tag formats correctly
+      const queryRunner = dataSource.createQueryRunner();
+      try {
+        // Using UUID format tags as specified in the system
+        const specialTag1 = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
+        const specialTag2 = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb';
+
+        await queryRunner.query(
+          'INSERT INTO records (id, user_id, content, tags, normalized_tags, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7)',
+          [
+            'abcdefab-cdef-abcd-efab-cdefabcdefab',
+            testUserId,
+            'Special chars test',
+            [specialTag1, specialTag2],
+            [specialTag1, specialTag2],
+            new Date(),
+            new Date(),
+          ]
+        );
+
+        const result = await repository.getTagStatistics();
+
+        expect(result.isOk()).toBe(true);
+        const statistics = result.unwrap();
+
+        expect(statistics).toHaveLength(2);
+
+        const tag1Stats = statistics.find((s) => s.tag === specialTag1);
+        const tag2Stats = statistics.find((s) => s.tag === specialTag2);
+
+        expect(tag1Stats).toBeDefined();
+        expect(tag1Stats!.count).toBe(1);
+
+        expect(tag2Stats).toBeDefined();
+        expect(tag2Stats!.count).toBe(1);
+      } finally {
+        await queryRunner.release();
+      }
+    });
+
+    it('should return empty array when no records exist', async () => {
+      // Test empty case (beforeEach clears all records)
+      const result = await repository.getTagStatistics();
+
+      expect(result.isOk()).toBe(true);
+      const statistics = result.unwrap();
+
+      expect(statistics).toHaveLength(0);
     });
   });
 });
