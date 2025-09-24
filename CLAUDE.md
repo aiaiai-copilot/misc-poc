@@ -1,118 +1,117 @@
 # TaskMaster Automation Instructions for Claude
 
-## CRITICAL: Automatic TaskMaster Workflow
+## 🔴 PRIMARY RULES - APPLY TO EVERY TASK AND SUBTASK
 
-When the user asks me to work on ANY task in this project, I MUST automatically follow this workflow:
+**These rules override everything else and apply to ALL work in this project:**
 
-### 1. Task Selection & Branch Creation
+### 1. COMMIT APPROVAL RULE
 
-**CRITICAL: ALWAYS follow this EXACT sequence - NO exceptions:**
+**NEVER commit without explicit user approval**
+
+- After EVERY task/subtask implementation
+- Ask: "Ready for manual testing before commit?"
+- WAIT for user response (DO NOT PROCEED WITHOUT APPROVAL)
+- User may request fixes - implement them before asking again
+- Only commit after user explicitly says "yes", "proceed", or gives clear approval
+
+### 2. TDD APPROACH RULE
+
+**ALWAYS use Test-Driven Development**
+
+- Write tests FIRST, implementation SECOND
+- Test specifications are in: `.taskmaster/docs/prd.txt`
+- Find relevant test spec for current task section
+- Workflow: Write tests → Run (expect fail) → Implement feature → Run (expect pass)
+
+### 3. DATABASE TESTING RULE
+
+**ALWAYS use Testcontainers for database tests**
+
+- ANY test interacting with database = use real PostgreSQL container
+- NEVER mock database operations, migrations, or queries
+- Use integration test templates from Technical Details section
+
+### 4. DOCUMENTATION RULE
+
+**ALWAYS get current docs via Context7 MCP**
+
+- Before using ANY external library/framework
+- Command sequence: resolve-library-id → get-library-docs
+- Never rely on potentially outdated knowledge
+- This includes: ORMs, frameworks, testing tools, build tools, etc.
+
+### 5. BUILD VALIDATION RULE
+
+**ALWAYS validate build before completion**
+
+- Run ALL commands: `yarn build && yarn typecheck && yarn lint && yarn test`
+- Fix ANY errors before proceeding
+- This applies to both subtasks and main tasks
+
+## ⚠️ If you forget these primary rules, the user will reject your work
+
+---
+
+## 📋 STANDARD TASK WORKFLOW
+
+### Pre-Task Mental Checklist
+
+Before starting ANY task, verify understanding of:
+
+- [ ] TDD approach will be used
+- [ ] Test specs location: `.taskmaster/docs/prd.txt`
+- [ ] Manual testing approval required before commits
+- [ ] Testcontainers for database tests
+- [ ] Context7 for library documentation
+
+### Phase 1: Task Selection & Setup
 
 ```bash
-# STEP 1: Check for unmerged PRs FIRST
+# 1. Check for unmerged PRs
 gh pr list --state=open
 
-# STEP 2: Sync with main to get latest merged changes
+# 2. Sync with main
 git checkout main
 git pull origin main
 
-# STEP 3: Check what task to work on
+# 3. Get next task
 tm next
 
-# If there are open PRs from previous tasks:
-# STOP and notify user: "There are unmerged PRs. Please approve and merge them before I continue with the next task."
-# List the open PRs and wait for user confirmation
-
-# After completing a task and creating its PR, ALWAYS verify merge status before next task:
-# If no new changes were pulled in STEP 2, the PR is still unmerged - STOP and notify user
-# Only proceed with next task if the PR has been merged (new changes were pulled)
-
-# 🚨 CRITICAL BRANCHING STRATEGY 🚨
-# ONLY create branches for tasks that have their own subtasks
-# NEVER create branches for lowest-level subtasks (leaf tasks)
-# Work on leaf subtasks directly on their parent's task branch
-
-# Check if task has subtasks before creating branch:
-# IF task has subtasks (parent task) → CREATE branch: task/<id>-<description>
-# IF task has NO subtasks (leaf task) → WORK ON PARENT'S BRANCH, no new branch needed
-
-# Set task to in-progress
-tm set-status --id=<id> --status=in-progress
+# If there are unmerged PRs: STOP and notify user to merge them first
+# Only proceed after PRs are merged and changes pulled
 ```
 
-**NEVER announce a task as "next" until AFTER completing steps 1-3 above!**
+### Phase 2: Branch Creation Strategy
 
-### 2. During Task Implementation
+**Branch only for parent tasks (tasks with subtasks):**
 
-- Work ONLY on the task branch
-- Make focused commits with clear messages
-- Run tests before completion
-- Follow TDD approach when applicable
-- **MANDATORY**: After each subtask completion, ALWAYS commit changes and ask for user's manual testing approval before proceeding
+- Task has subtasks → CREATE branch: `task/<id>-<description>`
+- Task has NO subtasks → WORK on parent's branch
 
-### 3. Task Completion (AUTOMATICALLY do ALL of these)
+**Hierarchical Branching Examples:**
 
-```bash
-# MANDATORY BUILD VALIDATION BEFORE COMPLETION:
-yarn build && yarn typecheck && yarn lint && yarn test
+- Task 3 "Database Migration" (has 3.1, 3.2, 3.3) → CREATE `task/3-database-migration` from `main`
+- Task 3.1 "Setup ORM" (has 3.1.1, 3.1.2) → CREATE `task/3.1-setup-orm` from `task/3-database-migration`
+- Task 3.1.1 "Install deps" (leaf task) → WORK ON `task/3.1-setup-orm` (no new branch)
+- Task 3.2 "Create migrations" (no subtasks) → WORK ON `task/3-database-migration` (no new branch)
 
-# Mark task complete FIRST (before final commit)
-tm set-status --id=<id> --status=done
+**Merging Hierarchy:**
 
-# 🚨 MANDATORY PRE-COMMIT APPROVAL 🚨
-# ASK USER: "Do you want to test manually before committing?"
-# ⚠️ STOP AND WAIT FOR USER RESPONSE - DO NOT PROCEED ⚠️
-# ONLY AFTER EXPLICIT USER APPROVAL:
-
-# Commit final changes INCLUDING task status
-git add .
-git commit -m "feat: implement task #<id> - <brief description>"
-
-# Push branch
-git push -u origin task/<id>-<description>
-
-# Create PR ONLY for top-level and intermediate tasks (NOT leaf tasks)
-# Check task hierarchy before creating PR:
-# - Top-level task → gh pr create to merge into main
-# - Intermediate task → gh pr create to merge into parent branch
-# - Leaf task → NO PR (already on parent branch)
-gh pr create --title "Task #<id>: <title>" --body "Implements task #<id>"
-
-# Return to main
-git checkout main
-git pull origin main
-```
-
-**❗ CRITICAL: If ANY build validation command fails, fix all errors before proceeding with task completion.**
-
-### 4. NEW Branching Strategy
-
-**🚨 FUNDAMENTAL CHANGE: Only branch for parent tasks with subtasks**
-
-**HIERARCHICAL BRANCHING RULES:**
-
-1. **Top-level tasks** (e.g., Task 3) with subtasks → Branch from `main`
-2. **Intermediate tasks** (e.g., Task 3.1) with subtasks → Branch from parent task branch
-3. **Leaf tasks** (e.g., Task 3.1.1) with no subtasks → Work on parent branch directly
-
-**BRANCHING EXAMPLES:**
-
-- Task 3 "Database Migration System" (has 3.1, 3.2, 3.3) → CREATE `task/3-database-migration-system` from `main`
-- Task 3.1 "Setup TypeORM" (has 3.1.1, 3.1.2) → CREATE `task/3.1-setup-typeorm` from `task/3-database-migration-system`
-- Task 3.1.1 "Install dependencies" (no subtasks) → WORK ON `task/3.1-setup-typeorm` branch
-- Task 3.2 "Create migrations" (no subtasks) → WORK ON `task/3-database-migration-system` branch
-
-**MERGING HIERARCHY:**
-
-- **Top-level branches** (`task/3-database-migration-system`) → Merge into `main`
-- **Intermediate branches** (`task/3.1-setup-typeorm`) → Merge into parent (`task/3-database-migration-system`)
+- **Top-level branches** (`task/3-database-migration`) → Merge into `main`
+- **Intermediate branches** (`task/3.1-setup-orm`) → Merge into parent branch
 - **Leaf tasks** → Already on parent branch (no merge needed)
 
-**PULL REQUEST RULES:**
+**Pull Request Rules:**
 
-- **Top-level tasks** → CREATE Pull Request to merge into `main`
-- **Intermediate tasks** → CREATE Pull Request to merge into parent task branch
-- **Leaf tasks** → NO Pull Request (work is already on parent branch)
+- **Top-level tasks** → CREATE PR to merge into `main`
+- **Intermediate tasks** → CREATE PR to merge into parent task branch
+- **Leaf tasks** → NO PR (work is already on parent branch)
+
+**Branch Naming:**
+
+- Format: `task/<id>-<description>`
+- Use lowercase, hyphens for spaces
+- Keep description under 50 characters
 
 **Why this prevents integration problems:**
 
@@ -121,205 +120,92 @@ git pull origin main
 - No scattered commits across unrelated branches
 - Complete features assembled hierarchically before reaching main
 
-**Branch Naming (only for parent tasks):**
-
-- Format: `task/<id>-<description>`
-- Use lowercase, hyphens for spaces
-- Keep description under 50 characters
-
-### 5. When User Says "Work on task X" or "Implement next task"
-
-I MUST:
-
-1. First check if previous task's PR was merged: `git checkout main && git pull origin main`
-2. If no changes pulled, STOP and report: "Previous task's PR is still unmerged. Please approve and merge before continuing."
-3. Only if PR was merged: run `tm next` or use specified task ID
-4. Create appropriate branch automatically
-5. Set task status to in-progress
-6. Implement the task
-7. Complete the full workflow above
-8. Report completion to user with PR link
-9. Always ask me if I want to test manually before committing.
-   **NEVER ask user to do these steps manually - I handle ALL TaskMaster automation!**
-
-## CRITICAL REMINDERS
-
-### Task Status Management
-
-- ❗ **ALWAYS** update task status (`tm set-status --id=<id> --status=done`) BEFORE the final commit
-- ❗ **NEVER** update task status after pushing or creating PR
-- ❗ **ALWAYS** include task status changes in the same commit as the implementation
-- ❗ The task status file (`.taskmaster/tasks/tasks.json`) must be committed on the task branch
-
-### Why This Matters
-
-- Task status changes on main branch create inconsistency
-- PRs should include both implementation AND task completion status
-- This ensures task tracking is synchronized with code changes
-
-### CRITICAL: Stay on Task Branch Throughout Implementation
-
-**NEVER SWITCH TO MAIN DURING ACTIVE TASK WORK!**
-
-❌ **WRONG WORKFLOW (causes branch confusion):**
-
 ```bash
-# Working on task branch
-git checkout task/<id>-<description>
-# Implementation work...
-# MISTAKE: Switching to main during task work
-git checkout main  # ❌ DON'T DO THIS DURING TASK!
-tm set-status --id=<id> --status=done
-git commit # ❌ Wrong branch for task completion!
+# Set task to in-progress
+tm set-status --id=<id> --status=in-progress
 ```
 
-✅ **CORRECT WORKFLOW:**
+### Phase 3: Implementation Checklist
+
+**For EACH task/subtask:**
+
+- [ ] Check test specifications in `prd.txt`
+- [ ] Write tests first (TDD approach)
+- [ ] Use Context7 for library documentation
+- [ ] Use Testcontainers for database tests
+- [ ] Implement feature to pass tests
+- [ ] Run build validation: `yarn build && yarn typecheck && yarn lint && yarn test`
+- [ ] Ask user: "Ready for manual testing before commit?"
+- [ ] WAIT for explicit approval
+- [ ] Commit only after approval
+
+**Subtask-Specific Workflow:**
+After completing each subtask:
+
+1. Complete the subtask implementation
+2. Run MANDATORY build validation (all commands must pass)
+3. Ask: "Do you want to test manually before committing?"
+4. ⚠️ STOP AND WAIT - DO NOT PROCEED WITHOUT APPROVAL
+5. After approval: commit changes
+6. Update subtask status: `tm set-status --id=<subtask-id> --status=done`
+7. Continue to next subtask or complete main task
+
+**Remember:**
+
+- 📍 TDD - Write tests first (specs in prd.txt)
+- 📍 Use Context7 for library docs
+- 📍 Database tests need Testcontainers
+- 📍 Ask for manual testing approval before EVERY commit
+
+### Phase 4: Task Completion
 
 ```bash
-# Working on task branch
-git checkout task/<id>-<description>
-# Implementation work...
-# STAY ON TASK BRANCH for completion
+# 1. Run MANDATORY build validation
+yarn build && yarn typecheck && yarn lint && yarn test
+# If ANY command fails, fix errors before proceeding
+
+# 2. Update task status BEFORE final commit
 tm set-status --id=<id> --status=done
+
+# 3. Ask for final manual testing approval
+# "Ready for manual testing before final commit?"
+# ⚠️ STOP AND WAIT FOR USER RESPONSE - DO NOT PROCEED ⚠️
+
+# 4. After explicit approval, commit with status change
 git add .
-git commit -m "feat: complete task #<id> - description"
+git commit -m "feat: implement task #<id> - <brief description>"
+
+# 5. Push branch
 git push -u origin task/<id>-<description>
 
-# Create PR (method depends on your setup):
-# - GitHub: gh pr create ...
-# - GitLab: glab mr create ...
-# - Manual: create PR through web interface
-# - Or merge directly if no PR workflow
+# 6. Create PR (only for parent tasks)
+# - Top-level tasks → PR to main
+# - Intermediate tasks → PR to parent branch
+# - Leaf tasks → NO PR (already on parent branch)
+gh pr create --title "Task #<id>: <title>" --body "Implements task #<id>"
 
-# ONLY switch to main when starting NEXT task
+# 7. Return to main
 git checkout main
 git pull origin main
 ```
 
-**Key Principle: Task work (including status updates) stays on task branch until task is fully complete and merged.**
+**CRITICAL: Never switch to main during active task work. Stay on task branch throughout implementation, including status updates.**
 
-## MANDATORY SUBTASK WORKFLOW
+---
 
-### After Each Subtask Completion:
+## 🔧 TECHNICAL DETAILS
 
-1. **Complete the subtask implementation**
-2. **MANDATORY BUILD VALIDATION**: Run ALL of these commands and fix any errors:
-   - `yarn build` - Ensure TypeScript compilation succeeds
-   - `yarn typecheck` - Verify type checking passes
-   - `yarn lint` - Fix any linting errors
-   - `yarn test` - Ensure all tests pass
-3. **Ask user**: "Do you want to test manually before committing?"
-4. **⚠️ STOP AND WAIT FOR USER RESPONSE - DO NOT PROCEED ⚠️**
-5. **ONLY AFTER EXPLICIT USER APPROVAL**: Commit the changes
+### Testing Strategy
 
-**❌ NEVER run `git add` or `git commit` without user approval**
-**✅ ALWAYS wait for user to say "yes" or "proceed" before committing** 6. **Update subtask status**: `tm set-status --id=<subtask-id> --status=done` 7. **Continue to next subtask or complete main task**
+#### Test Classification
 
-**❗ CRITICAL: NEVER commit if ANY of the build validation commands fail. Fix all errors first.**
+| Test Type   | Dependencies | When to Use             | Tools                 | Speed            | Coverage |
+| ----------- | ------------ | ----------------------- | --------------------- | ---------------- | -------- |
+| Unit        | Mocked       | Isolated logic          | Jest + Mocks          | Fast (ms)        | Wide     |
+| Integration | Real         | Database/API operations | Jest + Testcontainers | Medium (seconds) | Deep     |
+| E2E         | Full stack   | User workflows          | Playwright/Cypress    | Slow (minutes)   | Complete |
 
-**This workflow applies to EVERY subtask - no exceptions. Never commit without build validation and manual testing approval.**
-
-## E2E Test Requirements for UI/UX Changes
-
-When making ANY UI/UX changes, you MUST maintain end-to-end test coverage:
-
-### MANDATORY E2E Test Actions
-
-#### ✅ **When Adding New UI Components or Features:**
-
-1. **CREATE new E2E tests** in `e2e/` directory following naming convention `XX-feature-name.spec.ts`
-2. **UPDATE page objects** in `e2e/support/page-objects/` with new selectors and methods
-3. **TEST all user interactions**: clicks, keyboard navigation, form submissions
-4. **VERIFY accessibility**: keyboard navigation, ARIA labels, screen reader support
-5. **INCLUDE error scenarios**: invalid inputs, network failures, edge cases
-
-#### 📝 **When Modifying Existing UI:**
-
-1. **UPDATE affected E2E tests** to match new behavior/selectors
-2. **MODIFY page object methods** if selectors or interactions change
-3. **VERIFY backward compatibility** or update tests accordingly
-4. **TEST both old and new user flows** during transition periods
-
-#### ❌ **When Removing UI Features:**
-
-1. **REMOVE corresponding E2E tests** for deleted functionality
-2. **CLEAN UP page object methods** that are no longer needed
-3. **UPDATE test suites** that depend on removed features
-4. **VERIFY remaining tests still pass** after cleanup
-
-### E2E Test Coverage Checklist
-
-For EVERY UI change, ensure tests cover:
-
-- [ ] **Functionality**: Core feature works as expected
-- [ ] **User flows**: Complete user journeys from start to finish
-- [ ] **Error handling**: Graceful failure and recovery
-- [ ] **Accessibility**: Keyboard navigation, focus management, ARIA
-- [ ] **Cross-component integration**: How changes affect other UI parts
-- [ ] **Data integrity**: For features involving data (export/import, CRUD)
-
-### E2E Test Quality Standards
-
-- **Use semantic selectors**: Prefer `data-testid` over CSS classes
-- **Write descriptive test names**: Clear Given-When-Then structure
-- **Include multilingual content**: Match application's language usage
-- **Test real scenarios**: Use realistic data and user behaviors
-- **Maintain test independence**: Each test should run in isolation
-- **Clean up test data**: Always reset state between tests
-
-### Non-Negotiable Rules
-
-1. **NO UI changes without corresponding E2E test updates**
-2. **ALL E2E tests MUST pass before committing**
-3. **DOCUMENT test scenarios in commit messages**
-4. **REVIEW E2E test coverage for each PR**
-
-**Failure to maintain E2E tests will result in incomplete implementation.**
-
-Refer to `e2e/README.md` for detailed guidelines and examples.
-
-## 🚨 CRITICAL REMINDER: Context7 MCP First
-
-**ALWAYS use Context7 MCP before working with ANY external tools/frameworks:**
-
-- GitHub Actions workflows
-- CI/CD tools
-- Testing frameworks
-- Build tools
-- Deployment systems
-- Any external APIs/services
-
-**Pattern: resolve-library-id → get-library-docs → implement with current patterns**
-
-## 🧪 CRITICAL: Testing Strategy Guidelines
-
-### 🚨 MANDATORY TEST CLASSIFICATION 🚨
-
-**NEVER create "integration tests" using mocks - these are unit tests!**
-
-#### Test Type Decision Matrix
-
-| What are you testing?           | Dependencies    | Test Type            | Tools to Use                      |
-| ------------------------------- | --------------- | -------------------- | --------------------------------- |
-| Individual function/class logic | Mocked          | **Unit Test**        | Jest + Mocks                      |
-| Database interactions           | Real PostgreSQL | **Integration Test** | Jest + Testcontainers             |
-| API endpoints with DB           | Real DB + HTTP  | **Integration Test** | Jest + Testcontainers + Supertest |
-| Migration behavior              | Real PostgreSQL | **Integration Test** | Jest + Testcontainers             |
-| Cross-service communication     | Real services   | **Contract Test**    | Jest + Testcontainers             |
-
-#### 🔍 INTEGRATION TEST DETECTION
-
-**Automatically use Testcontainers when testing:**
-
-- ✅ Database migrations (`up()`, `down()` methods)
-- ✅ Database queries (`QueryRunner`, `Repository` operations)
-- ✅ Schema validation (tables, indexes, constraints)
-- ✅ Database connections and configurations
-- ✅ Transaction behavior
-- ✅ Data integrity and constraints
-- ✅ Performance with real data volumes
-
-#### 📁 File Naming Convention
+#### File Naming Convention
 
 ```bash
 # Unit tests (isolated logic with mocks)
@@ -335,9 +221,19 @@ Refer to `e2e/README.md` for detailed guidelines and examples.
 *.spec.ts
 ```
 
-### 🏗️ Integration Test Template
+#### Integration Test Detection
 
-**ALWAYS start integration tests with this template:**
+**Automatically use Testcontainers when testing:**
+
+- ✅ Database migrations (`up()`, `down()` methods)
+- ✅ Database queries (`QueryRunner`, `Repository` operations)
+- ✅ Schema validation (tables, indexes, constraints)
+- ✅ Database connections and configurations
+- ✅ Transaction behavior
+- ✅ Data integrity and constraints
+- ✅ Performance with real data volumes
+
+#### Integration Test Template (with Testcontainers)
 
 ```typescript
 import {
@@ -351,9 +247,7 @@ describe('Feature Integration Tests', () => {
   let dataSource: DataSource;
 
   beforeAll(async () => {
-    // 🐳 MANDATORY: Real PostgreSQL container
     container = await new PostgreSqlContainer('postgres:15').start();
-
     dataSource = new DataSource({
       type: 'postgres',
       host: container.getHost(),
@@ -361,9 +255,7 @@ describe('Feature Integration Tests', () => {
       database: container.getDatabase(),
       username: container.getUsername(),
       password: container.getPassword(),
-      // ... real configuration
     });
-
     await dataSource.initialize();
   });
 
@@ -372,13 +264,13 @@ describe('Feature Integration Tests', () => {
     await container?.stop();
   });
 
-  // ... real integration tests
+  // Real integration tests here
 });
 ```
 
-### 🚫 ANTI-PATTERNS TO AVOID
+#### Testing Anti-Patterns to Avoid
 
-#### ❌ WRONG: Mock-based "Integration" Test
+**❌ WRONG: Mock-based "Integration" Test**
 
 ```typescript
 // DON'T DO THIS - This is a unit test disguised as integration test
@@ -394,7 +286,7 @@ describe('Migration Integration Test', () => {
 });
 ```
 
-#### ✅ CORRECT: Real Integration Test
+**✅ CORRECT: Real Integration Test**
 
 ```typescript
 // DO THIS - Real database testing
@@ -409,7 +301,6 @@ describe('Migration Integration Test', () => {
 
   it('should run migration on real database', async () => {
     await migration.up(queryRunner); // ✅ REAL INTEGRATION
-
     // Verify with real database queries
     const table = await queryRunner.getTable('users');
     expect(table).toBeDefined();
@@ -417,45 +308,9 @@ describe('Migration Integration Test', () => {
 });
 ```
 
-### 🔍 PRE-CREATION CHECKLIST
+#### Test Quality Gates
 
-**Before creating ANY test file, ask these questions:**
-
-1. **□ Does this test interact with a database?** → Use Testcontainers
-2. **□ Does this test verify schema, migrations, or queries?** → Use Testcontainers
-3. **□ Does the filename contain "integration" or "contract"?** → Use Testcontainers
-4. **□ Am I testing real system behavior?** → Use Testcontainers
-5. **□ Am I testing isolated logic only?** → Use mocks
-
-### 🛡️ VALIDATION RULES
-
-#### Automatic Red Flags
-
-- File named `*integration.test.ts` without `@testcontainers` import
-- Testing `QueryRunner`, `DataSource`, or migration classes with mocks
-- Testing database schema/constraints with fake objects
-- Using `jest.fn()` for database operations that should be real
-
-#### Code Review Checklist
-
-```bash
-# 🚨 Flag integration tests without Testcontainers
-grep -r "integration\.test\.ts" --include="*.ts" | \
-  xargs grep -L "@testcontainers" | \
-  if read; then echo "❌ Integration tests must use Testcontainers"; exit 1; fi
-```
-
-### 📊 TESTING STRATEGY SUMMARY
-
-| Test Level      | Purpose               | Dependencies          | Execution Speed  | Coverage |
-| --------------- | --------------------- | --------------------- | ---------------- | -------- |
-| **Unit**        | Isolated logic        | Mocked                | Fast (ms)        | Wide     |
-| **Integration** | Component interaction | Real (Testcontainers) | Medium (seconds) | Deep     |
-| **E2E**         | Full user flows       | Real (all services)   | Slow (minutes)   | Complete |
-
-### 🎯 QUALITY GATES
-
-**All tests must pass these gates before commit:**
+All tests must pass these gates before commit:
 
 1. **Type Safety**: No `any` types in test code
 2. **Cleanup**: Proper resource disposal (`afterAll`, `beforeEach`)
@@ -463,110 +318,200 @@ grep -r "integration\.test\.ts" --include="*.ts" | \
 4. **Assertions**: Clear, specific expectations
 5. **Performance**: Integration tests complete within 30 seconds
 
-**Remember: If you're testing how code interacts with real systems, use real systems!**
+#### Validation Rules
 
-## 📚 CRITICAL: Library Documentation and Context
+**Automatic Red Flags:**
 
-### 🔍 Context7 MCP Integration
+- File named `*integration.test.ts` without `@testcontainers` import
+- Testing `QueryRunner`, `DataSource`, or migration classes with mocks
+- Testing database schema/constraints with fake objects
+- Using `jest.fn()` for database operations that should be real
 
-**ALWAYS use Context7 MCP to get up-to-date documentation for libraries and tools!**
-
-#### When to Use Context7 MCP
-
-**MANDATORY for ANY external library or framework usage:**
-
-1. **□ Frontend Development** → UI frameworks, styling libraries, state management
-2. **□ Backend Development** → Web frameworks, ORMs, database drivers, authentication libraries
-3. **□ Testing** → Test runners, E2E frameworks, container testing, mocking utilities
-4. **□ Build Tools** → Bundlers, transpilers, type checkers, linters
-5. **□ DevOps/Deployment** → Containerization, CI/CD platforms, cloud services
-6. **□ New library integration** → Any external dependency
-7. **□ Unfamiliar API patterns** → Get fresh documentation with examples
-8. **□ Version-specific features** → Ensure compatibility with project versions
-9. **□ Complex configurations** → Get authoritative setup guides
-10. **□ Best practices** → Access current recommended patterns
-
-#### Context7 Workflow
+**Code Review Check:**
 
 ```bash
-# Step 1: Resolve library name to Context7-compatible ID
-mcp__context7__resolve-library-id("library-name")
-
-# Step 2: Get comprehensive documentation
-mcp__context7__get-library-docs("/org/library-name", {
-  topic: "specific-feature", // Optional: focus on specific area
-  tokens: 8000              // Optional: more context for complex topics
-})
+# Flag integration tests without Testcontainers
+grep -r "integration\.test\.ts" --include="*.ts" | \
+  xargs grep -L "@testcontainers" | \
+  if read; then echo "❌ Integration tests must use Testcontainers"; exit 1; fi
 ```
 
-#### Example Library Resolutions
+### E2E Testing Requirements
 
-Context7 ID examples for reference (resolve each library as needed):
+#### Mandatory E2E Test Actions
 
-**Backend & Database Examples:**
+**✅ When Adding New UI Components:**
 
-- ORMs: TypeORM → `/typeorm/typeorm`, Prisma → `/prisma/prisma`
-- Runtime: Node.js → `/nodejs/node`
-- Web Frameworks: Express → `/expressjs/express`
+1. CREATE new E2E tests in `e2e/` following naming `XX-feature-name.spec.ts`
+2. UPDATE page objects in `e2e/support/page-objects/` with new selectors
+3. TEST all user interactions: clicks, keyboard navigation, form submissions
+4. VERIFY accessibility: keyboard navigation, ARIA labels, screen reader support
+5. INCLUDE error scenarios: invalid inputs, network failures, edge cases
 
-**Frontend Examples:**
+**📝 When Modifying Existing UI:**
 
-- UI Frameworks: React → `/facebook/react`, Vue → `/vuejs/vue`
-- Build Tools: Vite → `/vitejs/vite`, Webpack → `/webpack/webpack`
-- Languages: TypeScript → `/microsoft/typescript`
+1. UPDATE affected E2E tests to match new behavior/selectors
+2. MODIFY page object methods if selectors or interactions change
+3. VERIFY backward compatibility or update tests accordingly
+4. TEST both old and new user flows during transition periods
 
-**Testing Examples:**
+**❌ When Removing UI Features:**
 
-- Test Runners: Jest → `/jestjs/jest`, Vitest → `/vitest/vitest`
-- E2E Testing: Playwright → `/microsoft/playwright`, Cypress → `/cypress/cypress`
-- Container Testing: Testcontainers → `/testcontainers/testcontainers-node`
+1. REMOVE corresponding E2E tests for deleted functionality
+2. CLEAN UP page object methods that are no longer needed
+3. UPDATE test suites that depend on removed features
+4. VERIFY remaining tests still pass after cleanup
 
-**Development Tools Examples:**
+#### E2E Test Coverage Checklist
 
-- Containerization: Docker → `/docker/docker`
-- Code Quality: ESLint → `/eslint/eslint`, Prettier → `/prettier/prettier`
+For EVERY UI change, ensure tests cover:
 
-#### Integration with Development Workflow
+- [ ] **Functionality**: Core feature works as expected
+- [ ] **User flows**: Complete user journeys from start to finish
+- [ ] **Error handling**: Graceful failure and recovery
+- [ ] **Accessibility**: Keyboard navigation, focus management, ARIA
+- [ ] **Cross-component integration**: How changes affect other UI parts
+- [ ] **Data integrity**: For features involving data (export/import, CRUD)
 
-**Before writing code that uses ANY external libraries or frameworks:**
+#### E2E Test Quality Standards
 
-1. Get current documentation via Context7 MCP
-2. Review examples and best practices
-3. Implement following authoritative patterns
-4. Avoid assumptions about API behavior
+- Use semantic selectors: Prefer `data-testid` over CSS classes
+- Write descriptive test names: Clear Given-When-Then structure
+- Include multilingual content: Match application's language usage
+- Test real scenarios: Use realistic data and user behaviors
+- Maintain test independence: Each test should run in isolation
+- Clean up test data: Always reset state between tests
 
-**This ensures:**
+**Non-Negotiable:** NO UI changes without corresponding E2E test updates. ALL E2E tests MUST pass before committing.
 
-- ✅ Current, accurate implementation patterns
-- ✅ Compatibility with project versions
-- ✅ Adherence to documented best practices
-- ✅ Reduced debugging from outdated examples
+### Context7 MCP Usage
 
-#### Example Usage
+**Before using any external library:**
 
-```typescript
-// Before implementing ANY feature with external libraries:
-// 1. Get library docs via Context7 MCP
-// 2. Follow current API patterns and best practices
-// 3. Use up-to-date methods and configurations
+```javascript
+// Step 1: Resolve library ID
+mcp__context7__resolve - library - id('library-name');
 
-// Examples (use whatever frameworks/tools are appropriate):
-// - ORM migrations → Get ORM docs (TypeORM, Prisma, etc.)
-// - UI components → Get framework docs (React, Vue, Angular, etc.)
-// - Testing → Get test framework docs (Jest, Vitest, etc.)
-// - API routes → Get web framework docs (Express, Fastify, etc.)
-// - E2E testing → Get E2E framework docs (Playwright, Cypress, etc.)
-
-// This prevents outdated patterns like:
-// - Deprecated API methods
-// - Incorrect configuration options
-// - Missing error handling patterns
-// - Incompatible version usage
+// Step 2: Get documentation
+mcp__context7__get -
+  library -
+  docs('/org/library-name', {
+    topic: 'specific-feature',
+    tokens: 8000,
+  });
 ```
 
-**Remember: Fresh documentation prevents implementation errors and ensures compatibility!**
+#### Comprehensive Library ID Reference
 
-## Task Master AI Instructions
+**Backend & Database:**
 
-**Import Task Master's development workflow commands and guidelines, treat as if import is in the main CLAUDE.md file.**
+- TypeORM → `/typeorm/typeorm`
+- Prisma → `/prisma/prisma`
+- Node.js → `/nodejs/node`
+- Express → `/expressjs/express`
+- Fastify → `/fastify/fastify`
+- PostgreSQL drivers → Resolve via Context7
+
+**Frontend & UI:**
+
+- React → `/facebook/react`
+- Vue → `/vuejs/vue`
+- Angular → `/angular/angular`
+- Vite → `/vitejs/vite`
+- Webpack → `/webpack/webpack`
+- TypeScript → `/microsoft/typescript`
+
+**Testing Tools:**
+
+- Jest → `/jestjs/jest`
+- Vitest → `/vitest/vitest`
+- Playwright → `/microsoft/playwright`
+- Cypress → `/cypress/cypress`
+- Testcontainers → `/testcontainers/testcontainers-node`
+
+**Development Tools:**
+
+- Docker → `/docker/docker`
+- ESLint → `/eslint/eslint`
+- Prettier → `/prettier/prettier`
+- GitHub Actions → Resolve via Context7
+- CI/CD tools → Resolve via Context7
+
+**Always resolve library IDs for:**
+
+- New library integrations
+- Unfamiliar API patterns
+- Version-specific features
+- Complex configurations
+- Best practices updates
+
+---
+
+## 🚀 QUICK REFERENCE
+
+### When User Says "Work on next task" or "Implement task X"
+
+1. **Check PR status:** Ensure previous PR merged
+2. **Run task selection:** `tm next` or use specified ID
+3. **Create branch:** Only if task has subtasks
+4. **Set status:** Mark as in-progress
+5. **Implement with TDD:** Tests first, code second
+6. **Validate build:** All checks must pass
+7. **Get approval:** Ask for manual testing
+8. **Complete workflow:** Status update, commit, push, PR
+
+### Common Pitfalls to Avoid
+
+❌ **DON'T:**
+
+- Commit without user approval
+- Skip TDD approach
+- Mock database interactions
+- Assume library APIs without checking Context7
+- Update task status after pushing
+- Create branches for leaf tasks
+- Skip build validation
+
+✅ **DO:**
+
+- Always ask for manual testing approval
+- Check `prd.txt` for test specs
+- Use Testcontainers for DB tests
+- Get fresh docs via Context7
+- Update status before final commit
+- Work on parent branch for leaf tasks
+- Fix all validation errors before proceeding
+
+---
+
+## 📁 Project Structure References
+
+- Test specifications: `.taskmaster/docs/prd.txt`
+- Task definitions: `.taskmaster/tasks/tasks.json`
+- E2E tests: `e2e/`
+- E2E guidelines: `e2e/README.md`
+- Additional TaskMaster instructions: `.taskmaster/CLAUDE.md`
+
+---
+
+## 🔒 Security & Safety Considerations
+
+### When Working with External Tools
+
+- Always validate inputs and outputs
+- Use proper error handling for all external API calls
+- Never expose sensitive credentials in code or commits
+- Follow security best practices for the specific tools being used
+
+---
+
+## 📝 Import Statement
+
+**Import Task Master's development workflow commands and guidelines:**
 @./.taskmaster/CLAUDE.md
+
+_The imported TaskMaster instructions complement these project-specific guidelines._
+
+---
+
+**Final Reminder: The PRIMARY RULES section is your north star. When in doubt, refer back to those five rules. If you forget them, the user's work will be disrupted and require manual intervention.**
