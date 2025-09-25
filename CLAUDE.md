@@ -4,7 +4,20 @@
 
 **These rules override everything else and apply to ALL work in this project:**
 
-### 1. COMMIT APPROVAL RULE
+### 1. ONE SUBTASK AT A TIME RULE
+
+**NEVER implement multiple subtasks together**
+
+- **⚠️ CRITICAL: Complete ONE subtask → Get approval → Commit → ONLY THEN start next subtask**
+- If task has subtasks (e.g., 3.1, 3.2, 3.3), do them according to their interdependency (as a rule - sequentially):
+  1. Complete subtask 3.1 FULLY (implement, test, get approval, commit)
+  2. STOP and inform user: "Subtask 3.1 complete. Ready to start subtask 3.2?"
+  3. Wait for user confirmation before proceeding
+  4. ONLY after user approval, start subtask 3.2
+- **NEVER jump ahead to next subtask without completing current one**
+- **NEVER implement entire task at once if it has subtasks**
+
+### 2. COMMIT APPROVAL RULE
 
 **NEVER commit without explicit user approval**
 
@@ -14,11 +27,13 @@
 - User may request fixes - implement them before asking again
 - Only commit after user explicitly says "yes", "proceed", or gives clear approval
 
-### 2. TDD WITH PRD.TXT RULE
+### 3. TDD WITH PRD.TXT RULE
 
-**ALWAYS use Test-Driven Development with specifications from prd.txt**
+**ALWAYS use Test-Driven Development with specifications from prd.txt (when applicable)**
 
-- **⚠️ CRITICAL SEQUENCE:**
+- **⚠️ APPLIES TO:** Tasks that involve writing code (features, components, APIs, migrations, etc.)
+- **⚠️ DOES NOT APPLY TO:** Configuration tasks, documentation, setup, environment settings, dependency updates, etc.
+- **For coding tasks, CRITICAL SEQUENCE:**
   1. **OPEN** `~/projects/misc-poc/.taskmaster/docs/prd.txt`
   2. **FIND** the test specification for your current task/subtask
   3. **READ** the complete test requirements
@@ -28,8 +43,9 @@
   7. **IMPLEMENT** feature to make tests pass
   8. **RUN** tests again (expect success)
 - **NEVER write tests based on assumptions - ONLY from prd.txt specifications**
+- **For non-coding tasks:** Skip TDD and proceed directly with implementation
 
-### 3. DATABASE TESTING RULE
+### 4. DATABASE TESTING RULE
 
 **ALWAYS use Testcontainers for database tests**
 
@@ -37,7 +53,7 @@
 - NEVER mock database operations, migrations, or queries
 - Use integration test templates from Technical Details section
 
-### 4. DOCUMENTATION RULE
+### 5. DOCUMENTATION RULE
 
 **ALWAYS get current docs via Context7 MCP**
 
@@ -46,7 +62,7 @@
 - Never rely on potentially outdated knowledge
 - This includes: ORMs, frameworks, testing tools, build tools, etc.
 
-### 5. BUILD VALIDATION RULE
+### 6. BUILD VALIDATION RULE
 
 **ALWAYS validate build before completion**
 
@@ -64,13 +80,13 @@
 
 Before starting ANY task, verify understanding of:
 
-- [ ] **I will open `~/projects/misc-poc/.taskmaster/docs/prd.txt` FIRST**
-- [ ] I will find and read the test specification for this exact task
-- [ ] I will copy test cases from prd.txt, not create my own
-- [ ] TDD approach will be used (tests from prd.txt first)
-- [ ] Manual testing approval required before commits
-- [ ] Testcontainers for database tests
-- [ ] Context7 for library documentation
+- [ ] **For coding tasks: I will open `~/projects/misc-poc/.taskmaster/docs/prd.txt` FIRST**
+- [ ] For coding tasks: I will find and read the test specification for this exact task
+- [ ] For coding tasks: I will copy test cases from prd.txt, not create my own
+- [ ] TDD approach will be used (for coding tasks only)
+- [ ] Manual testing approval required before commits (always)
+- [ ] Testcontainers for database tests (when applicable)
+- [ ] Context7 for library documentation (when using external libraries)
 
 ### Phase 1: Task Selection & Setup
 
@@ -88,6 +104,16 @@ tm next
 # If there are unmerged PRs: STOP and notify user to merge them first
 # Only proceed after PRs are merged and changes pulled
 ```
+
+**⚠️ CRITICAL: If the selected task has subtasks:**
+
+- DO NOT implement the entire task at once
+- Start with the FIRST subtask only
+- Complete subtask → Get approval → Commit → Ask permission for next subtask
+- Example: Task 3 has subtasks 3.1, 3.2, 3.3
+  - Do ONLY 3.1 first
+  - After 3.1 is committed, ask: "Subtask 3.1 complete. Should I proceed with 3.2?"
+  - Wait for user confirmation before starting 3.2
 
 ### Phase 2: Branch Creation Strategy
 
@@ -149,15 +175,31 @@ tm set-status --id=<id> --status=in-progress
 - [ ] Commit only after approval
 
 **Subtask-Specific Workflow:**
-After completing each subtask:
+**⚠️ MANDATORY: Complete subtasks ONE AT A TIME**
 
-1. Complete the subtask implementation
+After completing EACH subtask:
+
+1. Complete ONLY the current subtask implementation
 2. Run MANDATORY build validation (all commands must pass)
-3. Ask: "Do you want to test manually before committing?"
+3. Ask: "Subtask X.Y complete. Do you want to test manually before committing?"
 4. ⚠️ STOP AND WAIT - DO NOT PROCEED WITHOUT APPROVAL
-5. After approval: commit changes
+5. After approval: commit changes for this subtask
 6. Update subtask status: `tm set-status --id=<subtask-id> --status=done`
-7. Continue to next subtask or complete main task
+7. **STOP and ask: "Subtask X.Y committed. Should I proceed with subtask X.Z?"**
+8. **WAIT for user confirmation before starting next subtask**
+9. **NEVER automatically continue to next subtask**
+
+**Example Flow:**
+
+```
+Task 3.1 has subtasks 3.1.1, 3.1.2, 3.1.3
+- Implement 3.1.1 → Test → Approve → Commit
+- STOP: "Subtask 3.1.1 complete. Ready for 3.1.2?"
+- User: "Yes, proceed"
+- Implement 3.1.2 → Test → Approve → Commit
+- STOP: "Subtask 3.1.2 complete. Ready for 3.1.3?"
+- And so on...
+```
 
 **Remember:**
 
@@ -463,19 +505,28 @@ mcp__context7__get -
 
 1. **Check PR status:** Ensure previous PR merged
 2. **Run task selection:** `tm next` or use specified ID
-3. **Create branch:** Only if task has subtasks
-4. **Set status:** Mark as in-progress
-5. **Implement with TDD:** Tests first, code second
-6. **Validate build:** All checks must pass
-7. **Get approval:** Ask for manual testing
-8. **Complete workflow:** Status update, commit, push, PR
+3. **CRITICAL: Check if task has subtasks**
+   - If YES → Start with FIRST subtask only
+   - If NO → Implement the single task
+4. **Create branch:** Only if task has subtasks
+5. **Set status:** Mark as in-progress (only current subtask)
+6. **Implement with TDD:** Tests first (from prd.txt), code second
+7. **Validate build:** All checks must pass
+8. **Get approval:** Ask for manual testing
+9. **Complete workflow:** Status update, commit, push
+10. **For tasks with subtasks:** STOP and ask permission before next subtask
+
+**⚠️ NEVER implement all subtasks at once - always one at a time with approval between each**
 
 ### Common Pitfalls to Avoid
 
 ❌ **DON'T:**
 
+- Implement multiple subtasks before getting approval for each
+- Automatically continue to next subtask without asking
+- Implement entire task at once when it has subtasks
 - Commit without user approval
-- Skip TDD approach
+- Skip TDD approach or ignore prd.txt specifications
 - Mock database interactions
 - Assume library APIs without checking Context7
 - Update task status after pushing
@@ -484,8 +535,10 @@ mcp__context7__get -
 
 ✅ **DO:**
 
-- Always ask for manual testing approval
-- Check `prd.txt` for test specs
+- Complete ONE subtask at a time
+- Ask for permission before starting next subtask
+- Always ask for manual testing approval before commits
+- Check `~/projects/misc-poc/.taskmaster/docs/prd.txt` for test specs
 - Use Testcontainers for DB tests
 - Get fresh docs via Context7
 - Update status before final commit

@@ -8,7 +8,7 @@ export interface ToastOptions {
   };
   cancel?: {
     label: string;
-    onClick?: () => void;
+    onClick: () => void; // Made required to match Sonner's Action type
   };
   id?: string | number;
   important?: boolean; // Makes the toast use assertive live region
@@ -68,7 +68,7 @@ export const toast = {
    * Dismiss a specific toast by ID
    */
   dismiss: (id?: string | number): void => {
-    return sonnerToast.dismiss(id);
+    sonnerToast.dismiss(id);
   },
 
   /**

@@ -63,6 +63,7 @@ const IntegratedIndex = (): JSX.Element => {
           updatedAt: record.updatedAt.toISOString(),
         })),
         total: filteredRecords.length,
+        hasMore: false, // Since we're showing all filtered records, there are no more
       };
 
       // Detect display mode
