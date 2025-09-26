@@ -51,6 +51,22 @@ describe('JwtService', () => {
       expect(decoded.email).toBe(payload.email);
       expect(decoded.iss).toBe(mockConfig.jwt.issuer);
     });
+
+    it('should create token with proper expiration handling', () => {
+      const payload: Omit<JwtPayload, 'iat' | 'exp' | 'iss'> = {
+        userId: 'user123',
+        email: 'test@example.com',
+      };
+
+      const token = jwtService.generateToken(payload);
+      const decoded = jwtService.verifyToken(token);
+
+      expect(decoded.exp).toBeDefined();
+      expect(decoded.iat).toBeDefined();
+      expect(typeof decoded.exp).toBe('number');
+      expect(typeof decoded.iat).toBe('number');
+      expect(decoded.exp).toBeGreaterThan(decoded.iat!);
+    });
   });
 
   describe('verifyToken', () => {
@@ -77,8 +93,24 @@ describe('JwtService', () => {
       );
     });
 
-    // Note: JWT secret validation test removed due to test environment issues
-    // The actual JWT verification works correctly in production
+    it('should validate token signature and reject tokens signed with wrong secret', () => {
+      // Create a token with the correct service
+      const payload: Omit<JwtPayload, 'iat' | 'exp' | 'iss'> = {
+        userId: 'user123',
+        email: 'test@example.com',
+      };
+      const token = jwtService.generateToken(payload);
+
+      // Create a different service with a different secret
+      const wrongConfig = { ...mockConfig };
+      wrongConfig.jwt.secret = 'wrong-secret';
+      const wrongSecretService = new JwtService(wrongConfig);
+
+      // Verify that the token is rejected with the wrong secret
+      expect(() => wrongSecretService.verifyToken(token)).toThrow(
+        'Invalid token'
+      );
+    });
   });
 
   describe('decodeToken', () => {
