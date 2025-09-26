@@ -18,6 +18,8 @@ export interface AuthConfig {
     secret: string;
     name: string;
     maxAge: number;
+    domain?: string;
+    path?: string;
   };
 }
 
@@ -50,6 +52,8 @@ export function loadAuthConfig(): AuthConfig {
       secret: getEnvVar('SESSION_SECRET', undefined, true),
       name: getEnvVar('SESSION_NAME', 'misc-poc-session'),
       maxAge: getNumberEnvVar('SESSION_MAX_AGE', 86400000), // 24 hours default
+      domain: getEnvVar('SESSION_DOMAIN'),
+      path: getEnvVar('SESSION_PATH'),
     },
   };
 }

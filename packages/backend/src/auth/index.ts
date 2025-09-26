@@ -12,6 +12,13 @@ import {
   optionalAuth,
   logout,
 } from './session.js';
+import {
+  getCookieParserMiddleware,
+  getSecureCookieOptions,
+  setSecureCookie,
+  clearSecureCookie,
+} from './cookies.js';
+import type { CookieSecurityOptions } from './cookies.js';
 
 export {
   loadAuthConfig,
@@ -20,9 +27,18 @@ export {
   requireAuth,
   optionalAuth,
   logout,
+  getCookieParserMiddleware,
+  getSecureCookieOptions,
+  setSecureCookie,
+  clearSecureCookie,
 };
 
-export type { AuthConfig, GoogleAuthCallback, JwtAuthCallback };
+export type {
+  AuthConfig,
+  GoogleAuthCallback,
+  JwtAuthCallback,
+  CookieSecurityOptions,
+};
 
 export class AuthService {
   private config: AuthConfig;
