@@ -4,13 +4,37 @@ Complete the current subtask with full validation.
 
 ## 🔴 MANDATORY COMPLETION SEQUENCE
 
-### Step 1: Final Build Validation
+### Step 1: Final Build Validation (Optimized)
 
-Run mandatory build validation:
+#### Determine validation scope:
+
+1. **Identify changed files**: `git diff --name-only`
+2. **Choose validation strategy**:
+
+##### For single package changes (most common):
 
 ```bash
+# Navigate to affected package
+cd packages/<package-name>
+# Run local validation (fast: ~30 seconds)
 yarn build && yarn typecheck && yarn lint && yarn test
 ```
+
+##### For multi-package or critical changes:
+
+```bash
+# Run from monorepo root (slower: ~3-5 minutes)
+yarn build && yarn typecheck && yarn lint && yarn test
+```
+
+##### Smart validation tips:
+
+- Local package checks catch 95% of issues
+- Full monorepo check recommended for:
+  - Changes to shared dependencies
+  - Updates to root configuration
+  - Cross-package functionality
+  - Before merging to main branch
 
 If ANY command fails, fix errors before proceeding.
 

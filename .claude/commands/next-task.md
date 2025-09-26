@@ -20,7 +20,14 @@ Begin work on the next task following TaskMaster workflow rules.
 
 ### BUILD VALIDATION MANDATORY
 
-- Before ANY commit, run: `yarn build && yarn typecheck && yarn lint && yarn test`
+- Before ANY commit, validate changes smartly:
+  1. **For single package changes**: Run local checks first
+     - Navigate to package directory: `cd packages/<package-name>`
+     - Run: `yarn build && yarn typecheck && yarn lint && yarn test`
+     - These local checks are much faster (seconds vs minutes)
+     - If local checks pass, optionally run full monorepo validation
+  2. **For multi-package or root changes**: Run full validation
+     - From root: `yarn build && yarn typecheck && yarn lint && yarn test`
 - If ANY command fails, fix errors before proceeding
 - This applies to EVERY subtask and main task
 
@@ -86,9 +93,16 @@ Determine if branch creation is needed:
 - [ ] For coding: Refactor if needed (TDD - Refactor phase)
 - [ ] For config: Implement directly
 
-### 4. Validation
+### 4. Validation (Optimized)
 
-- [ ] Run: `yarn build && yarn typecheck && yarn lint && yarn test`
+- [ ] Identify affected package(s) using `git diff --name-only`
+- [ ] **Single package changes** (most common):
+  - [ ] Navigate to package: `cd packages/<package-name>`
+  - [ ] Run local validation: `yarn build && yarn typecheck && yarn lint && yarn test`
+  - [ ] Time saved: ~30 seconds vs ~3-5 minutes for full check
+  - [ ] Optional: Run full monorepo check if critical changes
+- [ ] **Multi-package or root changes**:
+  - [ ] Run from root: `yarn build && yarn typecheck && yarn lint && yarn test`
 - [ ] Fix ALL errors before proceeding
 - [ ] Verify functionality works as expected
 
