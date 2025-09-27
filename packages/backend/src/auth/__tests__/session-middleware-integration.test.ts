@@ -38,6 +38,7 @@ describe('Session Management Middleware Integration', () => {
         origin: 'http://localhost:3000',
         credentials: true,
       },
+      authService: authService,
     });
   });
 
