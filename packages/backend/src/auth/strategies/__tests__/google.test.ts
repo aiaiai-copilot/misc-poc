@@ -119,13 +119,13 @@ describe('Google OAuth Strategy Configuration', () => {
     it('should handle Google profile with missing optional fields', async () => {
       const mockGoogleProfile = {
         id: 'google123',
-        emails: [],
-        name: {},
+        emails: [{ value: 'test@example.com' }], // Must have email for validation
+        name: {}, // Missing name fields
         displayName: 'John Doe',
-        photos: [],
+        photos: [], // Missing photos
       };
 
-      const mockUser = { id: 'user123', email: '' };
+      const mockUser = { id: 'user123', email: 'test@example.com' };
       mockCallback.mockResolvedValue(mockUser);
 
       const doneMock = jest.fn();
@@ -141,7 +141,7 @@ describe('Google OAuth Strategy Configuration', () => {
         'refresh-token',
         {
           id: 'google123',
-          email: '',
+          email: 'test@example.com',
           firstName: '',
           lastName: '',
           displayName: 'John Doe',
@@ -186,6 +186,27 @@ describe('Google OAuth Strategy Configuration', () => {
       );
 
       expect(doneMock).toHaveBeenCalledWith(expect.any(Error), false);
+    });
+
+    it('should reject Google profile missing email with appropriate error', async () => {
+      const mockGoogleProfile = {
+        id: 'google123',
+        emails: [], // Missing required email
+        name: { givenName: 'John', familyName: 'Doe' },
+        displayName: 'John Doe',
+        photos: [],
+      };
+
+      const doneMock = jest.fn();
+      await strategyCallback(
+        'access-token',
+        'refresh-token',
+        mockGoogleProfile,
+        doneMock
+      );
+
+      expect(doneMock).toHaveBeenCalledWith(expect.any(Error), false);
+      expect(mockCallback).not.toHaveBeenCalled();
     });
   });
 

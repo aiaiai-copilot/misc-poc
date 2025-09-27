@@ -19,6 +19,23 @@ import {
   clearSecureCookie,
 } from './cookies.js';
 import type { CookieSecurityOptions } from './cookies.js';
+import {
+  setupOAuthErrorHandling,
+  createOAuthErrorMiddleware,
+  catchOAuthErrors,
+  addRequestId,
+  authenticateWithErrorHandling,
+  OAuthErrorMiddleware,
+} from './middleware/oauth-error-middleware.js';
+import {
+  OAuthError,
+  AuthenticationError,
+  GoogleOAuthServiceError,
+  InvalidTokenError,
+  RateLimitError,
+  NetworkError,
+  OAuthErrorFactory,
+} from './errors/oauth-errors.js';
 
 export {
   loadAuthConfig,
@@ -31,6 +48,18 @@ export {
   getSecureCookieOptions,
   setSecureCookie,
   clearSecureCookie,
+  setupOAuthErrorHandling,
+  createOAuthErrorMiddleware,
+  catchOAuthErrors,
+  addRequestId,
+  authenticateWithErrorHandling,
+  OAuthError,
+  AuthenticationError,
+  GoogleOAuthServiceError,
+  InvalidTokenError,
+  RateLimitError,
+  NetworkError,
+  OAuthErrorFactory,
 };
 
 export type {
@@ -38,6 +67,7 @@ export type {
   GoogleAuthCallback,
   JwtAuthCallback,
   CookieSecurityOptions,
+  OAuthErrorMiddleware,
 };
 
 export class AuthService {
