@@ -114,8 +114,13 @@ After explicit approval, intelligently stage and commit changes:
 
 - Check overall task progress using `tm list --parent=<task-id>`
 - Count remaining subtasks vs completed
-- If all subtasks complete, suggest running `/complete-task`
-- Otherwise, show progress percentage
+- **If ALL subtasks complete**:
+  - Message: "✅ This was the LAST subtask! All validation passed recently."
+  - Suggest: "Run `/complete-task` to finalize the task and create PR"
+  - Note: "Validation will be skipped in complete-task as it just passed"
+- **Otherwise**:
+  - Show progress percentage
+  - List remaining subtasks
 
 ### Step 6: Next Subtask Gate
 
