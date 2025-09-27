@@ -31,6 +31,23 @@ Begin work on the next task following TaskMaster workflow rules.
 - If ANY command fails, fix errors before proceeding
 - This applies to EVERY subtask and main task
 
+### DOCKER CHECK FOR TEST FAILURES
+
+- If integration tests fail during validation:
+  1. **Check Docker status**: `docker ps`
+  2. **If Docker is not running**, ask user to start it:
+
+     ```bash
+     sudo service docker start
+     ```
+
+  3. **Wait for Docker to start** before retrying tests
+  4. **Common Docker-related failures**:
+     - Database connection errors
+     - Container startup failures
+     - Port binding issues (ECONNREFUSED)
+     - Test database initialization problems
+
 ## Workflow Execution
 
 ### Phase 1: Pre-Flight Checks
@@ -103,6 +120,10 @@ Determine if branch creation is needed:
   - [ ] Optional: Run full monorepo check if critical changes
 - [ ] **Multi-package or root changes**:
   - [ ] Run from root: `yarn build && yarn typecheck && yarn lint && yarn test`
+- [ ] **If integration tests fail**:
+  - [ ] Check Docker status: `docker ps`
+  - [ ] If Docker not running, ask user: `sudo service docker start`
+  - [ ] Retry tests after Docker starts
 - [ ] Fix ALL errors before proceeding
 - [ ] Verify functionality works as expected
 
@@ -130,4 +151,47 @@ Determine if branch creation is needed:
 ⚠️ **Context7 docs FIRST** - before writing any code
 ⚠️ **Manual testing approval** - before EVERY commit
 ⚠️ **Build validation** - must pass before commit
+⚠️ **Docker check** - verify Docker running if tests fail
 ⚠️ **Test specs from prd.txt** - don't invent test cases
+
+## Common Docker Troubleshooting
+
+### Symptoms of Docker Issues
+
+- **Database tests failing**: Connection refused to localhost:5432 (PostgreSQL), :3306 (MySQL), :27017 (MongoDB)
+- **Redis tests failing**: Connection refused to localhost:6379
+- **Container errors**: "Cannot connect to Docker daemon", "docker: command not found"
+- **Health check failures**: Containers not becoming healthy in time
+
+### Quick Docker Fixes
+
+1. **Start Docker service**:
+
+   ```bash
+   sudo service docker start     # Linux
+   # OR
+   sudo systemctl start docker   # SystemD-based systems
+   ```
+
+2. **Verify Docker is running**:
+
+   ```bash
+   docker ps                      # Should list running containers
+   docker info                    # Should show Docker system info
+   ```
+
+3. **Check container health**:
+
+   ```bash
+   docker ps --format "table {{.Names}}\t{{.Status}}"
+   ```
+
+4. **Restart problematic containers**:
+
+   ```bash
+   docker-compose restart         # If using docker-compose
+   # OR
+   docker restart <container-name>
+   ```
+
+Always inform user if Docker needs to be started before running integration tests!

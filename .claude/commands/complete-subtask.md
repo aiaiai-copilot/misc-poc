@@ -36,6 +36,28 @@ yarn build && yarn typecheck && yarn lint && yarn test
   - Cross-package functionality
   - Before merging to main branch
 
+#### ⚠️ Docker Check for Integration Test Failures
+
+If integration tests fail (especially database-related errors):
+
+1. **Check Docker status**: `docker ps`
+2. **If Docker daemon is not running**, you'll see an error like:
+   - "Cannot connect to the Docker daemon"
+   - "Is the Docker daemon running?"
+3. **Ask user to start Docker**:
+   ```bash
+   sudo service docker start
+   ```
+4. **Wait for Docker to start** (usually 5-10 seconds)
+5. **Retry the tests** after Docker is running
+
+Common signs of Docker issues:
+
+- Database connection timeouts
+- "ECONNREFUSED" errors on localhost ports
+- Container startup failures
+- "docker: command not found" (Docker not installed)
+
 If ANY command fails, fix errors before proceeding.
 
 ### Step 2: Update Subtask Status
@@ -127,4 +149,5 @@ If approved to continue:
 2. **TEST SPECS**: Always check prd.txt first
 3. **CONTEXT7**: Get docs before using libraries
 4. **VALIDATION**: Run all checks before completion
-5. **APPROVAL**: Get manual testing approval before commit
+5. **DOCKER CHECK**: Verify Docker is running if integration tests fail
+6. **APPROVAL**: Get manual testing approval before commit

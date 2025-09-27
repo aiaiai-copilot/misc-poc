@@ -25,6 +25,32 @@ If E2E tests exist, also run:
 yarn test-e2e
 ```
 
+#### ⚠️ Docker Check for Test Failures
+
+If integration or E2E tests fail (especially database-related):
+
+1. **Check Docker status**: `docker ps`
+2. **If Docker daemon is not running**, you'll see:
+   - "Cannot connect to the Docker daemon"
+   - "Is the Docker daemon running?"
+3. **Request user to start Docker**:
+
+   ```bash
+   sudo service docker start
+   ```
+
+4. **Wait for Docker to fully start** (5-10 seconds)
+5. **Verify Docker is running**: `docker ps`
+6. **Retry the failed tests**
+
+Common Docker-related test failures:
+
+- Database connection refused
+- Redis/PostgreSQL/MongoDB timeouts
+- "ECONNREFUSED 127.0.0.1:5432" (or other ports)
+- Container health check failures
+- Test database setup errors
+
 All checks must pass before proceeding.
 
 ### Phase 3: Task Status Update
@@ -47,6 +73,7 @@ tm set-status --id=<task-id> --status=done
 - ✅ All tests passing
 - ✅ Build validation successful
 - ✅ Code review ready
+- ✅ Docker running (if using containers)
 
 **Do you want to perform final manual testing before creating the PR?**
 

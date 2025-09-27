@@ -15,11 +15,17 @@ export class JwtService {
   /**
    * Generate a JWT token for a user
    */
-  generateToken(payload: Omit<JwtPayload, 'iat' | 'exp' | 'iss'>): string {
-    return jwt.sign(payload, this.config.jwt.secret, {
+  generateToken(
+    payload: Omit<JwtPayload, 'iat' | 'exp' | 'iss'>,
+    options?: Partial<jwt.SignOptions>
+  ): string {
+    const signOptions = {
       expiresIn: this.config.jwt.expiresIn,
       issuer: this.config.jwt.issuer,
-    } as jwt.SignOptions);
+      ...options,
+    } as jwt.SignOptions;
+
+    return jwt.sign(payload, this.config.jwt.secret, signOptions);
   }
 
   /**
