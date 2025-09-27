@@ -6,10 +6,23 @@ Finalize the current task and create pull request.
 
 ### Phase 1: Completeness Validation
 
-- Get current task using `tm current`
-- Verify ALL subtasks are complete using `tm list --parent=<task-id>`
-- Check for any pending or in-progress subtasks
-- If subtasks remain incomplete, stop and inform user
+#### Branch and Task Verification
+
+1. **Verify on correct branch**:
+
+   ```bash
+   git branch --show-current  # Check current branch
+   tm current                  # Get current task
+   ```
+
+   - If not on task branch, switch to it first
+   - This ensures Task Master reads correct tasks.json state
+
+2. **Validate task completion**:
+   - Get current task using `tm current`
+   - Verify ALL subtasks are complete using `tm list --parent=<task-id>`
+   - Check for any pending or in-progress subtasks
+   - If subtasks remain incomplete, stop and inform user
 
 ### Phase 2: Final Build Validation
 
@@ -114,22 +127,40 @@ After approval, intelligently stage and commit:
 
 ### Phase 6: Push and Create PR
 
-1. **Push branch** to origin
-2. **Determine PR target**:
+1. **Verify correct branch before push**:
+
+   ```bash
+   git branch --show-current  # Ensure on task branch
+   ```
+
+2. **Push branch** to origin:
+
+   ```bash
+   git push origin <task-branch>
+   ```
+
+3. **Determine PR target**:
    - Top-level task branches → PR to `main`
    - Intermediate task branches → PR to parent branch
    - If on main/not a task branch → Skip PR creation
 
-3. **Create Pull Request** with:
+4. **Create Pull Request** with:
    - Clear title referencing task ID and description
    - Summary of what was accomplished
    - List of all completed subtasks
    - Testing status
    - Any relevant notes for reviewers
 
-4. **Return to main branch**:
+5. **Return to main branch (ONLY after task fully complete)**:
 
    ```bash
+   # Ensure no more work on this task
+   tm show <task-id>  # Verify status is 'done'
+
+   # Only then return to main
    git checkout main
    git pull origin main
    ```
+
+   **⚠️ WARNING**: Only return to main after the ENTIRE task is complete.
+   Premature return to main causes Task Master to lose task context!

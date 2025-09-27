@@ -6,12 +6,12 @@ Complete the current subtask with full validation.
 
 ### Step 1: Final Build Validation (Optimized)
 
-#### Determine validation scope:
+#### Determine validation scope
 
 1. **Identify changed files**: `git diff --name-only`
 2. **Choose validation strategy**:
 
-##### For single package changes (most common):
+##### For single package changes (most common)
 
 ```bash
 # Navigate to affected package
@@ -20,14 +20,14 @@ cd packages/<package-name>
 yarn build && yarn typecheck && yarn lint && yarn test
 ```
 
-##### For multi-package or critical changes:
+##### For multi-package or critical changes
 
 ```bash
 # Run from monorepo root (slower: ~3-5 minutes)
 yarn build && yarn typecheck && yarn lint && yarn test
 ```
 
-##### Smart validation tips:
+##### Smart validation tips
 
 - Local package checks catch 95% of issues
 - Full monorepo check recommended for:
@@ -45,9 +45,11 @@ If integration tests fail (especially database-related errors):
    - "Cannot connect to the Docker daemon"
    - "Is the Docker daemon running?"
 3. **Ask user to start Docker**:
+
    ```bash
    sudo service docker start
    ```
+
 4. **Wait for Docker to start** (usually 5-10 seconds)
 5. **Retry the tests** after Docker is running
 
@@ -121,13 +123,13 @@ After explicit approval, intelligently stage and commit changes:
 
 **Subtask has been completed and committed.**
 
-### Current Status:
+### Current Status
 
 - ✅ Subtask complete
 - 📊 Task Progress: X/Y subtasks done
-- 🌿 Current branch
+- 🌿 Current branch: [show current branch]
 
-### Available Options:
+### Available Options
 
 1. **Continue with next subtask** (if any remaining)
 2. **Switch to different task**
@@ -138,6 +140,22 @@ After explicit approval, intelligently stage and commit changes:
 > **WAITING FOR YOUR DECISION...**
 
 If approved to continue:
+
+#### Pre-continuation Branch Check
+
+1. **Verify still on correct branch**:
+
+   ```bash
+   git branch --show-current  # Verify branch
+   tm current                  # Verify task context
+   ```
+
+2. **If branch mismatch detected**:
+   - Alert: "Branch mismatch detected! Currently on [branch] but task requires [task-branch]"
+   - Switch to correct branch before continuing
+3. **Pull latest changes**: `git pull origin <current-branch> --rebase`
+
+#### Then proceed
 
 - Get next subtask from task list
 - Set it to in-progress

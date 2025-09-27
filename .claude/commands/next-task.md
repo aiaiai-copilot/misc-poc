@@ -52,24 +52,76 @@ Begin work on the next task following TaskMaster workflow rules.
 
 ### Phase 1: Pre-Flight Checks
 
-- Check for uncommitted changes: `git status --porcelain`
-- If uncommitted changes exist, stop and ask user to commit or stash them
-- Check for unmerged PRs: `gh pr list --state=open`
-- If there are unmerged PRs, warn user and ask if they want to continue
-- Sync with main: `git checkout main && git pull origin main`
+#### Branch Verification (CRITICAL)
+
+1. **Check current task and its branch**:
+   - Get current task: `tm current`
+   - Check current Git branch: `git branch --show-current`
+   - If current task exists and has an associated branch (task/X.Y-description):
+     - Verify we're on the correct branch
+     - If NOT on correct branch:
+
+       ```bash
+       # Example: Current task is 1.2 but we're on main
+       git checkout task/1.2-feature  # Switch to task branch
+       ```
+
+     - If task branch doesn't exist yet, it will be created in Phase 3
+
+2. **Handle uncommitted changes**:
+   - Check for changes: `git status --porcelain`
+   - If uncommitted changes exist:
+     - If on wrong branch: "You have uncommitted changes on [branch]. Please commit or stash before switching branches."
+     - Stop and wait for user to resolve
+
+3. **Check for unmerged PRs**: `gh pr list --state=open`
+   - If there are unmerged PRs, warn user and ask if they want to continue
+
+4. **Only sync main if no active task or starting fresh**:
+   - If no current task in progress: `git checkout main && git pull origin main`
+   - If task in progress: Stay on task branch
 
 ### Phase 2: Task Selection
 
 - Get next task using `tm next` or use provided task ID if specified
 - Set task status to in-progress: `tm set-status --id=<task-id> --status=in-progress`
+- **IMPORTANT**: After setting status, Task Master updates tasks.json
+- Ensure we're on the correct branch before proceeding (see Phase 3)
 
 ### Phase 3: Branch Strategy
 
-Determine if branch creation is needed:
+#### Determine correct branch:
 
-- Check if task has subtasks using `tm list --parent=<task-id>`
-- If task has subtasks (parent task) → Create branch `task/<id>-<description>`
-- If task has no subtasks (leaf task) → Stay on parent branch
+1. **Check task hierarchy**:
+   - Use `tm list --parent=<task-id>` to check for subtasks
+   - Use `tm show <task-id>` to see task details and parent
+
+2. **Branch rules**:
+   - **Parent task with subtasks** → Create/switch to branch `task/<id>-<description>`
+   - **Leaf task (no subtasks)** → Work on parent's branch or main
+   - **Subtask of parent** → Work on parent's branch
+
+3. **Branch switching logic**:
+
+   ```bash
+   # Get current branch
+   current_branch=$(git branch --show-current)
+
+   # Determine target branch based on task type
+   # If parent task: task/1-feature
+   # If subtask: stay on parent's branch task/1-feature
+   # If leaf task on main: stay on main
+
+   # Switch if needed
+   if [ "$current_branch" != "$target_branch" ]; then
+       git checkout $target_branch || git checkout -b $target_branch
+   fi
+   ```
+
+4. **Verify branch state**:
+   - After switching, pull latest changes: `git pull origin <branch-name> --rebase`
+   - Ensure tasks.json is up to date on this branch
+   - If conflicts, resolve before proceeding
 
 ### Phase 4: Development Setup
 
@@ -147,12 +199,49 @@ Determine if branch creation is needed:
 
 ## Remember These Critical Rules
 
+⚠️ **BRANCH VERIFICATION** - always ensure on correct branch for current task
 ⚠️ **ONE subtask at a time** - never jump ahead
 ⚠️ **Context7 docs FIRST** - before writing any code
 ⚠️ **Manual testing approval** - before EVERY commit
 ⚠️ **Build validation** - must pass before commit
 ⚠️ **Docker check** - verify Docker running if tests fail
 ⚠️ **Test specs from prd.txt** - don't invent test cases
+
+## Branch Management Best Practices
+
+### Avoiding Branch Confusion
+
+1. **Always verify branch before starting work**:
+
+   ```bash
+   git branch --show-current  # Check current branch
+   tm current                  # Check current task
+   ```
+
+2. **Task-to-branch mapping**:
+   - Task 1 (parent) → `task/1-main-feature`
+   - Task 1.1 (subtask) → Work on `task/1-main-feature`
+   - Task 1.2 (subtask) → Work on `task/1-main-feature`
+   - Task 2 (parent) → `task/2-other-feature`
+
+3. **When confusion occurs**:
+   - If on `main` but should be on task branch:
+
+     ```bash
+     # Check if you have uncommitted work
+     git status
+     # If clean, switch to correct branch
+     git checkout task/1.2-feature
+     # If not clean, stash first
+     git stash
+     git checkout task/1.2-feature
+     git stash pop
+     ```
+
+4. **Prevent branch drift**:
+   - Before each subtask: Verify branch
+   - After each commit: Stay on task branch
+   - Don't switch to main until task fully complete
 
 ## Common Docker Troubleshooting
 
