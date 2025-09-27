@@ -178,6 +178,7 @@ Begin work on the next task following TaskMaster workflow rules.
   - [ ] Retry tests after Docker starts
 - [ ] Fix ALL errors before proceeding
 - [ ] Verify functionality works as expected
+- [ ] **Note**: This validation will be remembered - if this is the last subtask, `/complete-task` will skip redundant validation
 
 ### 5. Approval Gate
 

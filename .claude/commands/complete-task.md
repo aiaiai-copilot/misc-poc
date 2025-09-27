@@ -24,21 +24,37 @@ Finalize the current task and create pull request.
    - Check for any pending or in-progress subtasks
    - If subtasks remain incomplete, stop and inform user
 
-### Phase 2: Final Build Validation
+### Phase 2: Final Build Validation (Smart)
 
-Run comprehensive validation:
+#### Smart Validation Check
 
-```bash
-yarn build && yarn typecheck && yarn lint && yarn test
-```
+1. **Check for changes since last validation**:
 
-If E2E tests exist, also run:
+   ```bash
+   git diff HEAD --name-only  # Any uncommitted changes?
+   ```
 
-```bash
-yarn test-e2e
-```
+2. **Decision logic**:
+   - **If NO changes since last commit** AND **last subtask just completed**:
+     - Skip validation (already done in complete-subtask)
+     - Message: "✅ Validation already passed in last subtask completion - skipping redundant check"
+     - Continue to Phase 3
 
-#### ⚠️ Docker Check for Test Failures
+   - **If changes exist** OR **significant time elapsed (>30 min)** OR **uncertainty about last validation**:
+     - Run comprehensive validation:
+
+     ```bash
+     yarn build && yarn typecheck && yarn lint && yarn test
+     ```
+
+3. **E2E tests (if applicable and not recently run)**:
+
+   ```bash
+   # Check if E2E tests exist and when last run
+   yarn test-e2e  # Only if needed
+   ```
+
+#### ⚠️ Docker Check for Test Failures (if running tests)
 
 If integration or E2E tests fail (especially database-related):
 
@@ -64,7 +80,7 @@ Common Docker-related test failures:
 - Container health check failures
 - Test database setup errors
 
-All checks must pass before proceeding.
+All checks must pass before proceeding (if validation was needed).
 
 ### Phase 3: Task Status Update
 
