@@ -1,0 +1,166 @@
+# Complete Current Task
+
+Finalize the current task and create pull request.
+
+## 🔴 TASK COMPLETION WORKFLOW
+
+### Phase 1: Completeness Validation
+
+#### Branch and Task Verification
+
+1. **Verify on correct branch**:
+
+   ```bash
+   git branch --show-current  # Check current branch
+   tm current                  # Get current task
+   ```
+
+   - If not on task branch, switch to it first
+   - This ensures Task Master reads correct tasks.json state
+
+2. **Validate task completion**:
+   - Get current task using `tm current`
+   - Verify ALL subtasks are complete using `tm list --parent=<task-id>`
+   - Check for any pending or in-progress subtasks
+   - If subtasks remain incomplete, stop and inform user
+
+### Phase 2: Final Build Validation
+
+Run comprehensive validation:
+
+```bash
+yarn build && yarn typecheck && yarn lint && yarn test
+```
+
+If E2E tests exist, also run:
+
+```bash
+yarn test-e2e
+```
+
+#### ⚠️ Docker Check for Test Failures
+
+If integration or E2E tests fail (especially database-related):
+
+1. **Check Docker status**: `docker ps`
+2. **If Docker daemon is not running**, you'll see:
+   - "Cannot connect to the Docker daemon"
+   - "Is the Docker daemon running?"
+3. **Request user to start Docker**:
+
+   ```bash
+   sudo service docker start
+   ```
+
+4. **Wait for Docker to fully start** (5-10 seconds)
+5. **Verify Docker is running**: `docker ps`
+6. **Retry the failed tests**
+
+Common Docker-related test failures:
+
+- Database connection refused
+- Redis/PostgreSQL/MongoDB timeouts
+- "ECONNREFUSED 127.0.0.1:5432" (or other ports)
+- Container health check failures
+- Test database setup errors
+
+All checks must pass before proceeding.
+
+### Phase 3: Task Status Update
+
+Mark task as done BEFORE final commit:
+
+```bash
+tm set-status --id=<task-id> --status=done
+```
+
+### Phase 4: Final Approval Gate
+
+## ⚠️ FINAL APPROVAL REQUIRED
+
+**Task is ready for completion.**
+
+### Pre-Completion Checklist
+
+- ✅ All subtasks completed
+- ✅ All tests passing
+- ✅ Build validation successful
+- ✅ Code review ready
+- ✅ Docker running (if using containers)
+
+**Do you want to perform final manual testing before creating the PR?**
+
+This is your last chance to:
+
+1. Test the complete feature end-to-end
+2. Verify all acceptance criteria met
+3. Check for any regressions
+4. Review code quality
+
+**Type 'yes' or 'proceed' to approve, or describe any issues.**
+
+> **WAITING FOR YOUR APPROVAL...**
+
+### Phase 5: Final Commit
+
+After approval, intelligently stage and commit:
+
+1. **Review all changes** made during the task
+2. **Analyze changed files** in context of the complete task
+3. **Present summary** for approval, for example:
+
+   ```
+   Task #3.1 "Setup TypeORM" includes these changes:
+   - Database configuration files
+   - Entity definitions
+   - Migration files
+   - Integration tests
+   - Updated dependencies
+
+   Total: 15 files changed
+
+   Review file list? (yes/no)
+   ```
+
+4. **Stage all task-related changes**
+5. **Create comprehensive commit** with task completion message
+
+### Phase 6: Push and Create PR
+
+1. **Verify correct branch before push**:
+
+   ```bash
+   git branch --show-current  # Ensure on task branch
+   ```
+
+2. **Push branch** to origin:
+
+   ```bash
+   git push origin <task-branch>
+   ```
+
+3. **Determine PR target**:
+   - Top-level task branches → PR to `main`
+   - Intermediate task branches → PR to parent branch
+   - If on main/not a task branch → Skip PR creation
+
+4. **Create Pull Request** with:
+   - Clear title referencing task ID and description
+   - Summary of what was accomplished
+   - List of all completed subtasks
+   - Testing status
+   - Any relevant notes for reviewers
+
+5. **Return to main branch (ONLY after task fully complete)**:
+
+   ```bash
+   # Ensure no more work on this task
+   tm show <task-id>  # Verify status is 'done'
+
+   # Only then return to main
+   git checkout main
+   git pull origin main
+   ```
+
+   **⚠️ WARNING**: Only return to main after the ENTIRE task is complete.
+   Premature return to main causes Task Master to lose task context!

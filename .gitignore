@@ -36,6 +36,9 @@ dist/
 build/
 *.tsbuildinfo
 
+# Database artifacts
+**/history.json
+
 # Vite temporary files
 *.timestamp-*
 

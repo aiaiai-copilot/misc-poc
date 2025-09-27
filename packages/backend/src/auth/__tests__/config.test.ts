@@ -26,6 +26,8 @@ describe('Auth Config', () => {
       delete process.env.GOOGLE_CALLBACK_URL;
       delete process.env.SESSION_NAME;
       delete process.env.SESSION_MAX_AGE;
+      delete process.env.SESSION_DOMAIN;
+      delete process.env.SESSION_PATH;
     });
 
     it('should load configuration from environment variables', () => {
@@ -46,6 +48,8 @@ describe('Auth Config', () => {
           secret: 'test-session-secret',
           name: 'misc-poc-session',
           maxAge: 86400000,
+          domain: '',
+          path: '',
         },
       });
     });
@@ -56,6 +60,8 @@ describe('Auth Config', () => {
       process.env.GOOGLE_CALLBACK_URL = '/custom/callback';
       process.env.SESSION_NAME = 'custom-session';
       process.env.SESSION_MAX_AGE = '3600000';
+      process.env.SESSION_DOMAIN = '.example.com';
+      process.env.SESSION_PATH = '/api';
 
       const config = loadAuthConfig();
 
@@ -64,6 +70,8 @@ describe('Auth Config', () => {
       expect(config.google.callbackUrl).toBe('/custom/callback');
       expect(config.session.name).toBe('custom-session');
       expect(config.session.maxAge).toBe(3600000);
+      expect(config.session.domain).toBe('.example.com');
+      expect(config.session.path).toBe('/api');
     });
 
     it('should throw error when JWT_SECRET is missing', () => {

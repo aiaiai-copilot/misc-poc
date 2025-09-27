@@ -12,6 +12,30 @@ import {
   optionalAuth,
   logout,
 } from './session.js';
+import {
+  getCookieParserMiddleware,
+  getSecureCookieOptions,
+  setSecureCookie,
+  clearSecureCookie,
+} from './cookies.js';
+import type { CookieSecurityOptions } from './cookies.js';
+import {
+  setupOAuthErrorHandling,
+  createOAuthErrorMiddleware,
+  catchOAuthErrors,
+  addRequestId,
+  authenticateWithErrorHandling,
+  OAuthErrorMiddleware,
+} from './middleware/oauth-error-middleware.js';
+import {
+  OAuthError,
+  AuthenticationError,
+  GoogleOAuthServiceError,
+  InvalidTokenError,
+  RateLimitError,
+  NetworkError,
+  OAuthErrorFactory,
+} from './errors/oauth-errors.js';
 
 export {
   loadAuthConfig,
@@ -20,9 +44,31 @@ export {
   requireAuth,
   optionalAuth,
   logout,
+  getCookieParserMiddleware,
+  getSecureCookieOptions,
+  setSecureCookie,
+  clearSecureCookie,
+  setupOAuthErrorHandling,
+  createOAuthErrorMiddleware,
+  catchOAuthErrors,
+  addRequestId,
+  authenticateWithErrorHandling,
+  OAuthError,
+  AuthenticationError,
+  GoogleOAuthServiceError,
+  InvalidTokenError,
+  RateLimitError,
+  NetworkError,
+  OAuthErrorFactory,
 };
 
-export type { AuthConfig, GoogleAuthCallback, JwtAuthCallback };
+export type {
+  AuthConfig,
+  GoogleAuthCallback,
+  JwtAuthCallback,
+  CookieSecurityOptions,
+  OAuthErrorMiddleware,
+};
 
 export class AuthService {
   private config: AuthConfig;

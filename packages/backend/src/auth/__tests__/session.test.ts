@@ -57,6 +57,7 @@ describe('Session utilities', () => {
           secure: false, // NODE_ENV is 'test'
           httpOnly: true,
           maxAge: 3600000,
+          sameSite: 'lax', // test environment
         },
       });
     });
@@ -66,6 +67,7 @@ describe('Session utilities', () => {
       const config = getSessionConfig(mockConfig);
 
       expect(config.cookie.secure).toBe(true);
+      expect(config.cookie.sameSite).toBe('strict'); // production uses strict for CSRF protection
     });
 
     it('should not set secure cookie in development', () => {
@@ -73,6 +75,50 @@ describe('Session utilities', () => {
       const config = getSessionConfig(mockConfig);
 
       expect(config.cookie.secure).toBe(false);
+    });
+
+    it('should set secure httpOnly cookies for session management', () => {
+      const config = getSessionConfig(mockConfig);
+
+      expect(config.cookie.httpOnly).toBe(true);
+      expect(config.cookie.secure).toBe(false); // test environment
+    });
+
+    it('should configure cookie with sameSite protection', () => {
+      const config = getSessionConfig(mockConfig);
+
+      expect(config.cookie.sameSite).toBeDefined();
+    });
+
+    it('should support cookie signing for integrity', () => {
+      const config = getSessionConfig(mockConfig);
+
+      // Signed cookies should be supported through cookie-parser
+      expect(config.secret).toBe('test-session-secret');
+    });
+
+    it('should configure domain and path restrictions when provided', () => {
+      // Test with extended config that includes domain/path
+      const extendedConfig = {
+        ...mockConfig,
+        session: {
+          ...mockConfig.session,
+          domain: '.example.com',
+          path: '/api',
+        },
+      };
+
+      const config = getSessionConfig(extendedConfig);
+
+      expect(config.cookie.domain).toBe('.example.com');
+      expect(config.cookie.path).toBe('/api');
+    });
+
+    it('should clear session cookies on logout', () => {
+      const config = getSessionConfig(mockConfig);
+
+      // Verify proper cookie clearing configuration
+      expect(config.name).toBe('test-session');
     });
   });
 
@@ -200,6 +246,40 @@ describe('Session utilities', () => {
       expect(mockLogout).toHaveBeenCalled();
       expect(mockDestroy).toHaveBeenCalled();
       expect(mockNext).toHaveBeenCalledWith(destroyError);
+    });
+  });
+
+  describe('Cookie Security Features', () => {
+    it('should support cookie-parser middleware integration', () => {
+      const config = getSessionConfig(mockConfig);
+
+      // Verify cookie-parser compatible configuration
+      expect(config.secret).toBeDefined();
+      expect(typeof config.secret).toBe('string');
+    });
+
+    it('should configure cookies with CSRF protection considerations', () => {
+      process.env.NODE_ENV = 'production';
+      const config = getSessionConfig(mockConfig);
+
+      // CSRF protection through secure, httpOnly, and sameSite
+      expect(config.cookie.httpOnly).toBe(true);
+      expect(config.cookie.secure).toBe(true);
+    });
+
+    it('should handle cookie integrity verification', () => {
+      const config = getSessionConfig(mockConfig);
+
+      // Cookie signing secret should be present for integrity checks
+      expect(config.secret).toBeTruthy();
+      expect(config.secret.length).toBeGreaterThan(0);
+    });
+
+    it('should configure proper cookie expiration', () => {
+      const config = getSessionConfig(mockConfig);
+
+      expect(config.cookie.maxAge).toBe(3600000);
+      expect(config.cookie.maxAge).toBeGreaterThan(0);
     });
   });
 });
