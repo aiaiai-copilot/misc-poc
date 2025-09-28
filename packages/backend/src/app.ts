@@ -6,6 +6,8 @@ import rateLimit from 'express-rate-limit';
 import { AuthService } from './auth/index.js';
 import { JwtService } from './auth/jwt.js';
 import { configureGoogleStrategy } from './auth/strategies/google.js';
+import { getDataSource } from './infrastructure/database/data-source.js';
+import { DataSource } from 'typeorm';
 
 export interface AppConfig {
   cors?: {
@@ -13,6 +15,7 @@ export interface AppConfig {
     credentials: boolean;
   };
   authService?: AuthService;
+  dataSource?: DataSource;
 }
 
 /**
@@ -198,6 +201,7 @@ export function createApp(config?: AppConfig): express.Application {
       },
     });
   const jwtService = authService.getJwtService();
+  const dataSource = config?.dataSource || getDataSource();
 
   // Configure Google OAuth strategy
   configureGoogleStrategy(
@@ -642,6 +646,46 @@ export function createApp(config?: AppConfig): express.Application {
     ];
 
     res.json({ records, total: records.length });
+  });
+
+  app.get('/api/tags', requireAuth, async (req: Request, res: Response) => {
+    try {
+      const user = req.user as { userId: string; email: string };
+
+      // Initialize database connection if not already initialized
+      if (!dataSource.isInitialized) {
+        await dataSource.initialize();
+      }
+
+      // Query tag frequency statistics with user isolation
+      const tagStats = await dataSource.query(
+        `
+        SELECT
+          unnest(normalized_tags) as tag,
+          COUNT(*) as count
+        FROM records
+        WHERE user_id = $1
+        GROUP BY unnest(normalized_tags)
+        ORDER BY count DESC, tag ASC
+      `,
+        [user.userId]
+      );
+
+      // Transform to expected format
+      const formattedTags = tagStats.map(
+        (row: { tag: string; count: string }) => ({
+          tag: row.tag,
+          count: parseInt(row.count, 10),
+        })
+      );
+
+      res.json(formattedTags);
+    } catch (error) {
+      console.error('Error fetching tag statistics:', error);
+      res.status(500).json({
+        error: 'Internal server error while fetching tag statistics',
+      });
+    }
   });
 
   app.get('/api/user/profile', requireAuth, (req: Request, res: Response) => {
