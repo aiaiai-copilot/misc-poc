@@ -6,12 +6,21 @@ Complete the current subtask with full validation.
 
 ### Step 1: Final Build Validation (Optimized)
 
-#### Determine validation scope
+#### 🔴 MANDATORY TEST VERIFICATION
+
+**STOP! Before ANY completion:**
+
+1. **ALL tests MUST be GREEN** - no exceptions
+2. **Zero failing tests allowed** - fix ALL red tests first
+3. **No skipped tests** - unless explicitly approved by user
+4. **If ANY test is red**: STOP and fix it before proceeding
+
+#### Determine validation scope:
 
 1. **Identify changed files**: `git diff --name-only`
 2. **Choose validation strategy**:
 
-##### For single package changes (most common)
+##### For single package changes (most common):
 
 ```bash
 # Navigate to affected package
@@ -20,14 +29,14 @@ cd packages/<package-name>
 yarn build && yarn typecheck && yarn lint && yarn test
 ```
 
-##### For multi-package or critical changes
+##### For multi-package or critical changes:
 
 ```bash
 # Run from monorepo root (slower: ~3-5 minutes)
 yarn build && yarn typecheck && yarn lint && yarn test
 ```
 
-##### Smart validation tips
+##### Smart validation tips:
 
 - Local package checks catch 95% of issues
 - Full monorepo check recommended for:
@@ -61,6 +70,23 @@ Common signs of Docker issues:
 - "docker: command not found" (Docker not installed)
 
 If ANY command fails, fix errors before proceeding.
+
+#### ✅ TEST RESULTS VERIFICATION
+
+After running tests, VERIFY:
+
+- **ALL test suites passed** (look for "PASS" or green checkmarks)
+- **Zero failed tests** (no "FAIL" or red X marks)
+- **Test summary shows 100% passing** (e.g., "Tests: 42 passed, 42 total")
+
+**If even ONE test fails:**
+
+1. STOP immediately
+2. Fix the failing test(s)
+3. Re-run ALL tests
+4. Only proceed when 100% tests are GREEN
+
+⚠️ **CRITICAL**: NEVER mark subtask as done with failing tests!
 
 ### Step 2: Update Subtask Status
 
@@ -128,13 +154,13 @@ After explicit approval, intelligently stage and commit changes:
 
 **Subtask has been completed and committed.**
 
-### Current Status
+### Current Status:
 
 - ✅ Subtask complete
 - 📊 Task Progress: X/Y subtasks done
 - 🌿 Current branch: [show current branch]
 
-### Available Options
+### Available Options:
 
 1. **Continue with next subtask** (if any remaining)
 2. **Switch to different task**
@@ -146,7 +172,7 @@ After explicit approval, intelligently stage and commit changes:
 
 If approved to continue:
 
-#### Pre-continuation Branch Check
+#### Pre-continuation Branch Check:
 
 1. **Verify still on correct branch**:
 
@@ -160,7 +186,7 @@ If approved to continue:
    - Switch to correct branch before continuing
 3. **Pull latest changes**: `git pull origin <current-branch> --rebase`
 
-#### Then proceed
+#### Then proceed:
 
 - Get next subtask from task list
 - Set it to in-progress

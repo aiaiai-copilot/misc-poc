@@ -6,7 +6,7 @@ Finalize the current task and create pull request.
 
 ### Phase 1: Completeness Validation
 
-#### Branch and Task Verification
+#### Branch and Task Verification:
 
 1. **Verify on correct branch**:
 
@@ -26,7 +26,16 @@ Finalize the current task and create pull request.
 
 ### Phase 2: Final Build Validation (Smart)
 
-#### Smart Validation Check
+#### 🔴 MANDATORY: ALL TESTS MUST BE GREEN
+
+**ABSOLUTE REQUIREMENT before task completion:**
+
+- ✅ 100% of tests must pass - NO EXCEPTIONS
+- 🚫 Zero failing tests allowed
+- 🚫 No skipped tests (unless user explicitly approved)
+- If ANY test is red: STOP and fix before continuing
+
+#### Smart Validation Check:
 
 1. **Check for changes since last validation**:
 
@@ -81,6 +90,23 @@ Common Docker-related test failures:
 - Test database setup errors
 
 All checks must pass before proceeding (if validation was needed).
+
+#### ✅ FINAL TEST VERIFICATION
+
+**Before marking task as done, CONFIRM:**
+
+- Test output shows "All tests passed" or similar
+- No red/failing indicators in test results
+- Test coverage meets requirements (if specified)
+- E2E tests passed (if applicable)
+
+**🚫 TASK CANNOT BE COMPLETED if:**
+
+- Even ONE test is failing
+- Tests were skipped without approval
+- Build/lint/typecheck errors exist
+
+⚠️ **This is a HARD STOP** - fix all issues before proceeding!
 
 ### Phase 3: Task Status Update
 

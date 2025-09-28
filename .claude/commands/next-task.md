@@ -127,12 +127,23 @@ Begin work on the next task following TaskMaster workflow rules.
 
 #### For Coding Tasks
 
+🔴 **MANDATORY BATCH TDD APPROACH:**
+
 1. **Open prd.txt**: `.taskmaster/docs/prd.txt`
 2. **Find test specification** for the current task
 3. **Get Context7 documentation** for ALL libraries that will be used
-4. **Write tests FIRST** based on prd.txt specifications (TDD - Red phase)
-5. **Implement code** to make tests pass (TDD - Green phase)
-6. **Refactor** if needed while keeping tests green (TDD - Refactor phase)
+4. **Write ALL tests FIRST** (Batch TDD - Red phase):
+   - Write complete test suite for entire functionality
+   - Include contract tests from PRD
+   - Add edge cases and integration tests
+   - ALL tests should be RED initially
+5. **Implement code** to make ALL tests pass (TDD - Green phase):
+   - Work until 100% tests are GREEN
+   - NO partial implementations
+   - Fix every failing test
+6. **Refactor** if needed while keeping ALL tests GREEN (TDD - Refactor phase)
+
+⚠️ **NEVER proceed with red tests - fix them first!**
 
 #### For tasks where only configuration is required
 
@@ -157,10 +168,13 @@ Begin work on the next task following TaskMaster workflow rules.
 
 ### 3. Implementation
 
-- [ ] For coding: Write tests from prd.txt FIRST (TDD - Red phase)
-- [ ] For coding: Implement to pass tests (TDD - Green phase)
+- [ ] For coding: Write ALL tests from prd.txt FIRST (Batch TDD - Red phase)
+- [ ] For coding: Verify ALL tests are RED before implementing
+- [ ] For coding: Implement to pass ALL tests (TDD - Green phase)
+- [ ] For coding: Continue until 100% tests are GREEN
 - [ ] For coding: Refactor if needed (TDD - Refactor phase)
 - [ ] For config: Implement directly
+- [ ] 🔴 **CRITICAL CHECK: Zero red tests before proceeding!**
 
 ### 4. Validation (Optimized)
 

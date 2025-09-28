@@ -4,18 +4,57 @@
 
 **These principles define HOW we work on this project:**
 
-### 1. TEST-DRIVEN DEVELOPMENT
+### 1. TEST-DRIVEN DEVELOPMENT (BATCH TDD APPROACH)
 
-**All code must be developed using TDD with specifications from prd.txt**
+**All code must be developed using BATCH TDD with specifications from prd.txt**
+
+#### ⚠️ CRITICAL: Modified TDD Approach
+
+This project uses a **Batch TDD approach** that differs from traditional TDD:
+
+**❌ Traditional TDD (NOT used here):**
+
+- Write ONE test → Make it pass → Refactor → Repeat for next test
+
+**✅ Our Batch TDD (MANDATORY approach):**
+
+1. **RED Phase (Batch)**: Write ALL tests for the entire functionality at once
+   - Contract tests from PRD specifications
+   - Edge cases and error scenarios
+   - Integration tests
+   - ALL tests should be RED initially
+
+2. **GREEN Phase (Implementation)**: Implement code to pass ALL tests
+   - See the complete contract upfront
+   - Optimize implementation knowing all requirements
+   - Avoid duplication through shared utilities
+   - Work until 100% tests are GREEN
+
+3. **REFACTOR Phase**: Clean up while keeping ALL tests GREEN
+
+#### Benefits of Batch TDD
+
+- Complete visibility of the entire contract before implementation
+- Better architectural decisions with full context
+- Opportunity to optimize and avoid code duplication
+- Clearer understanding of edge cases and integration points
+
+#### Requirements
 
 - Test specifications location: `.taskmaster/docs/prd.txt`
-- Follow the TDD cycle: Red → Green → Refactor
-- Write tests BEFORE implementation (Red phase)
-- Implement minimum code to pass tests (Green phase)
-- Refactor while keeping tests green (Refactor phase)
 - Test cases must be copied exactly from prd.txt specifications
 - Never create test cases based on assumptions
 - Exception: Configuration and setup tasks may not require tests
+
+#### 🔴 CRITICAL RULE: Task Completion Requirements
+
+**A task or subtask can ONLY be marked as complete when:**
+
+- ✅ ALL tests are GREEN (passing)
+- ✅ NO tests are RED (failing)
+- ✅ NO tests are SKIPPED (unless explicitly approved by user)
+
+**NEVER complete a task with failing tests!**
 
 ### 2. REAL DATABASE TESTING
 
@@ -262,7 +301,8 @@ mcp__context7__get -
 
 **Commands enforce:**
 
-- TDD approach (Red → Green → Refactor)
+- Batch TDD approach (Write ALL tests → Implement until 100% GREEN → Refactor)
+- 🔴 **ZERO tolerance for red tests** - cannot complete with ANY failing tests
 - One subtask at a time workflow
 - Mandatory build validation before commits
 - Manual testing approval gates
@@ -278,11 +318,14 @@ Place command files in:
 
 ### Workflow Sequence
 
-1. **Start**: `/next-task` → Opens prd.txt, starts TDD cycle
-2. **Work**: Implement one subtask following TDD (tests first)
-3. **Complete Subtask**: `/complete-subtask` → Validates and commits
+1. **Start**: `/next-task` → Opens prd.txt, starts Batch TDD cycle
+2. **Work**:
+   - Write ALL tests for subtask first (Batch Red phase)
+   - Implement until 100% tests are GREEN
+   - Refactor while keeping all tests GREEN
+3. **Complete Subtask**: `/complete-subtask` → Validates ALL tests are GREEN, then commits
 4. **Repeat**: For each subtask (with approval between)
-5. **Finish**: `/complete-task` → Creates PR when all done
+5. **Finish**: `/complete-task` → Final check for 100% GREEN tests, creates PR
 
 ---
 
@@ -304,12 +347,16 @@ Place command files in:
 - ❌ Creating test cases without checking prd.txt
 - ❌ Skipping integration tests for database operations
 - ❌ Using `any` types in test code
+- ❌ **Writing tests one by one** instead of all at once (violates Batch TDD)
+- ❌ **Implementing partial functionality** with some tests still red
+- ❌ **Marking tasks as done with ANY red tests**
 
 ### Development Anti-Patterns
 
 - ❌ Using libraries without checking Context7 documentation
 - ❌ Committing code that fails build validation
-- ❌ Skipping TDD for coding tasks
+- ❌ Skipping Batch TDD for coding tasks
+- ❌ Using traditional one-test-at-a-time TDD instead of Batch TDD
 - ❌ Creating branches for leaf tasks
 
 ### Quality Anti-Patterns
