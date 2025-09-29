@@ -1342,6 +1342,7 @@ __metadata:
     "@types/passport-google-oauth20": ^2.0.16
     "@types/passport-jwt": ^4.0.1
     "@types/pg": ^8.11.10
+    "@types/redis": ^4.0.11
     "@types/supertest": ^6.0.3
     "@typescript-eslint/eslint-plugin": ^8.0.0
     "@typescript-eslint/parser": ^8.0.0
@@ -1358,6 +1359,7 @@ __metadata:
     passport-google-oauth20: ^2.0.0
     passport-jwt: ^4.0.1
     pg: ^8.12.0
+    redis: ^5.8.2
     reflect-metadata: ^0.2.2
     supertest: ^7.1.4
     ts-jest: ^29.0.0
@@ -2133,6 +2135,51 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@redis/bloom@npm:5.8.2":
+  version: 5.8.2
+  resolution: "@redis/bloom@npm:5.8.2"
+  peerDependencies:
+    "@redis/client": ^5.8.2
+  checksum: 0d3ee59c2ebf0fc1927c1f66dcd38e34342d9a14cc5cda6e725b3f7f16b707dfd72c972fef64df05a03d46d80d91576e84f396c67543936114cb1ff7339db478
+  languageName: node
+  linkType: hard
+
+"@redis/client@npm:5.8.2":
+  version: 5.8.2
+  resolution: "@redis/client@npm:5.8.2"
+  dependencies:
+    cluster-key-slot: 1.1.2
+  checksum: c083e22de7d42222d9547959f5561a04efed03ab9e23c3ad7afbcc85193ad02c92a1fb493bf4a7e308b99b6d5a8c529ae6a46d6441fd85ababa40a9bcd09d6f8
+  languageName: node
+  linkType: hard
+
+"@redis/json@npm:5.8.2":
+  version: 5.8.2
+  resolution: "@redis/json@npm:5.8.2"
+  peerDependencies:
+    "@redis/client": ^5.8.2
+  checksum: 2cb6fdfc8940a811fb3897b8a06995d573c89243565d8291289a21e3d47388ab4b81a9f8928b5a60c471e257ad0c496e25dbfd713899ecd37a0fffc1bc097139
+  languageName: node
+  linkType: hard
+
+"@redis/search@npm:5.8.2":
+  version: 5.8.2
+  resolution: "@redis/search@npm:5.8.2"
+  peerDependencies:
+    "@redis/client": ^5.8.2
+  checksum: 89fe5409aacc7fef26b157c1fd14d73bfed86c6ff48c370b7fdc37dddee83ec975ef0813f075b8d23b2eb6f13ec65d2f6c1ea809becd325a15c9f7b4e97d63ff
+  languageName: node
+  linkType: hard
+
+"@redis/time-series@npm:5.8.2":
+  version: 5.8.2
+  resolution: "@redis/time-series@npm:5.8.2"
+  peerDependencies:
+    "@redis/client": ^5.8.2
+  checksum: 91d0fe3320289da94e4159c4639d68e287b3e0dfe4228ed0e5c77c53f30f43393d6f6ecd0e8d1f155b280b43fe5dbc3e65a946674f9eb4f658e472ca02b7ab44
+  languageName: node
+  linkType: hard
+
 "@rolldown/pluginutils@npm:1.0.0-beta.27":
   version: 1.0.0-beta.27
   resolution: "@rolldown/pluginutils@npm:1.0.0-beta.27"
@@ -2485,6 +2532,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@testcontainers/redis@npm:^11.7.0":
+  version: 11.7.0
+  resolution: "@testcontainers/redis@npm:11.7.0"
+  dependencies:
+    testcontainers: ^11.7.0
+  checksum: 7e4f2305aff70d7d95c374ef60a5d328c988a4721de888a9961d00035c06a45cfb8dab38458dd8962536c3465f608a4668d914be05f9d2d76768bc03605e3210
+  languageName: node
+  linkType: hard
+
 "@testing-library/dom@npm:^10.4.0":
   version: 10.4.1
   resolution: "@testing-library/dom@npm:10.4.1"
@@ -2665,7 +2721,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/dockerode@npm:^3.3.35, @types/dockerode@npm:^3.3.43":
+"@types/dockerode@npm:^3.3.35, @types/dockerode@npm:^3.3.43, @types/dockerode@npm:^3.3.44":
   version: 3.3.44
   resolution: "@types/dockerode@npm:3.3.44"
   dependencies:
@@ -3002,6 +3058,15 @@ __metadata:
     "@types/prop-types": "*"
     csstype: ^3.0.2
   checksum: 852fd0430d721ceb431662ac90b6b41d6473ea55d29b5d92f7a81f4c6c397eb3b26a904fdd276fb71a5fad318d0d79cc0072867024611716bfb85e6b4907ae68
+  languageName: node
+  linkType: hard
+
+"@types/redis@npm:^4.0.11":
+  version: 4.0.11
+  resolution: "@types/redis@npm:4.0.11"
+  dependencies:
+    redis: "*"
+  checksum: 4b2d252368a7dc78738a98a8bcc817f92ca097511a901427628566f24f53998a2b1b524a85dea6a19307d4a95b55bd7d5a6ad7cc944ae8f39e54ca2f28ddf893
   languageName: node
   linkType: hard
 
@@ -4251,6 +4316,13 @@ __metadata:
   version: 2.1.1
   resolution: "clsx@npm:2.1.1"
   checksum: acd3e1ab9d8a433ecb3cc2f6a05ab95fe50b4a3cfc5ba47abb6cbf3754585fcb87b84e90c822a1f256c4198e3b41c7f6c391577ffc8678ad587fc0976b24fd57
+  languageName: node
+  linkType: hard
+
+"cluster-key-slot@npm:1.1.2":
+  version: 1.1.2
+  resolution: "cluster-key-slot@npm:1.1.2"
+  checksum: be0ad2d262502adc998597e83f9ded1b80f827f0452127c5a37b22dfca36bab8edf393f7b25bb626006fb9fb2436106939ede6d2d6ecf4229b96a47f27edd681
   languageName: node
   linkType: hard
 
@@ -7632,6 +7704,7 @@ __metadata:
   dependencies:
     "@axe-core/playwright": ^4.10.2
     "@playwright/test": ^1.55.0
+    "@testcontainers/redis": ^11.7.0
     "@types/node": ^22.0.0
     "@typescript-eslint/eslint-plugin": ^8.0.0
     "@typescript-eslint/parser": ^8.0.0
@@ -8812,6 +8885,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"redis@npm:*, redis@npm:^5.8.2":
+  version: 5.8.2
+  resolution: "redis@npm:5.8.2"
+  dependencies:
+    "@redis/bloom": 5.8.2
+    "@redis/client": 5.8.2
+    "@redis/json": 5.8.2
+    "@redis/search": 5.8.2
+    "@redis/time-series": 5.8.2
+  checksum: 5d02118e863dabbe07ae7d780b51f6e42f7a34e80187eb14f44bdcab6222cee3264f3ade7b11df9abf7ad6505e7d39dd162500783c39a72a7ff80fc0a686b63f
+  languageName: node
+  linkType: hard
+
 "reflect-metadata@npm:^0.2.2":
   version: 0.2.2
   resolution: "reflect-metadata@npm:0.2.2"
@@ -9746,7 +9832,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tar-fs@npm:^3.0.7, tar-fs@npm:^3.1.0":
+"tar-fs@npm:^3.0.7, tar-fs@npm:^3.1.0, tar-fs@npm:^3.1.1":
   version: 3.1.1
   resolution: "tar-fs@npm:3.1.1"
   dependencies:
@@ -9881,6 +9967,29 @@ __metadata:
     tmp: ^0.2.5
     undici: ^7.16.0
   checksum: 1b717196feab5951dc5b56afc00eafa8ee30f228916954415da0e754a627aee2f7837ba8384748d5f9147df2e025b141d728e21fffcc83eef0ba2ba45511dbf3
+  languageName: node
+  linkType: hard
+
+"testcontainers@npm:^11.7.0":
+  version: 11.7.0
+  resolution: "testcontainers@npm:11.7.0"
+  dependencies:
+    "@balena/dockerignore": ^1.0.2
+    "@types/dockerode": ^3.3.44
+    archiver: ^7.0.1
+    async-lock: ^1.4.1
+    byline: ^5.0.0
+    debug: ^4.4.3
+    docker-compose: ^1.3.0
+    dockerode: ^4.0.8
+    get-port: ^7.1.0
+    proper-lockfile: ^4.1.2
+    properties-reader: ^2.3.0
+    ssh-remote-port-forward: ^1.0.4
+    tar-fs: ^3.1.1
+    tmp: ^0.2.5
+    undici: ^7.16.0
+  checksum: 6a8a8a6aca128e1e004d411b0909eba15cfcf88dc2d86f52a3b07eecfdfd999d5cf0a24e51524efd61e2b74c68738335d93e1ec1a408c9cce9a85a34e82af0e3
   languageName: node
   linkType: hard
 
