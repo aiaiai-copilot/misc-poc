@@ -80,6 +80,62 @@ This project uses a **Batch TDD approach** that differs from traditional TDD:
 - No commit should be made if any check fails
 - Fix all errors before proceeding
 
+#### 🔴 CRITICAL: Test Validation Protocol
+
+**MANDATORY test completion verification:**
+
+1. **ALL tests MUST complete successfully** - no timeouts, no partial results
+2. **Must see exact pattern**: `Tests: X passed, X total` (where both X are equal, zero failures)
+3. **If tests timeout**: IMMEDIATELY increase timeout, never proceed on assumptions
+
+**Timeout Handling Rules:**
+
+```bash
+# STEP 1: When tests timeout, increase Jest timeout
+# Edit jest.config.js or package-specific config:
+testTimeout: 300000  # 5 minutes for performance tests
+
+# STEP 2: Or use per-test timeout
+describe('Performance Tests', () => {
+  jest.setTimeout(300000);
+});
+
+# STEP 3: Or command-line override
+yarn test --testTimeout=300000
+```
+
+**NEVER:**
+
+- ❌ Proceed with incomplete test validation
+- ❌ Assume partial success = complete success
+- ❌ Accept timeouts without increasing timeout
+- ❌ Reduce test comprehensiveness to avoid timeouts
+
+**ALWAYS:**
+
+- ✅ Show final test count: "Tests: 80/80 passed (100%)"
+- ✅ Increase timeout generously for performance/integration tests
+- ✅ Verify 100% completion before any commit approval
+- ✅ Performance tests with large datasets SHOULD take time
+
+**Correct Validation Output:**
+
+```
+✅ Build: Success
+✅ TypeScript: Success
+✅ Lint: Success
+✅ Tests: 142/142 passed (100% success rate)
+```
+
+**WRONG Validation Output:**
+
+```
+✅ Build: Success
+✅ TypeScript: Success
+✅ Lint: Success
+❌ Missing test results!
+```
+
 ### 5. INCREMENTAL DELIVERY
 
 **Work must be completed incrementally with validation**
@@ -87,6 +143,18 @@ This project uses a **Batch TDD approach** that differs from traditional TDD:
 - One subtask at a time with approval between each
 - Manual testing approval required before every commit
 - Clear progress tracking and status updates
+
+### 6. COMPREHENSIVE OVER QUICK
+
+**When tests timeout, the solution is MORE TIME, not LESS TESTING:**
+
+- ✅ Increase timeout to 5-10 minutes for performance tests
+- ❌ Never reduce dataset size or test coverage to save time
+- ✅ Performance validation REQUIRES adequate time
+- ❌ Never sacrifice quality for speed
+- ✅ Comprehensive testing > Quick execution
+
+This principle is CRITICAL for maintaining code quality and catching performance issues early.
 
 ---
 
@@ -195,7 +263,39 @@ describe('Migration Integration Test', () => {
 2. **Cleanup**: Proper resource disposal (`afterAll`, `beforeEach`)
 3. **Isolation**: Tests don't depend on each other
 4. **Assertions**: Clear, specific expectations
-5. **Performance**: Integration tests complete within 30 seconds
+5. **Performance**: Integration tests complete within reasonable time
+
+### Test Timeout Best Practices
+
+**Default Timeout Recommendations:**
+
+```javascript
+// jest.config.js
+module.exports = {
+  testTimeout: 120000, // 2 minutes default
+  projects: [
+    {
+      displayName: 'unit',
+      testTimeout: 60000, // 1 minute for unit tests
+    },
+    {
+      displayName: 'integration',
+      testTimeout: 180000, // 3 minutes for integration
+    },
+    {
+      displayName: 'performance',
+      testTimeout: 600000, // 10 minutes for performance tests
+    },
+  ],
+};
+```
+
+**When Tests Timeout:**
+
+1. INCREASE timeout first (don't reduce test coverage)
+2. Use `--testTimeout=300000` flag for immediate override
+3. Add per-test timeout for specific slow tests
+4. NEVER compromise test quality for speed
 
 ---
 
@@ -350,6 +450,10 @@ Place command files in:
 - ❌ **Writing tests one by one** instead of all at once (violates Batch TDD)
 - ❌ **Implementing partial functionality** with some tests still red
 - ❌ **Marking tasks as done with ANY red tests**
+- ❌ **Reducing test data to avoid timeouts** (increase timeout instead!)
+- ❌ **Accepting partial test results** due to timeouts
+- ❌ **Reporting "validation passed" without showing test numbers**
+- ❌ **Assuming test success** when tests timeout or partially complete
 
 ### Development Anti-Patterns
 
