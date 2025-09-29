@@ -8,6 +8,10 @@ import { JwtService } from './auth/jwt.js';
 import { configureGoogleStrategy } from './auth/strategies/google.js';
 import { getDataSource } from './infrastructure/database/data-source.js';
 import { DataSource } from 'typeorm';
+import {
+  RedisCacheService,
+  getCacheConfig,
+} from './infrastructure/cache/index.js';
 
 export interface AppConfig {
   cors?: {
@@ -16,6 +20,7 @@ export interface AppConfig {
   };
   authService?: AuthService;
   dataSource?: DataSource;
+  cacheService?: RedisCacheService;
 }
 
 /**
@@ -202,6 +207,25 @@ export function createApp(config?: AppConfig): express.Application {
     });
   const jwtService = authService.getJwtService();
   const dataSource = config?.dataSource || getDataSource();
+
+  // Initialize cache service
+  let cacheService: RedisCacheService | null = null;
+  if (config?.cacheService) {
+    cacheService = config.cacheService;
+  } else if (process.env.NODE_ENV !== 'test') {
+    // Only initialize Redis cache in non-test environments
+    try {
+      const cacheConfig = getCacheConfig();
+      cacheService = new RedisCacheService(cacheConfig);
+      // Connect to Redis in background - don't block app startup
+      cacheService.connect().catch((error) => {
+        console.warn('Failed to connect to Redis cache:', error);
+        cacheService = null;
+      });
+    } catch (error) {
+      console.warn('Failed to initialize cache service:', error);
+    }
+  }
 
   // Configure Google OAuth strategy
   configureGoogleStrategy(
@@ -652,6 +676,14 @@ export function createApp(config?: AppConfig): express.Application {
     try {
       const user = req.user as { userId: string; email: string };
 
+      // Try to get from cache first
+      if (cacheService) {
+        const cachedStats = await cacheService.getTagStatistics(user.userId);
+        if (cachedStats !== null) {
+          return res.json(cachedStats);
+        }
+      }
+
       // Initialize database connection if not already initialized
       if (!dataSource.isInitialized) {
         await dataSource.initialize();
@@ -678,6 +710,11 @@ export function createApp(config?: AppConfig): express.Application {
           count: parseInt(row.count, 10),
         })
       );
+
+      // Cache the result for next time
+      if (cacheService) {
+        await cacheService.setTagStatistics(user.userId, formattedTags);
+      }
 
       res.json(formattedTags);
     } catch (error) {
@@ -728,6 +765,18 @@ export function createApp(config?: AppConfig): express.Application {
           limit = parsedLimit;
         }
 
+        // Try to get from cache first
+        if (cacheService) {
+          const cachedSuggestions = await cacheService.getTagSuggestions(
+            user.userId,
+            trimmedQuery,
+            limit
+          );
+          if (cachedSuggestions !== null) {
+            return res.json(cachedSuggestions);
+          }
+        }
+
         // Initialize database connection if not already initialized
         if (!dataSource.isInitialized) {
           await dataSource.initialize();
@@ -757,6 +806,16 @@ export function createApp(config?: AppConfig): express.Application {
         const suggestions = tagSuggestions.map(
           (row: { tag: string }) => row.tag
         );
+
+        // Cache the result for next time
+        if (cacheService) {
+          await cacheService.setTagSuggestions(
+            user.userId,
+            trimmedQuery,
+            limit,
+            suggestions
+          );
+        }
 
         res.json(suggestions);
       } catch (error) {
