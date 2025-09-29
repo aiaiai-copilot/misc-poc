@@ -15,12 +15,12 @@ Complete the current subtask with full validation.
 3. **No skipped tests** - unless explicitly approved by user
 4. **If ANY test is red**: STOP and fix it before proceeding
 
-#### Determine validation scope:
+#### Determine validation scope
 
 1. **Identify changed files**: `git diff --name-only`
 2. **Choose validation strategy**:
 
-##### For single package changes (most common):
+##### For single package changes (most common)
 
 ```bash
 # Navigate to affected package
@@ -29,14 +29,14 @@ cd packages/<package-name>
 yarn build && yarn typecheck && yarn lint && yarn test
 ```
 
-##### For multi-package or critical changes:
+##### For multi-package or critical changes
 
 ```bash
 # Run from monorepo root (slower: ~3-5 minutes)
 yarn build && yarn typecheck && yarn lint && yarn test
 ```
 
-##### Smart validation tips:
+##### Smart validation tips
 
 - Local package checks catch 95% of issues
 - Full monorepo check recommended for:
@@ -88,13 +88,52 @@ After running tests, VERIFY:
 
 ⚠️ **CRITICAL**: NEVER mark subtask as done with failing tests!
 
+#### ⏱️ TIMEOUT PROTOCOL
+
+If tests timeout:
+
+1. **STOP** - Do not proceed
+2. **INCREASE timeout immediately**:
+
+   ```bash
+   # Option 1: Update jest.config.js
+   testTimeout: 300000  # 5 minutes minimum
+
+   # Option 2: Command line
+   yarn test --testTimeout=300000
+
+   # Option 3: Per-test timeout
+   jest.setTimeout(300000);
+   ```
+
+3. **RE-RUN tests** with increased timeout
+4. **NEVER reduce test coverage** to avoid timeouts
+
+**Remember**: Performance tests SHOULD take time - this is normal and expected!
+
 ### Step 2: Update Subtask Status
 
 - Get current subtask using `tm current --subtask`
 - Update status to done BEFORE commit: `tm set-status --id=<subtask-id> --status=done`
 - If no active subtask found, use current task instead
 
-### Step 3: Manual Testing Approval Gate
+### Step 3: Validation Checklist
+
+## 📋 VALIDATION CHECKLIST (MANDATORY)
+
+Before marking ANY subtask complete, verify:
+
+- [ ] Build passed
+- [ ] TypeScript passed
+- [ ] Lint passed
+- [ ] **Tests: X/X passed (show EXACT numbers)**
+- [ ] Zero timeouts (if timeout occurred, increased and re-ran)
+- [ ] Zero skipped tests (unless explicitly approved)
+- [ ] Test output explicitly shows "All tests passed" or similar
+
+**🚫 Cannot proceed if ANY item unchecked!**
+
+### Step 4: Manual Testing Approval Gate
 
 ## ⚠️ APPROVAL REQUIRED
 
@@ -112,7 +151,7 @@ Please test:
 
 > **WAITING FOR YOUR RESPONSE...**
 
-### Step 4: Intelligent Commit Process
+### Step 5: Intelligent Commit Process
 
 After explicit approval, intelligently stage and commit changes:
 
@@ -136,7 +175,7 @@ After explicit approval, intelligently stage and commit changes:
 4. **After confirmation**, stage only approved files
 5. **Create commit** with meaningful message referencing the subtask
 
-### Step 5: Progress Assessment
+### Step 6: Progress Assessment
 
 - Check overall task progress using `tm list --parent=<task-id>`
 - Count remaining subtasks vs completed
@@ -148,19 +187,19 @@ After explicit approval, intelligently stage and commit changes:
   - Show progress percentage
   - List remaining subtasks
 
-### Step 6: Next Subtask Gate
+### Step 7: Next Subtask Gate
 
 ## 🛑 STOP - Approval Required for Next Subtask
 
 **Subtask has been completed and committed.**
 
-### Current Status:
+### Current Status
 
 - ✅ Subtask complete
 - 📊 Task Progress: X/Y subtasks done
 - 🌿 Current branch: [show current branch]
 
-### Available Options:
+### Available Options
 
 1. **Continue with next subtask** (if any remaining)
 2. **Switch to different task**
@@ -172,7 +211,7 @@ After explicit approval, intelligently stage and commit changes:
 
 If approved to continue:
 
-#### Pre-continuation Branch Check:
+#### Pre-continuation Branch Check
 
 1. **Verify still on correct branch**:
 
@@ -186,7 +225,7 @@ If approved to continue:
    - Switch to correct branch before continuing
 3. **Pull latest changes**: `git pull origin <current-branch> --rebase`
 
-#### Then proceed:
+#### Then proceed
 
 - Get next subtask from task list
 - Set it to in-progress

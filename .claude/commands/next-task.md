@@ -145,6 +145,22 @@ Begin work on the next task following TaskMaster workflow rules.
 
 ⚠️ **NEVER proceed with red tests - fix them first!**
 
+### ⚠️ Performance Test Warning
+
+For tasks involving large datasets or performance testing:
+
+- **Set generous timeouts from the START** (5+ minutes minimum)
+- **Expect longer test execution times** (this is NORMAL)
+- **NEVER reduce test data** to make tests run faster
+- **Performance tests SHOULD take time** - comprehensive testing requires it
+
+Default timeout recommendations:
+
+- Unit tests: 60 seconds
+- Integration tests: 120 seconds
+- Performance tests: 300+ seconds
+- E2E tests: 600+ seconds
+
 #### For tasks where only configuration is required
 
 1. Skip TDD requirements

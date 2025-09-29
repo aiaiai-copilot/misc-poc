@@ -6,7 +6,7 @@ Finalize the current task and create pull request.
 
 ### Phase 1: Completeness Validation
 
-#### Branch and Task Verification:
+#### Branch and Task Verification
 
 1. **Verify on correct branch**:
 
@@ -35,7 +35,7 @@ Finalize the current task and create pull request.
 - 🚫 No skipped tests (unless user explicitly approved)
 - If ANY test is red: STOP and fix before continuing
 
-#### Smart Validation Check:
+#### Smart Validation Check
 
 1. **Check for changes since last validation**:
 
@@ -108,6 +108,32 @@ All checks must pass before proceeding (if validation was needed).
 
 ⚠️ **This is a HARD STOP** - fix all issues before proceeding!
 
+#### ⏱️ TIMEOUT PROTOCOL
+
+If tests timeout during validation:
+
+1. **STOP IMMEDIATELY** - Do not proceed or make assumptions
+2. **INCREASE timeout generously**:
+
+   ```bash
+   # Update jest.config.js or package.json:
+   "jest": {
+     "testTimeout": 300000  # 5+ minutes for comprehensive tests
+   }
+
+   # Or run with timeout override:
+   yarn test --testTimeout=300000
+   ```
+
+3. **RE-RUN full validation** with increased timeout
+4. **NEVER:**
+   - Assume partial success = complete success
+   - Reduce test dataset to avoid timeouts
+   - Skip tests to save time
+   - Proceed without 100% test completion
+
+**Performance and integration tests NEED adequate time - this is expected!**
+
 ### Phase 3: Task Status Update
 
 Mark task as done BEFORE final commit:
@@ -124,11 +150,21 @@ tm set-status --id=<task-id> --status=done
 
 ### Pre-Completion Checklist
 
-- ✅ All subtasks completed
-- ✅ All tests passing
-- ✅ Build validation successful
-- ✅ Code review ready
-- ✅ Docker running (if using containers)
+## 📋 MANDATORY VALIDATION CHECKLIST
+
+- [ ] All subtasks marked as done
+- [ ] Build validation passed
+- [ ] TypeScript validation passed
+- [ ] Lint validation passed
+- [ ] **Tests: X/X passed (MUST show exact numbers)**
+- [ ] Zero test timeouts (or increased and re-ran)
+- [ ] Zero failing tests
+- [ ] Zero skipped tests (unless approved)
+- [ ] Test output shows "All tests passed" or equivalent
+- [ ] Docker running (if using containers)
+- [ ] Code review ready
+
+**🚫 STOP if ANY item is unchecked!**
 
 **Do you want to perform final manual testing before creating the PR?**
 
