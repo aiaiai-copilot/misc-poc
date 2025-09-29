@@ -398,6 +398,7 @@ mcp__context7__get -
 - `/next-task` - Start work on next priority task
 - `/complete-subtask` - Complete current subtask with validation
 - `/complete-task` - Finalize current task and create PR
+- `/fix-errors <package>` - Fix errors in specific package (for new sessions)
 
 **Commands enforce:**
 
@@ -427,6 +428,22 @@ Place command files in:
 4. **Repeat**: For each subtask (with approval between)
 5. **Finish**: `/complete-task` → Final check for 100% GREEN tests, creates PR
 
+### New Session Recovery (After Context Loss)
+
+**When starting a NEW SESSION to continue work:**
+
+1. **If fixing errors**: Use `/fix-errors <package>` command
+   - Example: `/fix-errors backend` or `/fix-errors infrastructure/postgresql`
+   - Focuses on single package to avoid overwhelming context
+   - Re-establishes all Batch TDD rules
+   - Ensures 100% tests pass in that package
+
+2. **Key reminders for new sessions**:
+   - ALL tests must be GREEN (no exceptions)
+   - Increase timeouts, don't reduce test coverage
+   - Show exact numbers: "Tests: X/X passed"
+   - Fix one package completely before moving to another
+
 ---
 
 ## 📁 PROJECT REFERENCES
@@ -436,6 +453,7 @@ Place command files in:
 - **E2E Tests**: `e2e/`
 - **E2E Guidelines**: `e2e/README.md`
 - **TaskMaster CLI**: `.taskmaster/CLAUDE.md`
+- **Context Recovery**: `.claude/commands/CONTEXT-RECOVERY.md` (for new sessions)
 
 ---
 
@@ -462,6 +480,9 @@ Place command files in:
 - ❌ Skipping Batch TDD for coding tasks
 - ❌ Using traditional one-test-at-a-time TDD instead of Batch TDD
 - ❌ Creating branches for leaf tasks
+- ❌ **Starting new session without `/fix-errors`** when errors exist
+- ❌ **Trying to fix multiple packages simultaneously** in new session
+- ❌ **Forgetting Batch TDD rules** after context loss
 
 ### Quality Anti-Patterns
 
