@@ -11,7 +11,7 @@ import { DataSource } from 'typeorm';
 import {
   RedisCacheService,
   getCacheConfig,
-} from './infrastructure/cache/index.js';
+} from '@misc-poc/infrastructure-cache';
 
 export interface AppConfig {
   cors?: {
@@ -218,7 +218,7 @@ export function createApp(config?: AppConfig): express.Application {
       const cacheConfig = getCacheConfig();
       cacheService = new RedisCacheService(cacheConfig);
       // Connect to Redis in background - don't block app startup
-      cacheService.connect().catch((error) => {
+      cacheService.connect().catch((error: Error) => {
         console.warn('Failed to connect to Redis cache:', error);
         cacheService = null;
       });

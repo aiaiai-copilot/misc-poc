@@ -1,5 +1,4 @@
 import { createClient, RedisClientType } from 'redis';
-import { DataSource } from 'typeorm';
 
 export interface RedisCacheConfig {
   url: string;
@@ -40,11 +39,12 @@ export interface CacheMetrics {
   };
 }
 
-interface TagStatsQueryResult {
-  tag: string;
-  count: string | number;
-}
-
+/**
+ * Redis-based caching service for tag statistics and suggestions.
+ * This service is data-source agnostic - it only handles caching operations.
+ * Warmup logic should be implemented in application services that have access
+ * to both the cache and the data source.
+ */
 export class RedisCacheService {
   private client: RedisClientType;
   private config: RedisCacheConfig;
@@ -243,71 +243,6 @@ export class RedisCacheService {
       }
     } catch (error) {
       console.error('Error invalidating tag suggestion patterns:', error);
-    }
-  }
-
-  async batchWarmTagStatistics(
-    userIds: string[],
-    dataSource: DataSource
-  ): Promise<void> {
-    try {
-      for (const userId of userIds) {
-        // Query user's tag statistics from database
-        const tagStats = await dataSource.query(
-          `
-          SELECT tag, COUNT(*) as count
-          FROM user_tags
-          WHERE user_id = $1
-          GROUP BY tag
-          ORDER BY count DESC
-        `,
-          [userId]
-        );
-
-        if (tagStats.length > 0) {
-          // Convert count values to numbers to match interface expectations
-          const formattedStats = tagStats.map((stat: TagStatsQueryResult) => ({
-            tag: stat.tag,
-            count:
-              typeof stat.count === 'string'
-                ? parseInt(stat.count, 10)
-                : stat.count,
-          }));
-          await this.setTagStatistics(userId, formattedStats);
-        }
-      }
-    } catch (error) {
-      console.error('Error batch warming tag statistics:', error);
-    }
-  }
-
-  async warmPopularTagSuggestions(
-    userId: string,
-    prefixes: string[],
-    dataSource: DataSource
-  ): Promise<void> {
-    try {
-      for (const prefix of prefixes) {
-        // Query suggestions for this prefix
-        const suggestions = await dataSource.query(
-          `
-          SELECT DISTINCT tag,
-                 similarity(tag, $1) as similarity
-          FROM user_tags
-          WHERE user_id = $2
-            AND tag ILIKE $3
-          ORDER BY similarity DESC, tag
-          LIMIT 10
-        `,
-          [prefix, userId, `${prefix}%`]
-        );
-
-        if (suggestions.length > 0) {
-          await this.setTagSuggestions(userId, prefix, 10, suggestions);
-        }
-      }
-    } catch (error) {
-      console.error('Error warming popular tag suggestions:', error);
     }
   }
 

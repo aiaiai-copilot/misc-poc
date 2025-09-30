@@ -31,6 +31,7 @@
   "dependencies": {
     "@misc-poc/application": "workspace:*",
     "@misc-poc/domain": "workspace:*",
+    "@misc-poc/infrastructure-cache": "workspace:*",
     "@types/redis": "^4.0.11",
     "cookie-parser": "^1.4.7",
     "express": "^5.1.0",

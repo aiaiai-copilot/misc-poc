@@ -8,7 +8,8 @@
  */
 
 import { createApp } from '../../app.js';
-import { RedisCacheService } from '../../infrastructure/cache/redis-cache-service.js';
+import { RedisCacheService } from '@misc-poc/infrastructure-cache';
+import { CacheWarmupService } from '../../services/cache-warmup-service.js';
 import { DataSource } from 'typeorm';
 import { AuthService } from '../../auth/index.js';
 import request from 'supertest';
@@ -568,6 +569,7 @@ describe('API Cache Integration - Cache Warming & Background Jobs', () => {
   let postgresContainer: StartedPostgreSqlContainer;
   let dataSource: DataSource;
   let cacheService: RedisCacheService;
+  let warmupService: CacheWarmupService;
 
   beforeAll(async () => {
     redisContainer = await new GenericContainer('redis:7-alpine')
@@ -607,6 +609,9 @@ describe('API Cache Integration - Cache Warming & Background Jobs', () => {
     });
 
     await cacheService.connect();
+
+    // Initialize warmup service
+    warmupService = new CacheWarmupService(cacheService, dataSource);
   }, 60000);
 
   afterAll(async () => {
@@ -637,7 +642,7 @@ describe('API Cache Integration - Cache Warming & Background Jobs', () => {
         ('user-456', 'meeting')
     `);
 
-    await cacheService.batchWarmTagStatistics(activeUsers, dataSource);
+    await warmupService.batchWarmTagStatistics(activeUsers);
 
     // Verify cache was warmed
     const cached123 = await cacheService.getTagStatistics('user-123');
@@ -668,11 +673,7 @@ describe('API Cache Integration - Cache Warming & Background Jobs', () => {
       // Extension may already exist
     }
 
-    await cacheService.warmPopularTagSuggestions(
-      userId,
-      popularPrefixes,
-      dataSource
-    );
+    await warmupService.warmPopularTagSuggestions(userId, popularPrefixes);
 
     // Verify cache was warmed (may be null if similarity extension not available)
     const cachedP = await cacheService.getTagSuggestions(userId, 'p', 10);
@@ -693,7 +694,7 @@ describe('API Cache Integration - Cache Warming & Background Jobs', () => {
 
     // Should not throw even if one user has no data
     await expect(
-      cacheService.batchWarmTagStatistics(activeUsers, dataSource)
+      warmupService.batchWarmTagStatistics(activeUsers)
     ).resolves.not.toThrow();
 
     // First user should be cached
