@@ -12,7 +12,9 @@ import {
   RedisCacheService,
   getCacheConfig,
 } from '@misc-poc/infrastructure-cache';
-import { handleStreamingImport } from './api/streaming-import.js';
+import { handleImportWithProgress } from './api/streaming-import-with-progress.js';
+import { handleExportWithProgress } from './api/streaming-export-with-progress.js';
+import { progressTracker } from './api/progress-tracker.js';
 
 export interface AppConfig {
   cors?: {
@@ -851,67 +853,10 @@ export function createApp(config?: AppConfig): express.Application {
 
   app.get('/api/export', requireAuth, async (req: Request, res: Response) => {
     try {
-      const user = req.user as { userId: string; email: string };
-
-      // Initialize database connection if not already initialized
-      if (!dataSource.isInitialized) {
-        await dataSource.initialize();
-      }
-
-      // Query all user records
-      const records = await dataSource.query(
-        `
-        SELECT content, created_at, updated_at
-        FROM records
-        WHERE user_id = $1
-        ORDER BY created_at ASC
-      `,
-        [user.userId]
-      );
-
-      // Query user settings for normalization rules
-      const settingsResult = await dataSource.query(
-        `
-        SELECT case_sensitive, remove_accents
-        FROM user_settings
-        WHERE user_id = $1
-      `,
-        [user.userId]
-      );
-
-      // Use default settings if not found
-      const normalizationRules =
-        settingsResult.length > 0
-          ? {
-              caseSensitive: settingsResult[0].case_sensitive,
-              removeAccents: settingsResult[0].remove_accents,
-            }
-          : {
-              caseSensitive: false,
-              removeAccents: true,
-            };
-
-      // Transform records to export format
-      const exportRecords = records.map(
-        (record: { content: string; created_at: Date; updated_at: Date }) => ({
-          content: record.content,
-          createdAt: record.created_at.toISOString(),
-          updatedAt: record.updated_at.toISOString(),
-        })
-      );
-
-      // Build export response in v2.0 format
-      const exportData = {
-        version: '2.0',
-        records: exportRecords,
-        metadata: {
-          exportedAt: new Date().toISOString(),
-          recordCount: exportRecords.length,
-          normalizationRules,
-        },
-      };
-
-      res.json(exportData);
+      // Use new export handler with progress tracking support
+      await handleExportWithProgress(req, res, dataSource, {
+        chunkSize: 500,
+      });
     } catch (error) {
       console.error('Error exporting data:', error);
       res.status(500).json({
@@ -927,8 +872,8 @@ export function createApp(config?: AppConfig): express.Application {
         await dataSource.initialize();
       }
 
-      // Use streaming import handler with chunked processing
-      await handleStreamingImport(req, res, dataSource, {
+      // Use new import handler with progress tracking support
+      await handleImportWithProgress(req, res, dataSource, {
         chunkSize: 500,
         maxRecords: 50000,
       });
@@ -939,6 +884,63 @@ export function createApp(config?: AppConfig): express.Application {
       });
     }
   });
+
+  // Progress tracking endpoints (Server-Sent Events)
+  app.get(
+    '/api/import/progress/:sessionId',
+    requireAuth,
+    (req: Request, res: Response) => {
+      const sessionId = req.params.sessionId;
+      const user = req.user as { userId: string; email: string };
+
+      // Check if sessionId is provided
+      if (!sessionId) {
+        res.status(404).json({
+          error: 'Session ID is required',
+        });
+        return;
+      }
+
+      // Validate session belongs to user
+      if (!progressTracker.validateSession(sessionId, user.userId)) {
+        res.status(403).json({
+          error: 'Access denied to this progress session',
+        });
+        return;
+      }
+
+      // Attach SSE response
+      progressTracker.attachSSE(sessionId, res);
+    }
+  );
+
+  app.get(
+    '/api/export/progress/:sessionId',
+    requireAuth,
+    (req: Request, res: Response) => {
+      const sessionId = req.params.sessionId;
+      const user = req.user as { userId: string; email: string };
+
+      // Check if sessionId is provided
+      if (!sessionId) {
+        res.status(404).json({
+          error: 'Session ID is required',
+        });
+        return;
+      }
+
+      // Validate session belongs to user
+      if (!progressTracker.validateSession(sessionId, user.userId)) {
+        res.status(403).json({
+          error: 'Access denied to this progress session',
+        });
+        return;
+      }
+
+      // Attach SSE response
+      progressTracker.attachSSE(sessionId, res);
+    }
+  );
 
   // Error handling middleware
   app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
