@@ -31,5 +31,6 @@ export default {
   //   }
   // },
   // Integration tests with containers need more time
-  testTimeout: 60000
+  // Performance tests need even more time for large datasets
+  testTimeout: 120000
 };

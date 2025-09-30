@@ -6,6 +6,12 @@ import rateLimit from 'express-rate-limit';
 import { AuthService } from './auth/index.js';
 import { JwtService } from './auth/jwt.js';
 import { configureGoogleStrategy } from './auth/strategies/google.js';
+import { getDataSource } from './infrastructure/database/data-source.js';
+import { DataSource } from 'typeorm';
+import {
+  RedisCacheService,
+  getCacheConfig,
+} from '@misc-poc/infrastructure-cache';
 
 export interface AppConfig {
   cors?: {
@@ -13,6 +19,8 @@ export interface AppConfig {
     credentials: boolean;
   };
   authService?: AuthService;
+  dataSource?: DataSource;
+  cacheService?: RedisCacheService;
 }
 
 /**
@@ -198,6 +206,26 @@ export function createApp(config?: AppConfig): express.Application {
       },
     });
   const jwtService = authService.getJwtService();
+  const dataSource = config?.dataSource || getDataSource();
+
+  // Initialize cache service
+  let cacheService: RedisCacheService | null = null;
+  if (config?.cacheService) {
+    cacheService = config.cacheService;
+  } else if (process.env.NODE_ENV !== 'test') {
+    // Only initialize Redis cache in non-test environments
+    try {
+      const cacheConfig = getCacheConfig();
+      cacheService = new RedisCacheService(cacheConfig);
+      // Connect to Redis in background - don't block app startup
+      cacheService.connect().catch((error: Error) => {
+        console.warn('Failed to connect to Redis cache:', error);
+        cacheService = null;
+      });
+    } catch (error) {
+      console.warn('Failed to initialize cache service:', error);
+    }
+  }
 
   // Configure Google OAuth strategy
   configureGoogleStrategy(
@@ -643,6 +671,161 @@ export function createApp(config?: AppConfig): express.Application {
 
     res.json({ records, total: records.length });
   });
+
+  app.get('/api/tags', requireAuth, async (req: Request, res: Response) => {
+    try {
+      const user = req.user as { userId: string; email: string };
+
+      // Try to get from cache first
+      if (cacheService) {
+        const cachedStats = await cacheService.getTagStatistics(user.userId);
+        if (cachedStats !== null) {
+          return res.json(cachedStats);
+        }
+      }
+
+      // Initialize database connection if not already initialized
+      if (!dataSource.isInitialized) {
+        await dataSource.initialize();
+      }
+
+      // Query tag frequency statistics with user isolation
+      const tagStats = await dataSource.query(
+        `
+        SELECT
+          unnest(normalized_tags) as tag,
+          COUNT(*) as count
+        FROM records
+        WHERE user_id = $1
+        GROUP BY unnest(normalized_tags)
+        ORDER BY count DESC, tag ASC
+      `,
+        [user.userId]
+      );
+
+      // Transform to expected format
+      const formattedTags = tagStats.map(
+        (row: { tag: string; count: string }) => ({
+          tag: row.tag,
+          count: parseInt(row.count, 10),
+        })
+      );
+
+      // Cache the result for next time
+      if (cacheService) {
+        await cacheService.setTagStatistics(user.userId, formattedTags);
+      }
+
+      res.json(formattedTags);
+    } catch (error) {
+      console.error('Error fetching tag statistics:', error);
+      res.status(500).json({
+        error: 'Internal server error while fetching tag statistics',
+      });
+    }
+  });
+
+  app.get(
+    '/api/tags/suggest',
+    requireAuth,
+    async (req: Request, res: Response) => {
+      try {
+        const user = req.user as { userId: string; email: string };
+        const query = req.query.q as string;
+        const limitParam = req.query.limit as string;
+
+        // Validate query parameter
+        if (query === undefined) {
+          return res.status(400).json({
+            error: 'Query parameter q is required',
+          });
+        }
+
+        const trimmedQuery = query.trim();
+        if (trimmedQuery === '') {
+          return res.status(400).json({
+            error: 'Query parameter q cannot be empty',
+          });
+        }
+
+        // Validate and parse limit parameter
+        let limit = 10; // Default limit
+        if (limitParam) {
+          const parsedLimit = parseInt(limitParam, 10);
+          if (isNaN(parsedLimit)) {
+            return res.status(400).json({
+              error: 'Limit must be a valid number',
+            });
+          }
+          if (parsedLimit < 1 || parsedLimit > 100) {
+            return res.status(400).json({
+              error: 'Limit must be between 1 and 100',
+            });
+          }
+          limit = parsedLimit;
+        }
+
+        // Try to get from cache first
+        if (cacheService) {
+          const cachedSuggestions = await cacheService.getTagSuggestions(
+            user.userId,
+            trimmedQuery,
+            limit
+          );
+          if (cachedSuggestions !== null) {
+            return res.json(cachedSuggestions);
+          }
+        }
+
+        // Initialize database connection if not already initialized
+        if (!dataSource.isInitialized) {
+          await dataSource.initialize();
+        }
+
+        // Query tags with prefix matching, frequency-based sorting, and user isolation
+        // Using ILIKE for case-insensitive prefix matching
+        const tagSuggestions = await dataSource.query(
+          `
+        SELECT
+          tag,
+          COUNT(*) as frequency
+        FROM (
+          SELECT unnest(normalized_tags) as tag
+          FROM records
+          WHERE user_id = $1
+        ) tags
+        WHERE tag ILIKE $2
+        GROUP BY tag
+        ORDER BY frequency DESC, tag ASC
+        LIMIT $3
+      `,
+          [user.userId, `${trimmedQuery.toLowerCase()}%`, limit]
+        );
+
+        // Transform to simple string array as expected by frontend
+        const suggestions = tagSuggestions.map(
+          (row: { tag: string }) => row.tag
+        );
+
+        // Cache the result for next time
+        if (cacheService) {
+          await cacheService.setTagSuggestions(
+            user.userId,
+            trimmedQuery,
+            limit,
+            suggestions
+          );
+        }
+
+        res.json(suggestions);
+      } catch (error) {
+        console.error('Error fetching tag suggestions:', error);
+        res.status(500).json({
+          error: 'Internal server error while fetching tag suggestions',
+        });
+      }
+    }
+  );
 
   app.get('/api/user/profile', requireAuth, (req: Request, res: Response) => {
     const user = req.user as { userId: string; email: string };

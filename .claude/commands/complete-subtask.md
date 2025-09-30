@@ -6,6 +6,15 @@ Complete the current subtask with full validation.
 
 ### Step 1: Final Build Validation (Optimized)
 
+#### 🔴 MANDATORY TEST VERIFICATION
+
+**STOP! Before ANY completion:**
+
+1. **ALL tests MUST be GREEN** - no exceptions
+2. **Zero failing tests allowed** - fix ALL red tests first
+3. **No skipped tests** - unless explicitly approved by user
+4. **If ANY test is red**: STOP and fix it before proceeding
+
 #### Determine validation scope
 
 1. **Identify changed files**: `git diff --name-only`
@@ -62,13 +71,75 @@ Common signs of Docker issues:
 
 If ANY command fails, fix errors before proceeding.
 
-### Step 2: Update Subtask Status
+#### ✅ TEST RESULTS VERIFICATION
 
-- Get current subtask using `tm current --subtask`
-- Update status to done BEFORE commit: `tm set-status --id=<subtask-id> --status=done`
-- If no active subtask found, use current task instead
+After running tests, VERIFY:
 
-### Step 3: Manual Testing Approval Gate
+- **ALL test suites passed** (look for "PASS" or green checkmarks)
+- **Zero failed tests** (no "FAIL" or red X marks)
+- **Test summary shows 100% passing** (e.g., "Tests: 42 passed, 42 total")
+
+**If even ONE test fails:**
+
+1. STOP immediately
+2. Fix the failing test(s)
+3. Re-run ALL tests
+4. Only proceed when 100% tests are GREEN
+
+⚠️ **CRITICAL**: NEVER mark subtask as done with failing tests!
+
+#### ⏱️ TIMEOUT PROTOCOL
+
+If tests timeout:
+
+1. **STOP** - Do not proceed
+2. **INCREASE timeout immediately**:
+
+   ```bash
+   # Option 1: Update jest.config.js
+   testTimeout: 300000  # 5 minutes minimum
+
+   # Option 2: Command line
+   yarn test --testTimeout=300000
+
+   # Option 3: Per-test timeout
+   jest.setTimeout(300000);
+   ```
+
+3. **RE-RUN tests** with increased timeout
+4. **NEVER reduce test coverage** to avoid timeouts
+
+**Remember**: Performance tests SHOULD take time - this is normal and expected!
+
+### Step 2: Update Task Status (Before Commit)
+
+1. **Check if this is the last subtask**:
+   - Run `tm show <parent-id>` to see all subtasks
+   - Count how many are already done
+
+2. **Update status(es)**:
+   - Always update current subtask: `tm set-status --id=<subtask-id> --status=done`
+   - **If this is the LAST subtask**: Also update parent: `tm set-status --id=<parent-id> --status=done`
+
+3. **Important**: DO NOT commit yet - status updates will be included in the main commit
+
+### Step 3: Validation Checklist
+
+## 📋 VALIDATION CHECKLIST (MANDATORY)
+
+Before marking ANY subtask complete, verify:
+
+- [ ] Build passed
+- [ ] TypeScript passed
+- [ ] Lint passed
+- [ ] **Tests: X/X passed (show EXACT numbers)**
+- [ ] Zero timeouts (if timeout occurred, increased and re-ran)
+- [ ] Zero skipped tests (unless explicitly approved)
+- [ ] Test output explicitly shows "All tests passed" or similar
+
+**🚫 Cannot proceed if ANY item unchecked!**
+
+### Step 4: Manual Testing Approval Gate
 
 ## ⚠️ APPROVAL REQUIRED
 
@@ -86,9 +157,9 @@ Please test:
 
 > **WAITING FOR YOUR RESPONSE...**
 
-### Step 4: Intelligent Commit Process
+### Step 5: Intelligent Commit Process (ONE COMMIT ONLY)
 
-After explicit approval, intelligently stage and commit changes:
+After explicit approval, create ONE commit with all changes:
 
 1. **Get all changed files**: `git status --porcelain`
 2. **Analyze changes** in context of current subtask
@@ -99,6 +170,7 @@ After explicit approval, intelligently stage and commit changes:
    - src/auth/login.ts (authentication logic)
    - tests/auth.test.ts (authentication tests)
    - package.json (added bcrypt dependency)
+   - .taskmaster/tasks/tasks.json (task status update)
 
    Excluded from commit:
    - .env.local (local configuration)
@@ -107,10 +179,20 @@ After explicit approval, intelligently stage and commit changes:
    Proceed with these files? (yes/no/edit)
    ```
 
-4. **After confirmation**, stage only approved files
-5. **Create commit** with meaningful message referencing the subtask
+4. **Stage ALL approved files INCLUDING tasks.json**:
 
-### Step 5: Progress Assessment
+   ```bash
+   git add <implementation-files> .taskmaster/tasks/tasks.json
+   ```
+
+5. **Create ONE commit** with implementation + status updates:
+   - Commit message should describe the feature/fix work
+   - NOT separate "chore" commits for task status
+   - Example: `feat(auth): implement user login (task 5.2)`
+
+⚠️ **CRITICAL**: Never create separate commits just for task status updates!
+
+### Step 6: Progress Assessment
 
 - Check overall task progress using `tm list --parent=<task-id>`
 - Count remaining subtasks vs completed
@@ -122,7 +204,7 @@ After explicit approval, intelligently stage and commit changes:
   - Show progress percentage
   - List remaining subtasks
 
-### Step 6: Next Subtask Gate
+### Step 7: Next Subtask Gate
 
 ## 🛑 STOP - Approval Required for Next Subtask
 

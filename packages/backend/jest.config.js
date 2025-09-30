@@ -7,6 +7,7 @@ export default {
     '**/__tests__/**/*.+(ts|tsx|js)',
     '**/?(*.)+(spec|test).+(ts|tsx|js)'
   ],
+  testTimeout: 300000, // 5 minutes for integration tests with containers
   transform: {
     '^.+\\.(ts|tsx)$': ['ts-jest', {
       useESM: true,
@@ -19,6 +20,7 @@ export default {
     }]
   },
   moduleNameMapper: {
+    '^@misc-poc/infrastructure-cache$': '<rootDir>/../infrastructure/cache/src/index.ts',
     '^(\\.{1,2}/.*)\\.js$': '$1'
   },
   extensionsToTreatAsEsm: ['.ts'],

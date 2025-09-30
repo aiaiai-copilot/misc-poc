@@ -127,12 +127,39 @@ Begin work on the next task following TaskMaster workflow rules.
 
 #### For Coding Tasks
 
+🔴 **MANDATORY BATCH TDD APPROACH:**
+
 1. **Open prd.txt**: `.taskmaster/docs/prd.txt`
 2. **Find test specification** for the current task
 3. **Get Context7 documentation** for ALL libraries that will be used
-4. **Write tests FIRST** based on prd.txt specifications (TDD - Red phase)
-5. **Implement code** to make tests pass (TDD - Green phase)
-6. **Refactor** if needed while keeping tests green (TDD - Refactor phase)
+4. **Write ALL tests FIRST** (Batch TDD - Red phase):
+   - Write complete test suite for entire functionality
+   - Include contract tests from PRD
+   - Add edge cases and integration tests
+   - ALL tests should be RED initially
+5. **Implement code** to make ALL tests pass (TDD - Green phase):
+   - Work until 100% tests are GREEN
+   - NO partial implementations
+   - Fix every failing test
+6. **Refactor** if needed while keeping ALL tests GREEN (TDD - Refactor phase)
+
+⚠️ **NEVER proceed with red tests - fix them first!**
+
+### ⚠️ Performance Test Warning
+
+For tasks involving large datasets or performance testing:
+
+- **Set generous timeouts from the START** (5+ minutes minimum)
+- **Expect longer test execution times** (this is NORMAL)
+- **NEVER reduce test data** to make tests run faster
+- **Performance tests SHOULD take time** - comprehensive testing requires it
+
+Default timeout recommendations:
+
+- Unit tests: 60 seconds
+- Integration tests: 120 seconds
+- Performance tests: 300+ seconds
+- E2E tests: 600+ seconds
 
 #### For tasks where only configuration is required
 
@@ -157,10 +184,13 @@ Begin work on the next task following TaskMaster workflow rules.
 
 ### 3. Implementation
 
-- [ ] For coding: Write tests from prd.txt FIRST (TDD - Red phase)
-- [ ] For coding: Implement to pass tests (TDD - Green phase)
+- [ ] For coding: Write ALL tests from prd.txt FIRST (Batch TDD - Red phase)
+- [ ] For coding: Verify ALL tests are RED before implementing
+- [ ] For coding: Implement to pass ALL tests (TDD - Green phase)
+- [ ] For coding: Continue until 100% tests are GREEN
 - [ ] For coding: Refactor if needed (TDD - Refactor phase)
 - [ ] For config: Implement directly
+- [ ] 🔴 **CRITICAL CHECK: Zero red tests before proceeding!**
 
 ### 4. Validation (Optimized)
 
@@ -188,9 +218,11 @@ Begin work on the next task following TaskMaster workflow rules.
 
 ### 6. Commit
 
-- [ ] Use intelligent git staging (see commit workflow)
-- [ ] Create meaningful commit message
-- [ ] Update subtask status to done
+- [ ] Update subtask status to done: `tm set-status --id=<subtask-id> --status=done`
+- [ ] **If this is the LAST subtask**: Also update parent status: `tm set-status --id=<parent-id> --status=done`
+- [ ] Stage ALL changes including tasks.json: `git add <changed-files> .taskmaster/tasks/tasks.json`
+- [ ] Create meaningful commit message with feature work (NOT separate chore commits for status)
+- [ ] **ONE commit** should include: implementation changes + task status updates
 
 ### 7. Next Subtask Check
 

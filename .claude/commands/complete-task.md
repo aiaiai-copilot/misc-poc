@@ -26,6 +26,15 @@ Finalize the current task and create pull request.
 
 ### Phase 2: Final Build Validation (Smart)
 
+#### 🔴 MANDATORY: ALL TESTS MUST BE GREEN
+
+**ABSOLUTE REQUIREMENT before task completion:**
+
+- ✅ 100% of tests must pass - NO EXCEPTIONS
+- 🚫 Zero failing tests allowed
+- 🚫 No skipped tests (unless user explicitly approved)
+- If ANY test is red: STOP and fix before continuing
+
 #### Smart Validation Check
 
 1. **Check for changes since last validation**:
@@ -82,6 +91,49 @@ Common Docker-related test failures:
 
 All checks must pass before proceeding (if validation was needed).
 
+#### ✅ FINAL TEST VERIFICATION
+
+**Before marking task as done, CONFIRM:**
+
+- Test output shows "All tests passed" or similar
+- No red/failing indicators in test results
+- Test coverage meets requirements (if specified)
+- E2E tests passed (if applicable)
+
+**🚫 TASK CANNOT BE COMPLETED if:**
+
+- Even ONE test is failing
+- Tests were skipped without approval
+- Build/lint/typecheck errors exist
+
+⚠️ **This is a HARD STOP** - fix all issues before proceeding!
+
+#### ⏱️ TIMEOUT PROTOCOL
+
+If tests timeout during validation:
+
+1. **STOP IMMEDIATELY** - Do not proceed or make assumptions
+2. **INCREASE timeout generously**:
+
+   ```bash
+   # Update jest.config.js or package.json:
+   "jest": {
+     "testTimeout": 300000  # 5+ minutes for comprehensive tests
+   }
+
+   # Or run with timeout override:
+   yarn test --testTimeout=300000
+   ```
+
+3. **RE-RUN full validation** with increased timeout
+4. **NEVER:**
+   - Assume partial success = complete success
+   - Reduce test dataset to avoid timeouts
+   - Skip tests to save time
+   - Proceed without 100% test completion
+
+**Performance and integration tests NEED adequate time - this is expected!**
+
 ### Phase 3: Task Status Update
 
 Mark task as done BEFORE final commit:
@@ -98,11 +150,21 @@ tm set-status --id=<task-id> --status=done
 
 ### Pre-Completion Checklist
 
-- ✅ All subtasks completed
-- ✅ All tests passing
-- ✅ Build validation successful
-- ✅ Code review ready
-- ✅ Docker running (if using containers)
+## 📋 MANDATORY VALIDATION CHECKLIST
+
+- [ ] All subtasks marked as done
+- [ ] Build validation passed
+- [ ] TypeScript validation passed
+- [ ] Lint validation passed
+- [ ] **Tests: X/X passed (MUST show exact numbers)**
+- [ ] Zero test timeouts (or increased and re-ran)
+- [ ] Zero failing tests
+- [ ] Zero skipped tests (unless approved)
+- [ ] Test output shows "All tests passed" or equivalent
+- [ ] Docker running (if using containers)
+- [ ] Code review ready
+
+**🚫 STOP if ANY item is unchecked!**
 
 **Do you want to perform final manual testing before creating the PR?**
 

@@ -4,18 +4,57 @@
 
 **These principles define HOW we work on this project:**
 
-### 1. TEST-DRIVEN DEVELOPMENT
+### 1. TEST-DRIVEN DEVELOPMENT (BATCH TDD APPROACH)
 
-**All code must be developed using TDD with specifications from prd.txt**
+**All code must be developed using BATCH TDD with specifications from prd.txt**
+
+#### ⚠️ CRITICAL: Modified TDD Approach
+
+This project uses a **Batch TDD approach** that differs from traditional TDD:
+
+**❌ Traditional TDD (NOT used here):**
+
+- Write ONE test → Make it pass → Refactor → Repeat for next test
+
+**✅ Our Batch TDD (MANDATORY approach):**
+
+1. **RED Phase (Batch)**: Write ALL tests for the entire functionality at once
+   - Contract tests from PRD specifications
+   - Edge cases and error scenarios
+   - Integration tests
+   - ALL tests should be RED initially
+
+2. **GREEN Phase (Implementation)**: Implement code to pass ALL tests
+   - See the complete contract upfront
+   - Optimize implementation knowing all requirements
+   - Avoid duplication through shared utilities
+   - Work until 100% tests are GREEN
+
+3. **REFACTOR Phase**: Clean up while keeping ALL tests GREEN
+
+#### Benefits of Batch TDD
+
+- Complete visibility of the entire contract before implementation
+- Better architectural decisions with full context
+- Opportunity to optimize and avoid code duplication
+- Clearer understanding of edge cases and integration points
+
+#### Requirements
 
 - Test specifications location: `.taskmaster/docs/prd.txt`
-- Follow the TDD cycle: Red → Green → Refactor
-- Write tests BEFORE implementation (Red phase)
-- Implement minimum code to pass tests (Green phase)
-- Refactor while keeping tests green (Refactor phase)
 - Test cases must be copied exactly from prd.txt specifications
 - Never create test cases based on assumptions
 - Exception: Configuration and setup tasks may not require tests
+
+#### 🔴 CRITICAL RULE: Task Completion Requirements
+
+**A task or subtask can ONLY be marked as complete when:**
+
+- ✅ ALL tests are GREEN (passing)
+- ✅ NO tests are RED (failing)
+- ✅ NO tests are SKIPPED (unless explicitly approved by user)
+
+**NEVER complete a task with failing tests!**
 
 ### 2. REAL DATABASE TESTING
 
@@ -41,6 +80,62 @@
 - No commit should be made if any check fails
 - Fix all errors before proceeding
 
+#### 🔴 CRITICAL: Test Validation Protocol
+
+**MANDATORY test completion verification:**
+
+1. **ALL tests MUST complete successfully** - no timeouts, no partial results
+2. **Must see exact pattern**: `Tests: X passed, X total` (where both X are equal, zero failures)
+3. **If tests timeout**: IMMEDIATELY increase timeout, never proceed on assumptions
+
+**Timeout Handling Rules:**
+
+```bash
+# STEP 1: When tests timeout, increase Jest timeout
+# Edit jest.config.js or package-specific config:
+testTimeout: 300000  # 5 minutes for performance tests
+
+# STEP 2: Or use per-test timeout
+describe('Performance Tests', () => {
+  jest.setTimeout(300000);
+});
+
+# STEP 3: Or command-line override
+yarn test --testTimeout=300000
+```
+
+**NEVER:**
+
+- ❌ Proceed with incomplete test validation
+- ❌ Assume partial success = complete success
+- ❌ Accept timeouts without increasing timeout
+- ❌ Reduce test comprehensiveness to avoid timeouts
+
+**ALWAYS:**
+
+- ✅ Show final test count: "Tests: 80/80 passed (100%)"
+- ✅ Increase timeout generously for performance/integration tests
+- ✅ Verify 100% completion before any commit approval
+- ✅ Performance tests with large datasets SHOULD take time
+
+**Correct Validation Output:**
+
+```
+✅ Build: Success
+✅ TypeScript: Success
+✅ Lint: Success
+✅ Tests: 142/142 passed (100% success rate)
+```
+
+**WRONG Validation Output:**
+
+```
+✅ Build: Success
+✅ TypeScript: Success
+✅ Lint: Success
+❌ Missing test results!
+```
+
 ### 5. INCREMENTAL DELIVERY
 
 **Work must be completed incrementally with validation**
@@ -48,6 +143,18 @@
 - One subtask at a time with approval between each
 - Manual testing approval required before every commit
 - Clear progress tracking and status updates
+
+### 6. COMPREHENSIVE OVER QUICK
+
+**When tests timeout, the solution is MORE TIME, not LESS TESTING:**
+
+- ✅ Increase timeout to 5-10 minutes for performance tests
+- ❌ Never reduce dataset size or test coverage to save time
+- ✅ Performance validation REQUIRES adequate time
+- ❌ Never sacrifice quality for speed
+- ✅ Comprehensive testing > Quick execution
+
+This principle is CRITICAL for maintaining code quality and catching performance issues early.
 
 ---
 
@@ -156,7 +263,39 @@ describe('Migration Integration Test', () => {
 2. **Cleanup**: Proper resource disposal (`afterAll`, `beforeEach`)
 3. **Isolation**: Tests don't depend on each other
 4. **Assertions**: Clear, specific expectations
-5. **Performance**: Integration tests complete within 30 seconds
+5. **Performance**: Integration tests complete within reasonable time
+
+### Test Timeout Best Practices
+
+**Default Timeout Recommendations:**
+
+```javascript
+// jest.config.js
+module.exports = {
+  testTimeout: 120000, // 2 minutes default
+  projects: [
+    {
+      displayName: 'unit',
+      testTimeout: 60000, // 1 minute for unit tests
+    },
+    {
+      displayName: 'integration',
+      testTimeout: 180000, // 3 minutes for integration
+    },
+    {
+      displayName: 'performance',
+      testTimeout: 600000, // 10 minutes for performance tests
+    },
+  ],
+};
+```
+
+**When Tests Timeout:**
+
+1. INCREASE timeout first (don't reduce test coverage)
+2. Use `--testTimeout=300000` flag for immediate override
+3. Add per-test timeout for specific slow tests
+4. NEVER compromise test quality for speed
 
 ---
 
@@ -259,10 +398,12 @@ mcp__context7__get -
 - `/next-task` - Start work on next priority task
 - `/complete-subtask` - Complete current subtask with validation
 - `/complete-task` - Finalize current task and create PR
+- `/fix-errors <package>` - Fix errors in specific package (for new sessions)
 
 **Commands enforce:**
 
-- TDD approach (Red → Green → Refactor)
+- Batch TDD approach (Write ALL tests → Implement until 100% GREEN → Refactor)
+- 🔴 **ZERO tolerance for red tests** - cannot complete with ANY failing tests
 - One subtask at a time workflow
 - Mandatory build validation before commits
 - Manual testing approval gates
@@ -278,11 +419,30 @@ Place command files in:
 
 ### Workflow Sequence
 
-1. **Start**: `/next-task` → Opens prd.txt, starts TDD cycle
-2. **Work**: Implement one subtask following TDD (tests first)
-3. **Complete Subtask**: `/complete-subtask` → Validates and commits
+1. **Start**: `/next-task` → Opens prd.txt, starts Batch TDD cycle
+2. **Work**:
+   - Write ALL tests for subtask first (Batch Red phase)
+   - Implement until 100% tests are GREEN
+   - Refactor while keeping all tests GREEN
+3. **Complete Subtask**: `/complete-subtask` → Validates ALL tests are GREEN, then commits
 4. **Repeat**: For each subtask (with approval between)
-5. **Finish**: `/complete-task` → Creates PR when all done
+5. **Finish**: `/complete-task` → Final check for 100% GREEN tests, creates PR
+
+### New Session Recovery (After Context Loss)
+
+**When starting a NEW SESSION to continue work:**
+
+1. **If fixing errors**: Use `/fix-errors <package>` command
+   - Example: `/fix-errors backend` or `/fix-errors infrastructure/postgresql`
+   - Focuses on single package to avoid overwhelming context
+   - Re-establishes all Batch TDD rules
+   - Ensures 100% tests pass in that package
+
+2. **Key reminders for new sessions**:
+   - ALL tests must be GREEN (no exceptions)
+   - Increase timeouts, don't reduce test coverage
+   - Show exact numbers: "Tests: X/X passed"
+   - Fix one package completely before moving to another
 
 ---
 
@@ -293,6 +453,7 @@ Place command files in:
 - **E2E Tests**: `e2e/`
 - **E2E Guidelines**: `e2e/README.md`
 - **TaskMaster CLI**: `.taskmaster/CLAUDE.md`
+- **Context Recovery**: `.claude/commands/CONTEXT-RECOVERY.md` (for new sessions)
 
 ---
 
@@ -304,13 +465,24 @@ Place command files in:
 - ❌ Creating test cases without checking prd.txt
 - ❌ Skipping integration tests for database operations
 - ❌ Using `any` types in test code
+- ❌ **Writing tests one by one** instead of all at once (violates Batch TDD)
+- ❌ **Implementing partial functionality** with some tests still red
+- ❌ **Marking tasks as done with ANY red tests**
+- ❌ **Reducing test data to avoid timeouts** (increase timeout instead!)
+- ❌ **Accepting partial test results** due to timeouts
+- ❌ **Reporting "validation passed" without showing test numbers**
+- ❌ **Assuming test success** when tests timeout or partially complete
 
 ### Development Anti-Patterns
 
 - ❌ Using libraries without checking Context7 documentation
 - ❌ Committing code that fails build validation
-- ❌ Skipping TDD for coding tasks
+- ❌ Skipping Batch TDD for coding tasks
+- ❌ Using traditional one-test-at-a-time TDD instead of Batch TDD
 - ❌ Creating branches for leaf tasks
+- ❌ **Starting new session without `/fix-errors`** when errors exist
+- ❌ **Trying to fix multiple packages simultaneously** in new session
+- ❌ **Forgetting Batch TDD rules** after context loss
 
 ### Quality Anti-Patterns
 
