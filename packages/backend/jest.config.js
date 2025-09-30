@@ -21,6 +21,7 @@ export default {
   },
   moduleNameMapper: {
     '^@misc-poc/infrastructure-cache$': '<rootDir>/../infrastructure/cache/src/index.ts',
+    '^@misc-poc/shared$': '<rootDir>/../shared/src/index.ts',
     '^(\\.{1,2}/.*)\\.js$': '$1'
   },
   extensionsToTreatAsEsm: ['.ts'],

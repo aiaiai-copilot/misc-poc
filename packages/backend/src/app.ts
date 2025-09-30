@@ -12,6 +12,7 @@ import {
   RedisCacheService,
   getCacheConfig,
 } from '@misc-poc/infrastructure-cache';
+import { validateExportFormat } from '@misc-poc/shared';
 
 export interface AppConfig {
   cors?: {
@@ -909,6 +910,143 @@ export function createApp(config?: AppConfig): express.Application {
       console.error('Error exporting data:', error);
       res.status(500).json({
         error: 'Internal server error while exporting data',
+      });
+    }
+  });
+
+  app.post('/api/import', requireAuth, async (req: Request, res: Response) => {
+    try {
+      const user = req.user as { userId: string; email: string };
+      const importData = req.body;
+
+      // Initialize database connection if not already initialized
+      if (!dataSource.isInitialized) {
+        await dataSource.initialize();
+      }
+
+      // Step 1: Validate JSON structure with Zod schema
+      const validationResult = validateExportFormat(importData);
+      if (!validationResult.success) {
+        const zodError = validationResult.error;
+        let errorMessage = 'Invalid import data format';
+
+        try {
+          // ZodError has issues property (array of ZodIssue)
+          const issues = (
+            zodError as {
+              issues?: Array<{
+                path: (string | number)[];
+                message: string;
+              }>;
+            }
+          ).issues;
+
+          if (issues && Array.isArray(issues)) {
+            errorMessage = issues
+              .map((err: { path: (string | number)[]; message: string }) => {
+                const path =
+                  err.path && err.path.length > 0 ? err.path.join('.') : 'root';
+                return `${path}: ${err.message}`;
+              })
+              .join('; ');
+          } else if (zodError && zodError.message) {
+            errorMessage = zodError.message;
+          }
+        } catch (err) {
+          console.error('Error formatting validation error:', err);
+        }
+
+        return res.status(400).json({
+          error: `Import data validation failed: ${errorMessage}`,
+        });
+      }
+
+      const validatedData = validationResult.data;
+
+      // Step 2: Transform v1.0 to v2.0 format if needed
+      let recordsToImport: Array<{
+        content: string;
+        createdAt: string;
+        updatedAt: string;
+      }>;
+
+      if (validatedData.version === '1.0') {
+        // Migrate v1.0 format: add updatedAt = createdAt
+        recordsToImport = validatedData.records.map((record) => ({
+          content: record.content,
+          createdAt: record.createdAt,
+          updatedAt: record.createdAt, // Use createdAt as updatedAt for v1.0
+        }));
+      } else {
+        recordsToImport = validatedData.records;
+      }
+
+      // Step 3: Process import with duplicate detection
+      let imported = 0;
+      let skipped = 0;
+      const errors: string[] = [];
+
+      // Use transaction for data integrity
+      await dataSource.query('BEGIN');
+
+      try {
+        for (const record of recordsToImport) {
+          // Extract tags from content (space-separated)
+          const tags = record.content.trim().split(/\s+/).filter(Boolean);
+
+          // Normalize tags for duplicate detection
+          // For simplicity, using lowercase normalization
+          const normalizedTags = tags.map((tag) => tag.toLowerCase());
+
+          // Check for duplicate based on normalized tags
+          const duplicateCheck = await dataSource.query(
+            `
+            SELECT id FROM records
+            WHERE user_id = $1 AND normalized_tags = $2
+          `,
+            [user.userId, normalizedTags]
+          );
+
+          if (duplicateCheck.length > 0) {
+            skipped++;
+            continue;
+          }
+
+          // Insert new record
+          await dataSource.query(
+            `
+            INSERT INTO records (user_id, content, tags, normalized_tags, created_at, updated_at)
+            VALUES ($1, $2, $3, $4, $5, $6)
+          `,
+            [
+              user.userId,
+              record.content,
+              tags,
+              normalizedTags,
+              record.createdAt,
+              record.updatedAt,
+            ]
+          );
+
+          imported++;
+        }
+
+        await dataSource.query('COMMIT');
+      } catch (error) {
+        await dataSource.query('ROLLBACK');
+        throw error;
+      }
+
+      // Step 4: Return import statistics
+      res.json({
+        imported,
+        skipped,
+        errors,
+      });
+    } catch (error) {
+      console.error('Error importing data:', error);
+      res.status(500).json({
+        error: 'Internal server error while importing data',
       });
     }
   });
