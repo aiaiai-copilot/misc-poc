@@ -797,7 +797,7 @@
             "description": "Create import endpoint with comprehensive JSON validation and format detection",
             "dependencies": ["12.1"],
             "details": "Build POST endpoint accepting multipart/form-data uploads. Implement JSON validation against schemas, automatic format version detection, and preliminary data structure verification before processing.",
-            "status": "in-progress",
+            "status": "done",
             "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
@@ -1423,7 +1423,7 @@
     ],
     "metadata": {
       "created": "2025-09-21T07:42:47.545Z",
-      "updated": "2025-09-30T10:10:13.839Z",
+      "updated": "2025-09-30T10:25:39.880Z",
       "description": "Tasks for mvp context"
     }
   }
