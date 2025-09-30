@@ -111,11 +111,17 @@ If tests timeout:
 
 **Remember**: Performance tests SHOULD take time - this is normal and expected!
 
-### Step 2: Update Subtask Status
+### Step 2: Update Task Status (Before Commit)
 
-- Get current subtask using `tm current --subtask`
-- Update status to done BEFORE commit: `tm set-status --id=<subtask-id> --status=done`
-- If no active subtask found, use current task instead
+1. **Check if this is the last subtask**:
+   - Run `tm show <parent-id>` to see all subtasks
+   - Count how many are already done
+
+2. **Update status(es)**:
+   - Always update current subtask: `tm set-status --id=<subtask-id> --status=done`
+   - **If this is the LAST subtask**: Also update parent: `tm set-status --id=<parent-id> --status=done`
+
+3. **Important**: DO NOT commit yet - status updates will be included in the main commit
 
 ### Step 3: Validation Checklist
 
@@ -151,9 +157,9 @@ Please test:
 
 > **WAITING FOR YOUR RESPONSE...**
 
-### Step 5: Intelligent Commit Process
+### Step 5: Intelligent Commit Process (ONE COMMIT ONLY)
 
-After explicit approval, intelligently stage and commit changes:
+After explicit approval, create ONE commit with all changes:
 
 1. **Get all changed files**: `git status --porcelain`
 2. **Analyze changes** in context of current subtask
@@ -164,6 +170,7 @@ After explicit approval, intelligently stage and commit changes:
    - src/auth/login.ts (authentication logic)
    - tests/auth.test.ts (authentication tests)
    - package.json (added bcrypt dependency)
+   - .taskmaster/tasks/tasks.json (task status update)
 
    Excluded from commit:
    - .env.local (local configuration)
@@ -172,8 +179,18 @@ After explicit approval, intelligently stage and commit changes:
    Proceed with these files? (yes/no/edit)
    ```
 
-4. **After confirmation**, stage only approved files
-5. **Create commit** with meaningful message referencing the subtask
+4. **Stage ALL approved files INCLUDING tasks.json**:
+
+   ```bash
+   git add <implementation-files> .taskmaster/tasks/tasks.json
+   ```
+
+5. **Create ONE commit** with implementation + status updates:
+   - Commit message should describe the feature/fix work
+   - NOT separate "chore" commits for task status
+   - Example: `feat(auth): implement user login (task 5.2)`
+
+⚠️ **CRITICAL**: Never create separate commits just for task status updates!
 
 ### Step 6: Progress Assessment
 

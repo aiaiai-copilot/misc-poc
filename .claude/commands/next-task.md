@@ -218,9 +218,11 @@ Default timeout recommendations:
 
 ### 6. Commit
 
-- [ ] Use intelligent git staging (see commit workflow)
-- [ ] Create meaningful commit message
-- [ ] Update subtask status to done
+- [ ] Update subtask status to done: `tm set-status --id=<subtask-id> --status=done`
+- [ ] **If this is the LAST subtask**: Also update parent status: `tm set-status --id=<parent-id> --status=done`
+- [ ] Stage ALL changes including tasks.json: `git add <changed-files> .taskmaster/tasks/tasks.json`
+- [ ] Create meaningful commit message with feature work (NOT separate chore commits for status)
+- [ ] **ONE commit** should include: implementation changes + task status updates
 
 ### 7. Next Subtask Check
 
