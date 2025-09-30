@@ -842,6 +842,77 @@ export function createApp(config?: AppConfig): express.Application {
     });
   });
 
+  app.get('/api/export', requireAuth, async (req: Request, res: Response) => {
+    try {
+      const user = req.user as { userId: string; email: string };
+
+      // Initialize database connection if not already initialized
+      if (!dataSource.isInitialized) {
+        await dataSource.initialize();
+      }
+
+      // Query all user records
+      const records = await dataSource.query(
+        `
+        SELECT content, created_at, updated_at
+        FROM records
+        WHERE user_id = $1
+        ORDER BY created_at ASC
+      `,
+        [user.userId]
+      );
+
+      // Query user settings for normalization rules
+      const settingsResult = await dataSource.query(
+        `
+        SELECT case_sensitive, remove_accents
+        FROM user_settings
+        WHERE user_id = $1
+      `,
+        [user.userId]
+      );
+
+      // Use default settings if not found
+      const normalizationRules =
+        settingsResult.length > 0
+          ? {
+              caseSensitive: settingsResult[0].case_sensitive,
+              removeAccents: settingsResult[0].remove_accents,
+            }
+          : {
+              caseSensitive: false,
+              removeAccents: true,
+            };
+
+      // Transform records to export format
+      const exportRecords = records.map(
+        (record: { content: string; created_at: Date; updated_at: Date }) => ({
+          content: record.content,
+          createdAt: record.created_at.toISOString(),
+          updatedAt: record.updated_at.toISOString(),
+        })
+      );
+
+      // Build export response in v2.0 format
+      const exportData = {
+        version: '2.0',
+        records: exportRecords,
+        metadata: {
+          exportedAt: new Date().toISOString(),
+          recordCount: exportRecords.length,
+          normalizationRules,
+        },
+      };
+
+      res.json(exportData);
+    } catch (error) {
+      console.error('Error exporting data:', error);
+      res.status(500).json({
+        error: 'Internal server error while exporting data',
+      });
+    }
+  });
+
   // Error handling middleware
   app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
     console.error('Application error:', err);
