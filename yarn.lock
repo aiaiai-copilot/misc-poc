@@ -1490,6 +1490,7 @@ __metadata:
     ts-jest: ^29.0.0
     typescript: ^5.9.2
     uuid: ^9.0.0
+    zod: ^4.1.11
   languageName: unknown
   linkType: soft
 

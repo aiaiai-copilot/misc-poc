@@ -20,7 +20,8 @@
     "clean": "rm -rf dist tsconfig.tsbuildinfo"
   },
   "dependencies": {
-    "uuid": "^9.0.0"
+    "uuid": "^9.0.0",
+    "zod": "^4.1.11"
   },
   "devDependencies": {
     "@types/jest": "^29.0.0",

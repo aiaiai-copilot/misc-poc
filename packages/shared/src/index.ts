@@ -42,3 +42,32 @@ export { ValidationConstants, ValidationRules } from './validation-constants';
 
 // Configuration
 export { DefaultConfig, createConfig, type AppConfig } from './config';
+
+// Export/Import format types and schemas
+export type {
+  ExportRecordV1,
+  ExportFormatV1,
+  ExportRecordV2,
+  NormalizationRules,
+  ExportMetadataV2,
+  ExportFormatV2,
+  ExportFormat,
+  ImportResult,
+} from './export-format';
+
+export {
+  ExportFormatSchema,
+  ExportFormatV1Schema,
+  ExportFormatV2Schema,
+  ExportRecordV1Schema,
+  ExportRecordV2Schema,
+  NormalizationRulesSchema,
+  ExportMetadataV2Schema,
+  ImportResultSchema,
+  type ExportRecordV1Input,
+  type ExportRecordV2Input,
+  type ExportFormatV1Input,
+  type ExportFormatV2Input,
+  type ExportFormatInput,
+  type ImportResultInput,
+} from './export-format-schema';
