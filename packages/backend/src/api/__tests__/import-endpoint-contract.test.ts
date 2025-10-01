@@ -25,7 +25,7 @@ import {
 } from '@testcontainers/postgresql';
 import { AuthService } from '../../auth/index.js';
 
-describe('POST /api/import - Contract Tests', () => {
+describe('[perf] POST /api/import - Contract Tests', () => {
   let app: Express;
   let container: StartedPostgreSqlContainer;
   let dataSource: DataSource;
@@ -647,7 +647,7 @@ describe('POST /api/import - Contract Tests', () => {
       expect(response.body.error).toMatch(/length|size|exceed/i);
     });
 
-    it('should handle maximum allowed record count', async () => {
+    it('[perf] should handle maximum allowed record count', async () => {
       // Create 1000 records (reasonable limit)
       const records = Array.from({ length: 1000 }, (_, i) => ({
         content: `test record ${i}`,
@@ -823,7 +823,7 @@ describe('POST /api/import - Contract Tests', () => {
       expect(response.body.imported).toBe(1);
     });
 
-    it('should handle concurrent import requests safely', async () => {
+    it('[perf] should handle concurrent import requests safely', async () => {
       const importData = {
         version: '2.0',
         records: [

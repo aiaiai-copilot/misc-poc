@@ -32,17 +32,44 @@ yarn build && yarn typecheck && yarn lint && yarn test
 ##### For multi-package or critical changes
 
 ```bash
-# Run from monorepo root (slower: ~3-5 minutes)
-yarn build && yarn typecheck && yarn lint && yarn test
+# Fast validation (excludes integration/perf tests: ~2-3 minutes)
+yarn validate
+
+# Full validation (includes all tests: ~6-8 minutes)
+yarn validate:all
 ```
+
+**🔴 MANDATORY: Use `yarn validate:all` for these changes:**
+
+- Database schema, migrations, queries, or indexes
+- Repository implementations or data access layer
+- Performance optimizations or query tuning
+- API endpoints with database interactions
+- Caching, Redis, or background job implementations
+- Integration between services (API + DB, caching, etc.)
+- Batch operations or large dataset processing
+- Any code touching PostgreSQL/Redis Testcontainers
+
+**⚠️ Use `yarn validate` (fast) ONLY for:**
+
+- UI/frontend changes without backend impact
+- Documentation updates
+- Simple utility functions (pure logic, no I/O)
+- Configuration files (non-database)
+
+**Validation Scripts:**
+
+- `yarn validate` = `yarn build && yarn typecheck && yarn lint && yarn test` (fast, skips [perf])
+- `yarn validate:all` = `yarn build && yarn typecheck && yarn lint && yarn test:all` (includes integration)
+- **When in doubt → use `yarn validate:all`**
 
 ##### Smart validation tips
 
-- Local package checks catch 95% of issues
-- Full monorepo check recommended for:
-  - Changes to shared dependencies
-  - Updates to root configuration
-  - Cross-package functionality
+- Local package checks catch 95% of issues for simple changes
+- **ALWAYS use full validation** (`validate:all`) for:
+  - Database-related changes
+  - Performance-critical code
+  - Integration layer changes
   - Before merging to main branch
 
 #### ⚠️ Docker Check for Integration Test Failures

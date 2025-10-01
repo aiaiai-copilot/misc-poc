@@ -17,7 +17,7 @@ import {
 } from '@testcontainers/postgresql';
 import { DataSource, QueryRunner } from 'typeorm';
 
-describe('Query Performance Optimization Contract', () => {
+describe('[perf] Query Performance Optimization Contract', () => {
   let container: StartedPostgreSqlContainer;
   let dataSource: DataSource;
   let queryRunner: QueryRunner;
@@ -245,7 +245,7 @@ describe('Query Performance Optimization Contract', () => {
       expect(executionTime).toBeLessThan(200);
     });
 
-    it('should efficiently handle tag statistics for power users with 2k+ records', async () => {
+    it('[perf] should efficiently handle tag statistics for power users with 2k+ records', async () => {
       // Create power user with 2k records to test scale
       await insertPowerUserDataset(queryRunner);
 
