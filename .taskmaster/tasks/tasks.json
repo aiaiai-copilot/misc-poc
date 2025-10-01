@@ -383,7 +383,7 @@
             "description": "Implement create method for new user registration and profile management",
             "dependencies": ["6.1"],
             "details": "Implement create method for inserting new users with Google OAuth data. Add profile management capabilities including user metadata handling. Implement proper data validation, duplicate prevention, and return proper User domain objects with generated IDs.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "TDD cycle: Write failing tests → Implement → Refactor. Test implementation meets requirements and passes all validation. Refer to the relevant test specifications in ~/projects/misc-poc/.taskmaster/docs/prd.txt"
           },
           {
@@ -1423,7 +1423,7 @@
     ],
     "metadata": {
       "created": "2025-09-21T07:42:47.545Z",
-      "updated": "2025-10-01T21:28:06.010Z",
+      "updated": "2025-10-01T21:41:15.262Z",
       "description": "Tasks for mvp context"
     }
   }
