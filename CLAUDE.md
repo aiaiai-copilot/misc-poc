@@ -396,8 +396,7 @@ mcp__context7__get -
 **TaskMaster Commands (enforce all workflow rules automatically):**
 
 - `/next-task` - Start work on next priority task
-- `/complete-subtask` - Complete current subtask with validation
-- `/complete-task` - Finalize current task and create PR
+- `/complete-task` - Complete current task with validation (auto-creates PR when entire task done)
 - `/fix-errors <package>` - Fix errors in specific package (for new sessions)
 
 **Commands enforce:**
@@ -421,12 +420,12 @@ Place command files in:
 
 1. **Start**: `/next-task` → Opens prd.txt, starts Batch TDD cycle
 2. **Work**:
-   - Write ALL tests for subtask first (Batch Red phase)
+   - Write ALL tests for current task first (Batch Red phase)
    - Implement until 100% tests are GREEN
    - Refactor while keeping all tests GREEN
-3. **Complete Subtask**: `/complete-subtask` → Validates ALL tests are GREEN, then commits
-4. **Repeat**: For each subtask (with approval between)
-5. **Finish**: `/complete-task` → Final check for 100% GREEN tests, creates PR
+3. **Complete**: `/complete-task` → Validates ALL tests are GREEN, then commits
+4. **Repeat**: For each task (with approval between)
+5. **Auto-PR**: `/complete-task` on final subtask → Auto-detects completion, creates PR automatically
 
 ### New Session Recovery (After Context Loss)
 

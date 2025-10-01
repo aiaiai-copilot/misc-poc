@@ -1,170 +1,246 @@
 # Complete Current Task
 
-Finalize the current task and create pull request.
+Complete the current task with full validation. Automatically detects whether this is a subtask or the final task and handles accordingly.
 
-## 🔴 TASK COMPLETION WORKFLOW
+## 🔴 MANDATORY COMPLETION SEQUENCE
 
-### Phase 1: Completeness Validation
+### Step 1: Final Build Validation (Optimized)
 
-#### Branch and Task Verification
+#### 🔴 MANDATORY TEST VERIFICATION
 
-1. **Verify on correct branch**:
+**STOP! Before ANY completion:**
 
-   ```bash
-   git branch --show-current  # Check current branch
-   tm current                  # Get current task
-   ```
+1. **ALL tests MUST be GREEN** - no exceptions
+2. **Zero failing tests allowed** - fix ALL red tests first
+3. **No skipped tests** - unless explicitly approved by user
+4. **If ANY test is red**: STOP and fix it before proceeding
 
-   - If not on task branch, switch to it first
-   - This ensures Task Master reads correct tasks.json state
+#### Determine validation scope
 
-2. **Validate task completion**:
-   - Get current task using `tm current`
-   - Verify ALL subtasks are complete using `tm list --parent=<task-id>`
-   - Check for any pending or in-progress subtasks
-   - If subtasks remain incomplete, stop and inform user
+1. **Identify changed files**: `git diff --name-only`
+2. **Choose validation strategy**:
 
-### Phase 2: Final Build Validation (Smart)
+##### For single package changes (most common)
 
-#### 🔴 MANDATORY: ALL TESTS MUST BE GREEN
+```bash
+# Navigate to affected package
+cd packages/<package-name>
+# Run local validation (fast: ~30 seconds)
+yarn build && yarn typecheck && yarn lint && yarn test
+```
 
-**ABSOLUTE REQUIREMENT before task completion:**
+##### For multi-package or critical changes
 
-- ✅ 100% of tests must pass - NO EXCEPTIONS
-- 🚫 Zero failing tests allowed
-- 🚫 No skipped tests (unless user explicitly approved)
-- If ANY test is red: STOP and fix before continuing
+```bash
+# Run from monorepo root (slower: ~3-5 minutes)
+yarn build && yarn typecheck && yarn lint && yarn test
+```
 
-#### Smart Validation Check
+##### Smart validation tips
 
-1. **Check for changes since last validation**:
+- Local package checks catch 95% of issues
+- Full monorepo check recommended for:
+  - Changes to shared dependencies
+  - Updates to root configuration
+  - Cross-package functionality
+  - Before merging to main branch
 
-   ```bash
-   git diff HEAD --name-only  # Any uncommitted changes?
-   ```
+#### ⚠️ Docker Check for Integration Test Failures
 
-2. **Decision logic**:
-   - **If NO changes since last commit** AND **last subtask just completed**:
-     - Skip validation (already done in complete-subtask)
-     - Message: "✅ Validation already passed in last subtask completion - skipping redundant check"
-     - Continue to Phase 3
-
-   - **If changes exist** OR **significant time elapsed (>30 min)** OR **uncertainty about last validation**:
-     - Run comprehensive validation:
-
-     ```bash
-     yarn build && yarn typecheck && yarn lint && yarn test
-     ```
-
-3. **E2E tests (if applicable and not recently run)**:
-
-   ```bash
-   # Check if E2E tests exist and when last run
-   yarn test-e2e  # Only if needed
-   ```
-
-#### ⚠️ Docker Check for Test Failures (if running tests)
-
-If integration or E2E tests fail (especially database-related):
+If integration tests fail (especially database-related errors):
 
 1. **Check Docker status**: `docker ps`
-2. **If Docker daemon is not running**, you'll see:
+2. **If Docker daemon is not running**, you'll see an error like:
    - "Cannot connect to the Docker daemon"
    - "Is the Docker daemon running?"
-3. **Request user to start Docker**:
+3. **Ask user to start Docker**:
 
    ```bash
    sudo service docker start
    ```
 
-4. **Wait for Docker to fully start** (5-10 seconds)
-5. **Verify Docker is running**: `docker ps`
-6. **Retry the failed tests**
+4. **Wait for Docker to start** (usually 5-10 seconds)
+5. **Retry the tests** after Docker is running
 
-Common Docker-related test failures:
+Common signs of Docker issues:
 
-- Database connection refused
-- Redis/PostgreSQL/MongoDB timeouts
-- "ECONNREFUSED 127.0.0.1:5432" (or other ports)
-- Container health check failures
-- Test database setup errors
+- Database connection timeouts
+- "ECONNREFUSED" errors on localhost ports
+- Container startup failures
+- "docker: command not found" (Docker not installed)
 
-All checks must pass before proceeding (if validation was needed).
+If ANY command fails, fix errors before proceeding.
 
-#### ✅ FINAL TEST VERIFICATION
+#### ✅ TEST RESULTS VERIFICATION
 
-**Before marking task as done, CONFIRM:**
+After running tests, VERIFY:
 
-- Test output shows "All tests passed" or similar
-- No red/failing indicators in test results
-- Test coverage meets requirements (if specified)
-- E2E tests passed (if applicable)
+- **ALL test suites passed** (look for "PASS" or green checkmarks)
+- **Zero failed tests** (no "FAIL" or red X marks)
+- **Test summary shows 100% passing** (e.g., "Tests: 42 passed, 42 total")
 
-**🚫 TASK CANNOT BE COMPLETED if:**
+**If even ONE test fails:**
 
-- Even ONE test is failing
-- Tests were skipped without approval
-- Build/lint/typecheck errors exist
+1. STOP immediately
+2. Fix the failing test(s)
+3. Re-run ALL tests
+4. Only proceed when 100% tests are GREEN
 
-⚠️ **This is a HARD STOP** - fix all issues before proceeding!
+⚠️ **CRITICAL**: NEVER mark subtask as done with failing tests!
 
 #### ⏱️ TIMEOUT PROTOCOL
 
-If tests timeout during validation:
+If tests timeout:
 
-1. **STOP IMMEDIATELY** - Do not proceed or make assumptions
-2. **INCREASE timeout generously**:
+1. **STOP** - Do not proceed
+2. **INCREASE timeout immediately**:
 
    ```bash
-   # Update jest.config.js or package.json:
-   "jest": {
-     "testTimeout": 300000  # 5+ minutes for comprehensive tests
-   }
+   # Option 1: Update jest.config.js
+   testTimeout: 300000  # 5 minutes minimum
 
-   # Or run with timeout override:
+   # Option 2: Command line
    yarn test --testTimeout=300000
+
+   # Option 3: Per-test timeout
+   jest.setTimeout(300000);
    ```
 
-3. **RE-RUN full validation** with increased timeout
-4. **NEVER:**
-   - Assume partial success = complete success
-   - Reduce test dataset to avoid timeouts
-   - Skip tests to save time
-   - Proceed without 100% test completion
+3. **RE-RUN tests** with increased timeout
+4. **NEVER reduce test coverage** to avoid timeouts
 
-**Performance and integration tests NEED adequate time - this is expected!**
+**Remember**: Performance tests SHOULD take time - this is normal and expected!
 
-### Phase 3: Task Status Update
+### Step 2: Update Task Status (Before Commit)
 
-Mark task as done BEFORE final commit:
+1. **Check if this is the last subtask**:
+   - Run `tm show <parent-id>` to see all subtasks
+   - Count how many are already done
 
-```bash
-tm set-status --id=<task-id> --status=done
-```
+2. **Update status(es)**:
+   - Always update current subtask: `tm set-status --id=<subtask-id> --status=done`
+   - **If this is the LAST subtask**: Also update parent: `tm set-status --id=<parent-id> --status=done`
 
-### Phase 4: Final Approval Gate
+3. **Important**: DO NOT commit yet - status updates will be included in the main commit
 
-## ⚠️ FINAL APPROVAL REQUIRED
+### Step 3: Validation Checklist
 
-**Task is ready for completion.**
+## 📋 VALIDATION CHECKLIST (MANDATORY)
+
+Before marking ANY subtask complete, verify:
+
+- [ ] Build passed
+- [ ] TypeScript passed
+- [ ] Lint passed
+- [ ] **Tests: X/X passed (show EXACT numbers)**
+- [ ] Zero timeouts (if timeout occurred, increased and re-ran)
+- [ ] Zero skipped tests (unless explicitly approved)
+- [ ] Test output explicitly shows "All tests passed" or similar
+
+**🚫 Cannot proceed if ANY item unchecked!**
+
+### Step 4: Manual Testing Approval Gate
+
+## ⚠️ APPROVAL REQUIRED
+
+**The implementation is complete and validated.**
+**Do you want to test manually before committing?**
+
+Please test:
+
+1. Functionality works as expected
+2. No UI/UX regressions
+3. Edge cases handled properly
+4. Performance acceptable
+
+**Type 'yes' or 'proceed' to approve commit, or describe any issues found.**
+
+> **WAITING FOR YOUR RESPONSE...**
+
+### Step 5: Intelligent Commit Process (ONE COMMIT ONLY)
+
+After explicit approval, create ONE commit with all changes:
+
+1. **Get all changed files**: `git status --porcelain`
+2. **Analyze changes** in context of current subtask
+3. **Present filtered list** for approval:
+
+   ```
+   For subtask "Add user authentication", I recommend committing:
+   - src/auth/login.ts (authentication logic)
+   - tests/auth.test.ts (authentication tests)
+   - package.json (added bcrypt dependency)
+   - .taskmaster/tasks/tasks.json (task status update)
+
+   Excluded from commit:
+   - .env.local (local configuration)
+   - debug.log (temporary file)
+
+   Proceed with these files? (yes/no/edit)
+   ```
+
+4. **Stage ALL approved files INCLUDING tasks.json**:
+
+   ```bash
+   git add <implementation-files> .taskmaster/tasks/tasks.json
+   ```
+
+5. **Create ONE commit** with implementation + status updates:
+   - Commit message should describe the feature/fix work
+   - NOT separate "chore" commits for task status
+   - Example: `feat(auth): implement user login (task 5.2)`
+
+⚠️ **CRITICAL**: Never create separate commits just for task status updates!
+
+### Step 6: Progress Assessment & Last Subtask Detection
+
+1. **Check overall task progress** using `tm list --parent=<task-id>`
+2. **Count remaining subtasks** vs completed
+3. **Determine if this is the LAST subtask**:
+
+   ```bash
+   # Get parent task details
+   tm show <parent-id>
+   # Count: done_count + 1 (current) == total_subtasks
+   ```
+
+#### 🎯 If ALL Subtasks Complete (LAST SUBTASK)
+
+**✅ This was the LAST subtask! Automatically proceeding to task completion.**
+
+Skip to **Step 7: Task Completion Flow**
+
+#### 📊 If More Subtasks Remain
+
+- Show progress percentage
+- List remaining subtasks
+- Skip to **Step 8: Next Subtask Gate**
+
+---
+
+### Step 7: Task Completion Flow (ONLY IF LAST SUBTASK)
+
+**🎉 All subtasks complete - finalizing task and creating PR**
+
+#### Phase 1: Final Approval Gate
+
+## ⚠️ FINAL TASK APPROVAL REQUIRED
+
+**All subtasks are complete. Task is ready for finalization.**
 
 ### Pre-Completion Checklist
 
-## 📋 MANDATORY VALIDATION CHECKLIST
+## 📋 FINAL VALIDATION CHECKLIST
 
-- [ ] All subtasks marked as done
-- [ ] Build validation passed
-- [ ] TypeScript validation passed
-- [ ] Lint validation passed
-- [ ] **Tests: X/X passed (MUST show exact numbers)**
-- [ ] Zero test timeouts (or increased and re-ran)
-- [ ] Zero failing tests
-- [ ] Zero skipped tests (unless approved)
-- [ ] Test output shows "All tests passed" or equivalent
-- [ ] Docker running (if using containers)
-- [ ] Code review ready
+- [x] All subtasks marked as done
+- [x] Build validation passed (just verified)
+- [x] TypeScript validation passed (just verified)
+- [x] Lint validation passed (just verified)
+- [x] Tests: 100% passed (just verified)
+- [x] Zero test failures
+- [x] Code review ready
 
-**🚫 STOP if ANY item is unchecked!**
+**✅ All validation passed in last subtask - skipping redundant checks**
 
 **Do you want to perform final manual testing before creating the PR?**
 
@@ -175,35 +251,13 @@ This is your last chance to:
 3. Check for any regressions
 4. Review code quality
 
-**Type 'yes' or 'proceed' to approve, or describe any issues.**
+**Type 'yes' or 'proceed' to approve PR creation, or describe any issues.**
 
 > **WAITING FOR YOUR APPROVAL...**
 
-### Phase 5: Final Commit
+#### Phase 2: Push and Create PR
 
-After approval, intelligently stage and commit:
-
-1. **Review all changes** made during the task
-2. **Analyze changed files** in context of the complete task
-3. **Present summary** for approval, for example:
-
-   ```
-   Task #3.1 "Setup TypeORM" includes these changes:
-   - Database configuration files
-   - Entity definitions
-   - Migration files
-   - Integration tests
-   - Updated dependencies
-
-   Total: 15 files changed
-
-   Review file list? (yes/no)
-   ```
-
-4. **Stage all task-related changes**
-5. **Create comprehensive commit** with task completion message
-
-### Phase 6: Push and Create PR
+After approval:
 
 1. **Verify correct branch before push**:
 
@@ -242,3 +296,69 @@ After approval, intelligently stage and commit:
 
    **⚠️ WARNING**: Only return to main after the ENTIRE task is complete.
    Premature return to main causes Task Master to lose task context!
+
+6. **Success message**:
+
+   ```
+   ✅ Task completed successfully!
+   📝 PR created: [PR URL]
+   🌿 Returned to main branch
+   🎯 Ready for next task
+   ```
+
+**END OF WORKFLOW - Task fully complete!**
+
+---
+
+### Step 8: Next Subtask Gate (ONLY IF MORE SUBTASKS REMAIN)
+
+## 🛑 STOP - Approval Required for Next Subtask
+
+**Subtask has been completed and committed.**
+
+### Current Status
+
+- ✅ Subtask complete
+- 📊 Task Progress: X/Y subtasks done
+- 🌿 Current branch: [show current branch]
+
+### Available Options
+
+1. **Continue with next subtask** (if any remaining)
+2. **Switch to different task**
+3. **Take a break**
+
+**Should I proceed with the next subtask?**
+
+> **WAITING FOR YOUR DECISION...**
+
+If approved to continue:
+
+#### Pre-continuation Branch Check
+
+1. **Verify still on correct branch**:
+
+   ```bash
+   git branch --show-current  # Verify branch
+   tm current                  # Verify task context
+   ```
+
+2. **If branch mismatch detected**:
+   - Alert: "Branch mismatch detected! Currently on [branch] but task requires [task-branch]"
+   - Switch to correct branch before continuing
+3. **Pull latest changes**: `git pull origin <current-branch> --rebase`
+
+#### Then proceed
+
+- Get next subtask from task list
+- Set it to in-progress
+- Remind about checking prd.txt and Context7 docs
+
+## Reminders for Next Subtask
+
+1. **ONE AT A TIME**: Complete fully before moving to next
+2. **TEST SPECS**: Always check prd.txt first
+3. **CONTEXT7**: Get docs before using libraries
+4. **VALIDATION**: Run all checks before completion
+5. **DOCKER CHECK**: Verify Docker is running if integration tests fail
+6. **APPROVAL**: Get manual testing approval before commit

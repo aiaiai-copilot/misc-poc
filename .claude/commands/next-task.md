@@ -208,7 +208,7 @@ Default timeout recommendations:
   - [ ] Retry tests after Docker starts
 - [ ] Fix ALL errors before proceeding
 - [ ] Verify functionality works as expected
-- [ ] **Note**: This validation will be remembered - if this is the last subtask, `/complete-task` will skip redundant validation
+- [ ] **Note**: This validation will be remembered - if this is the last subtask, `/complete-task` will auto-create PR
 
 ### 5. Approval Gate
 
