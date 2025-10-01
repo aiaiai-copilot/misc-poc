@@ -25,7 +25,7 @@ import crypto from 'crypto';
 // Helper function to generate valid UUIDs for testing
 const generateUUID = (): string => crypto.randomUUID();
 
-describe('[perf] Refresh Token Rotation Contract', () => {
+describe('Refresh Token Rotation Contract', () => {
   let container: StartedPostgreSqlContainer;
   let dataSource: DataSource;
   let refreshTokenService: RefreshTokenService;

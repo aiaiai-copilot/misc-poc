@@ -2,14 +2,26 @@ export default {
   '*.{ts,tsx}': [
     'eslint --fix',
     'prettier --write',
-    // NOTE: Tests are NOT run in pre-commit hook
-    // Reasons:
-    // 1. Workflow requires manual testing approval before every commit (see CLAUDE.md)
-    // 2. Developers must run `yarn validate` or `yarn validate:all` before committing
-    // 3. Running tests for entire packages on file changes is slow (even with [perf] exclusion)
-    // 4. CI/CD runs comprehensive test suite on every push
-    //
-    // Pre-commit focuses on code quality (ESLint + Prettier) only
+    (filenames) => {
+      const hasWebFiles = filenames.some(f => f.includes('packages/presentation/web'));
+      const hasDomainFiles = filenames.some(f => f.includes('packages/domain'));
+      const hasApplicationFiles = filenames.some(f => f.includes('packages/application'));
+      const hasInfrastructureFiles = filenames.some(f => f.includes('packages/infrastructure'));
+      const hasSharedFiles = filenames.some(f => f.includes('packages/shared'));
+
+      const commands = [];
+      // Add timeout wrapper for test commands (3 minutes)
+      if (hasWebFiles) commands.push('timeout 180 yarn workspace @misc-poc/presentation-web test');
+      if (hasDomainFiles) commands.push('timeout 180 yarn workspace @misc-poc/domain test');
+      if (hasApplicationFiles) commands.push('timeout 180 yarn workspace @misc-poc/application test');
+      if (hasInfrastructureFiles) {
+        commands.push('timeout 180 yarn workspace @misc-poc/infrastructure-localstorage test');
+        commands.push('timeout 180 yarn workspace @misc-poc/infrastructure-postgresql test');
+      }
+      if (hasSharedFiles) commands.push('timeout 180 yarn workspace @misc-poc/shared test');
+
+      return commands;
+    }
   ],
   '*.{json,md}': ['prettier --write']
 };

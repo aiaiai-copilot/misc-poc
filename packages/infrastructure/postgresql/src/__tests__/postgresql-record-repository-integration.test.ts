@@ -7,7 +7,7 @@ import { createTestDataSource } from '../data-source.js';
 import { PostgreSQLRecordRepository } from '../postgresql-record-repository.js';
 
 // Test using the repository's built-in domain object mapping
-describe('[perf] PostgreSQL Record Repository findByTags Integration Tests', () => {
+describe('PostgreSQL Record Repository findByTags Integration Tests', () => {
   let container: StartedPostgreSqlContainer;
   let dataSource: DataSource;
   let repository: PostgreSQLRecordRepository;

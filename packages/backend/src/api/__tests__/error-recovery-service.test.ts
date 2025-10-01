@@ -12,7 +12,7 @@ import { DataSource } from 'typeorm';
 import { ErrorRecoveryService } from '../services/error-recovery-service.js';
 import { ErrorMessageBuilder } from '../utils/error-messages.js';
 
-describe('[perf] ErrorRecoveryService Integration Tests', () => {
+describe('ErrorRecoveryService Integration Tests', () => {
   let container: StartedPostgreSqlContainer;
   let dataSource: DataSource;
   let service: ErrorRecoveryService;

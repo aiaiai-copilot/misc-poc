@@ -20,7 +20,7 @@ import { MigrationCLI } from '../migration-cli.js';
  * - Error scenarios with real database constraints
  */
 
-describe('[perf] Enhanced Migration Runner - Integration Tests with Testcontainers', () => {
+describe('Enhanced Migration Runner - Integration Tests with Testcontainers', () => {
   let container: StartedPostgreSqlContainer;
   let dataSource: DataSource;
   let migrationRunner: EnhancedMigrationRunner;

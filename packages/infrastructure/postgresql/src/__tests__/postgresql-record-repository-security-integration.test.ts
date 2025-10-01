@@ -8,7 +8,7 @@ import { PostgreSQLRecordRepository } from '../postgresql-record-repository.js';
 import { RecordId, RecordContent, TagId } from '@misc-poc/shared';
 import { Record } from '@misc-poc/domain';
 
-describe('[perf] PostgreSQL Record Repository Security & Data Isolation Integration Tests', () => {
+describe('PostgreSQL Record Repository Security & Data Isolation Integration Tests', () => {
   let container: StartedPostgreSqlContainer;
   let dataSource: DataSource;
   let user1Repository: PostgreSQLRecordRepository;

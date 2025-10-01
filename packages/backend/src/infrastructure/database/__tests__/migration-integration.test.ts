@@ -11,7 +11,7 @@ import { CreateUsersTable1758589440121 } from '../migrations/1758589440121-Creat
  *
  * Now uses Testcontainers for reliable, isolated PostgreSQL testing
  */
-describe('[perf] Database Migration Contract - Integration Tests with Testcontainers', () => {
+describe('Database Migration Contract - Integration Tests with Testcontainers', () => {
   let container: StartedPostgreSqlContainer;
   let dataSource: DataSource;
   let queryRunner: QueryRunner;

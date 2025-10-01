@@ -22,7 +22,7 @@ import { createApp } from '../../app.js';
 import { AuthService } from '../index.js';
 import express from 'express';
 
-describe('[perf] OAuth Flow Integration Tests', () => {
+describe('OAuth Flow Integration Tests', () => {
   let container: StartedPostgreSqlContainer;
   let dataSource: DataSource;
   let app: express.Application;

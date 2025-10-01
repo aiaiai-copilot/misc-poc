@@ -89,7 +89,7 @@ yarn test:validate
 *.test.ts
 *-unit.test.ts
 
-# Integration tests (real dependencies) - Tagged with [perf]
+# Integration tests (real dependencies)
 *-integration.test.ts
 *-contract.test.ts
 
@@ -97,28 +97,6 @@ yarn test:validate
 *.e2e.test.ts
 *.spec.ts
 ```
-
-### Performance Test Separation
-
-Integration tests using Testcontainers are tagged with `[perf]` to enable faster development cycles:
-
-```typescript
-// Tag entire test file when ALL tests use Testcontainers
-describe('[perf] Database Migration Integration Tests', () => {
-  let container: StartedPostgreSqlContainer;
-  // ... all tests in this file are now excluded from `yarn test`
-});
-```
-
-**Test Scripts:**
-
-- `yarn test` - Fast unit tests (excludes [perf] tagged tests) ~2-3 minutes
-- `yarn test:perf` - Only integration/performance tests ~5-6 minutes
-- `yarn test:all` - All tests (unit + integration) ~6-8 minutes
-- `yarn validate` - Fast validation (build + typecheck + lint + test)
-- `yarn validate:all` - Complete validation (includes all tests)
-
-See [.claude/TEST-TAGGING-EXAMPLES.md](../.claude/TEST-TAGGING-EXAMPLES.md) for details on test tagging.
 
 ### Red Flags to Watch For
 

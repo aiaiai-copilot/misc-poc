@@ -5,7 +5,7 @@ import {
 import { DataSource } from 'typeorm';
 import { createTestDataSource } from '../data-source.js';
 
-describe('[perf] Database Migration Integration Tests', () => {
+describe('Database Migration Integration Tests', () => {
   let container: StartedPostgreSqlContainer;
   let dataSource: DataSource;
 

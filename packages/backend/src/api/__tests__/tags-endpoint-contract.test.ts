@@ -14,7 +14,7 @@ import { createApp, AppConfig } from '../../app.js';
 import { AuthService } from '../../auth/index.js';
 import express from 'express';
 
-describe('[perf] GET /api/tags Contract', () => {
+describe('GET /api/tags Contract', () => {
   let container: StartedPostgreSqlContainer;
   let dataSource: DataSource;
   let queryRunner: QueryRunner;

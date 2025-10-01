@@ -7,7 +7,7 @@ import { RecordId, TagId, RecordContent } from '@misc-poc/shared';
 import { Record, DomainError } from '@misc-poc/domain';
 import { PostgreSQLRecordRepository } from '../postgresql-record-repository';
 
-describe('[perf] Record Repository Contract', () => {
+describe('Record Repository Contract', () => {
   let container: StartedPostgreSqlContainer;
   let dataSource: DataSource;
   let repository: PostgreSQLRecordRepository;
