@@ -1345,6 +1345,8 @@ __metadata:
     "@types/passport-jwt": ^4.0.1
     "@types/pg": ^8.11.10
     "@types/redis": ^4.0.11
+    "@types/stream-chain": ^2.1.0
+    "@types/stream-json": ^1.7.8
     "@types/supertest": ^6.0.3
     "@typescript-eslint/eslint-plugin": ^8.0.0
     "@typescript-eslint/parser": ^8.0.0
@@ -1363,6 +1365,7 @@ __metadata:
     pg: ^8.12.0
     redis: ^5.8.2
     reflect-metadata: ^0.2.2
+    stream-json: ^1.9.1
     supertest: ^7.1.4
     ts-jest: ^29.0.0
     ts-node: ^10.0.0
@@ -1510,6 +1513,7 @@ __metadata:
     ts-jest: ^29.0.0
     typescript: ^5.9.2
     uuid: ^9.0.0
+    zod: ^4.1.11
   languageName: unknown
   linkType: soft
 
@@ -3141,6 +3145,25 @@ __metadata:
   version: 2.0.3
   resolution: "@types/stack-utils@npm:2.0.3"
   checksum: 72576cc1522090fe497337c2b99d9838e320659ac57fa5560fcbdcbafcf5d0216c6b3a0a8a4ee4fdb3b1f5e3420aa4f6223ab57b82fef3578bec3206425c6cf5
+  languageName: node
+  linkType: hard
+
+"@types/stream-chain@npm:*, @types/stream-chain@npm:^2.1.0":
+  version: 2.1.0
+  resolution: "@types/stream-chain@npm:2.1.0"
+  dependencies:
+    "@types/node": "*"
+  checksum: 0cc764e01abb0d86725081206751f1dd1c52ba147c2d15b03698aa373ad06ff0085afd577b92927347d288539803af78166314a4f50c2d17d275cb911ee92a29
+  languageName: node
+  linkType: hard
+
+"@types/stream-json@npm:^1.7.8":
+  version: 1.7.8
+  resolution: "@types/stream-json@npm:1.7.8"
+  dependencies:
+    "@types/node": "*"
+    "@types/stream-chain": "*"
+  checksum: c36bb76343199bdbc290ca99afa951da0a970b42f2020ec0f1de2224f723f0324e6edbfc156e9b27eb5c60c1153849f8ce5a942979588b7a78401832a48a061d
   languageName: node
   linkType: hard
 
@@ -9578,6 +9601,22 @@ __metadata:
   version: 3.9.0
   resolution: "std-env@npm:3.9.0"
   checksum: d40126e4a650f6e5456711e6c297420352a376ef99a9599e8224d2d8f2ff2b91a954f3264fcef888d94fce5c9ae14992c5569761c95556fc87248ce4602ed212
+  languageName: node
+  linkType: hard
+
+"stream-chain@npm:^2.2.5":
+  version: 2.2.5
+  resolution: "stream-chain@npm:2.2.5"
+  checksum: c83cbf504bd11e2bcbe761a92801295b3decac7ffa4092ceffca2eb1b5d0763bcc511fa22cd8044e8a18c21ca66794fd10c8d9cd1292a3e6c0d83a4194c6b8ed
+  languageName: node
+  linkType: hard
+
+"stream-json@npm:^1.9.1":
+  version: 1.9.1
+  resolution: "stream-json@npm:1.9.1"
+  dependencies:
+    stream-chain: ^2.2.5
+  checksum: 2ebf0648f9ed82ee79727a9a47805231a70d5032e0c21cee3e05cd3c449d3ce49c72b371555447eeef55904bae22ac64be8ae6086fc6cce0b83b3aa617736b64
   languageName: node
   linkType: hard
 

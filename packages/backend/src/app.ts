@@ -12,6 +12,9 @@ import {
   RedisCacheService,
   getCacheConfig,
 } from '@misc-poc/infrastructure-cache';
+import { handleImportWithProgress } from './api/streaming-import-with-progress.js';
+import { handleExportWithProgress } from './api/streaming-export-with-progress.js';
+import { progressTracker } from './api/progress-tracker.js';
 
 export interface AppConfig {
   cors?: {
@@ -280,8 +283,14 @@ export function createApp(config?: AppConfig): express.Application {
   );
 
   // Basic middleware
-  app.use(express.json());
-  app.use(express.urlencoded({ extended: true }));
+  // Configure JSON parser with 5MB limit for large imports
+  app.use(
+    express.json({
+      limit: '5mb',
+      strict: false, // Allow more JSON parsing flexibility
+    })
+  );
+  app.use(express.urlencoded({ extended: true, limit: '5mb' }));
   app.use(cookieParser());
 
   // CORS middleware
@@ -842,9 +851,125 @@ export function createApp(config?: AppConfig): express.Application {
     });
   });
 
+  app.get('/api/export', requireAuth, async (req: Request, res: Response) => {
+    try {
+      // Use new export handler with progress tracking support
+      await handleExportWithProgress(req, res, dataSource, {
+        chunkSize: 500,
+      });
+    } catch (error) {
+      console.error('Error exporting data:', error);
+      res.status(500).json({
+        error: 'Internal server error while exporting data',
+      });
+    }
+  });
+
+  app.post('/api/import', requireAuth, async (req: Request, res: Response) => {
+    try {
+      // Initialize database connection if not already initialized
+      if (!dataSource.isInitialized) {
+        await dataSource.initialize();
+      }
+
+      // Use new import handler with progress tracking support
+      await handleImportWithProgress(req, res, dataSource, {
+        chunkSize: 500,
+        maxRecords: 50000,
+      });
+    } catch (error) {
+      console.error('Error importing data:', error);
+      res.status(500).json({
+        error: 'Internal server error while importing data',
+      });
+    }
+  });
+
+  // Progress tracking endpoints (Server-Sent Events)
+  app.get(
+    '/api/import/progress/:sessionId',
+    requireAuth,
+    (req: Request, res: Response) => {
+      const sessionId = req.params.sessionId;
+      const user = req.user as { userId: string; email: string };
+
+      // Check if sessionId is provided
+      if (!sessionId) {
+        res.status(404).json({
+          error: 'Session ID is required',
+        });
+        return;
+      }
+
+      // Validate session belongs to user
+      if (!progressTracker.validateSession(sessionId, user.userId)) {
+        res.status(403).json({
+          error: 'Access denied to this progress session',
+        });
+        return;
+      }
+
+      // Attach SSE response
+      progressTracker.attachSSE(sessionId, res);
+    }
+  );
+
+  app.get(
+    '/api/export/progress/:sessionId',
+    requireAuth,
+    (req: Request, res: Response) => {
+      const sessionId = req.params.sessionId;
+      const user = req.user as { userId: string; email: string };
+
+      // Check if sessionId is provided
+      if (!sessionId) {
+        res.status(404).json({
+          error: 'Session ID is required',
+        });
+        return;
+      }
+
+      // Validate session belongs to user
+      if (!progressTracker.validateSession(sessionId, user.userId)) {
+        res.status(403).json({
+          error: 'Access denied to this progress session',
+        });
+        return;
+      }
+
+      // Attach SSE response
+      progressTracker.attachSSE(sessionId, res);
+    }
+  );
+
   // Error handling middleware
   app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
     console.error('Application error:', err);
+
+    // Handle JSON parsing errors
+    if (
+      err.message.includes('JSON') ||
+      err.message.includes('parse') ||
+      err.message.includes('Unexpected token') ||
+      (err as { type?: string }).type === 'entity.parse.failed'
+    ) {
+      return res.status(400).json({
+        error: 'Invalid JSON format',
+        code: 'INVALID_JSON',
+      });
+    }
+
+    // Handle payload too large errors
+    if (
+      err.message.includes('request entity too large') ||
+      err.message.includes('PayloadTooLarge') ||
+      (err as { type?: string }).type === 'entity.too.large'
+    ) {
+      return res.status(413).json({
+        error: 'Request payload too large. Maximum size is 5MB.',
+        code: 'PAYLOAD_TOO_LARGE',
+      });
+    }
 
     if (
       err.message.includes('Network failure') ||
