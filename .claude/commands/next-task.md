@@ -20,16 +20,30 @@ Begin work on the next task following TaskMaster workflow rules.
 
 ### BUILD VALIDATION MANDATORY
 
-- Before ANY commit, validate changes smartly:
-  1. **For single package changes**: Run local checks first
-     - Navigate to package directory: `cd packages/<package-name>`
+- Before ANY commit, validate changes based on what you changed:
+  1. **For simple single package changes** (UI, docs, simple utils):
+     - Navigate to package: `cd packages/<package-name>`
      - Run: `yarn build && yarn typecheck && yarn lint && yarn test`
-     - These local checks are much faster (seconds vs minutes)
-     - If local checks pass, optionally run full monorepo validation
-  2. **For multi-package or root changes**: Run full validation
-     - From root: `yarn build && yarn typecheck && yarn lint && yarn test`
-- If ANY command fails, fix errors before proceeding
-- This applies to EVERY subtask and main task
+     - Fast local checks (~30 seconds)
+
+  2. **For database/performance/integration changes**:
+     - **🔴 MANDATORY**: Run from root: `yarn validate:all` (~6-8 minutes)
+     - **MUST use `validate:all` when changing:**
+       - Database (schema, migrations, queries, indexes)
+       - Repository layer or data access code
+       - Performance code (query optimization, caching)
+       - API + DB integration
+       - Redis, background jobs, async operations
+       - Batch processing or large datasets
+       - Any code tested by Testcontainers
+
+  3. **For other multi-package changes**:
+     - **Fast option**: `yarn validate` (~2-3 minutes, skips [perf] tests)
+     - **When in doubt**: `yarn validate:all` (safer, includes integration)
+
+- **If ANY command fails**, fix errors before proceeding
+- **This applies to EVERY subtask and main task**
+- **Integration tests exist for a reason** - don't skip them when they matter!
 
 ### DOCKER CHECK FOR TEST FAILURES
 
@@ -198,10 +212,12 @@ Default timeout recommendations:
 - [ ] **Single package changes** (most common):
   - [ ] Navigate to package: `cd packages/<package-name>`
   - [ ] Run local validation: `yarn build && yarn typecheck && yarn lint && yarn test`
-  - [ ] Time saved: ~30 seconds vs ~3-5 minutes for full check
+  - [ ] Time saved: ~30 seconds vs ~2-3 minutes for full check
   - [ ] Optional: Run full monorepo check if critical changes
 - [ ] **Multi-package or root changes**:
-  - [ ] Run from root: `yarn build && yarn typecheck && yarn lint && yarn test`
+  - [ ] **Fast validation**: `yarn validate` (~2-3 minutes, skips [perf] tests)
+  - [ ] **OR Complete validation**: `yarn validate:all` (~6-8 minutes, all tests)
+  - [ ] Use `validate` during development, `validate:all` before final commit
 - [ ] **If integration tests fail**:
   - [ ] Check Docker status: `docker ps`
   - [ ] If Docker not running, ask user: `sudo service docker start`

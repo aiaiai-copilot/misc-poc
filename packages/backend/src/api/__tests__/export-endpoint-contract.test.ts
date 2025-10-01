@@ -22,7 +22,7 @@ import {
 } from '@testcontainers/postgresql';
 import { AuthService } from '../../auth/index.js';
 
-describe('GET /api/export - Contract Tests', () => {
+describe('[perf] GET /api/export - Contract Tests', () => {
   let app: Express;
   let container: StartedPostgreSqlContainer;
   let dataSource: DataSource;

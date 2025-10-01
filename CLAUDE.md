@@ -76,9 +76,50 @@ This project uses a **Batch TDD approach** that differs from traditional TDD:
 
 **All code must pass quality checks before commit**
 
-- Required checks: `yarn build && yarn typecheck && yarn lint && yarn test`
+- **Standard validation**: `yarn validate` (build + typecheck + lint + test)
+  - Excludes performance tests tagged with `[perf]` for faster feedback
+  - Use during development for quick validation
+  - **⚠️ Only for non-critical changes** (UI fixes, documentation, simple logic)
+
+- **Comprehensive validation**: `yarn validate:all` (build + typecheck + lint + test:all)
+  - Includes ALL tests (regular + performance + integration)
+  - **🔴 MANDATORY for these changes:**
+    - Database schema, migrations, or queries
+    - Repository implementations or data access layer
+    - Performance-critical code or optimizations
+    - Integration between multiple services
+    - Caching, background jobs, or async operations
+    - API contracts with database interactions
+    - Any code touching Testcontainer-tested functionality
+  - Use before final commits or in CI/CD
+
 - No commit should be made if any check fails
 - Fix all errors before proceeding
+
+**🔴 CRITICAL RULE: When in doubt, use `yarn validate:all`**
+
+If your changes involve:
+
+- ❌ Database (PostgreSQL, Redis, migrations)
+- ❌ Performance (queries, indexes, optimizations)
+- ❌ Integration (API + DB, caching, async jobs)
+- ❌ Repository layer or data access
+- ❌ Batch operations or large datasets
+
+→ **You MUST run `yarn validate:all`** to ensure integration tests pass!
+
+**Test Script Variants:**
+
+```bash
+yarn test        # Regular tests only (excludes [perf] tagged tests)
+yarn test:perf   # Performance tests only ([perf] tagged tests)
+yarn test:all    # All tests (regular + performance)
+```
+
+See [.claude/TEST-TAGGING-EXAMPLES.md](.claude/TEST-TAGGING-EXAMPLES.md) for details on performance test tagging.
+
+**🔴 CRITICAL**: See [.claude/VALIDATION-RULES.md](.claude/VALIDATION-RULES.md) for **mandatory** validation rules.
+**Future sessions: READ THIS DOCUMENT to understand when `validate:all` is REQUIRED!**
 
 #### 🔴 CRITICAL: Test Validation Protocol
 

@@ -25,7 +25,7 @@ import {
 } from '@testcontainers/postgresql';
 import { AuthService } from '../../auth/index.js';
 
-describe('Progress Reporting for Import/Export Operations', () => {
+describe('[perf] Progress Reporting for Import/Export Operations', () => {
   let app: Express;
   let container: StartedPostgreSqlContainer;
   let dataSource: DataSource;
@@ -815,7 +815,7 @@ describe('Progress Reporting for Import/Export Operations', () => {
       expect(response.body).not.toHaveProperty('sessionId');
     });
 
-    it('should send progress updates during export with large dataset', async () => {
+    it('[perf] should send progress updates during export with large dataset', async () => {
       await insertExportRecords(1000); // Insert records needed for this specific test
 
       const startResponse = await request(app)
@@ -1003,7 +1003,7 @@ describe('Progress Reporting for Import/Export Operations', () => {
       expect([200, 404]).toContain(response.status);
     }, 30000);
 
-    it('should support multiple concurrent progress sessions', async () => {
+    it('[perf] should support multiple concurrent progress sessions', async () => {
       const importData1 = {
         version: '2.0',
         records: Array.from({ length: 500 }, (_, i) => ({

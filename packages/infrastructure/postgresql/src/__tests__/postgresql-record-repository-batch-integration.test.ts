@@ -8,7 +8,7 @@ import { PostgreSQLRecordRepository } from '../postgresql-record-repository.js';
 import { Record, DomainError } from '@misc-poc/domain';
 import { RecordId, RecordContent, TagId } from '@misc-poc/shared';
 
-describe('PostgreSQL Record Repository Batch Operations Integration Tests', () => {
+describe('[perf] PostgreSQL Record Repository Batch Operations Integration Tests', () => {
   let container: StartedPostgreSqlContainer;
   let dataSource: DataSource;
   let repository: PostgreSQLRecordRepository;

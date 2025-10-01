@@ -19,7 +19,7 @@ import { ExtendMigrationsTableWithChecksumAndVersion1758589440122 } from '../mig
  *
  * Now uses Testcontainers for reliable, isolated testing
  */
-describe('Migration Runner Contract Tests with Testcontainers', () => {
+describe('[perf] Migration Runner Contract Tests with Testcontainers', () => {
   let container: StartedPostgreSqlContainer;
   let dataSource: DataSource;
 
