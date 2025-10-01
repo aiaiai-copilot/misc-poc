@@ -194,6 +194,12 @@ export class CreateMiscSchema1704067200000 implements MigrationInterface {
       true
     );
 
+    // Create performance indexes for users table using raw SQL for better control
+    await queryRunner.query(
+      'CREATE INDEX idx_users_google_id ON users(google_id);'
+    );
+    await queryRunner.query('CREATE INDEX idx_users_email ON users(email);');
+
     // Create performance indexes for records table using raw SQL for better control
     await queryRunner.query(
       'CREATE INDEX idx_records_user_id ON records(user_id);'
@@ -213,6 +219,8 @@ export class CreateMiscSchema1704067200000 implements MigrationInterface {
       'DROP INDEX IF EXISTS idx_records_normalized_tags_gin;'
     );
     await queryRunner.query('DROP INDEX IF EXISTS idx_records_user_id;');
+    await queryRunner.query('DROP INDEX IF EXISTS idx_users_email;');
+    await queryRunner.query('DROP INDEX IF EXISTS idx_users_google_id;');
 
     // Drop tables in reverse order (foreign key dependencies)
     await queryRunner.dropTable('user_settings');
