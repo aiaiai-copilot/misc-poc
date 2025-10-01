@@ -2,6 +2,15 @@ import { DataSource } from 'typeorm';
 import { Result, Ok, Err, RecordId } from '@misc-poc/shared';
 import { User, GoogleId, UserSettings, DomainError } from '@misc-poc/domain';
 import { UserRepository } from '@misc-poc/application';
+import { classifyPostgresError } from './errors';
+import {
+  createRepositoryLogger,
+  logOperation,
+  startTimer,
+  logError,
+  logDebug,
+} from './logger';
+import { withRetry, DEFAULT_RETRY_CONFIG } from './retry';
 
 /**
  * PostgreSQL implementation of User Repository
@@ -12,8 +21,16 @@ import { UserRepository } from '@misc-poc/application';
  * - Handles proper connection management with QueryRunner
  * - Returns Result types for error handling
  * - Manages both users and user_settings tables
+ *
+ * Enhanced with (Task 6.6):
+ * - Comprehensive error handling with custom error types
+ * - Structured logging with Pino
+ * - Retry logic for transient failures
+ * - Performance monitoring
  */
 export class PostgreSQLUserRepository implements UserRepository {
+  private readonly logger = createRepositoryLogger('PostgreSQLUserRepository');
+
   constructor(private readonly dataSource: DataSource) {}
 
   /**
@@ -23,40 +40,85 @@ export class PostgreSQLUserRepository implements UserRepository {
   async findByGoogleId(
     googleId: GoogleId
   ): Promise<Result<User | null, DomainError>> {
-    const queryRunner = this.dataSource.createQueryRunner();
-    try {
-      // Query user by Google ID with a join to get settings
-      const result = await queryRunner.query(
-        `
-        SELECT
-          u.id, u.email, u.google_id, u.display_name, u.avatar_url,
-          u.created_at, u.updated_at, u.last_login_at,
-          s.case_sensitive, s.remove_accents, s.max_tag_length,
-          s.max_tags_per_record, s.ui_language
-        FROM users u
-        LEFT JOIN user_settings s ON u.id = s.user_id
-        WHERE u.google_id = $1
-        `,
-        [googleId.toString()]
-      );
+    const getTimer = startTimer();
+    const operation = 'findByGoogleId';
 
-      if (result.length === 0) {
-        return Ok(null);
-      }
+    logDebug(this.logger, `${operation} started`, {
+      google_id: googleId.toString().substring(0, 10) + '...',
+    });
 
-      const row = result[0];
-      const user = this.mapRowToUser(row);
-      return Ok(user);
-    } catch (error) {
-      return Err(
-        new DomainError(
-          'USER_FIND_ERROR',
-          `Failed to find user by Google ID: ${(error as Error).message}`
-        )
-      );
-    } finally {
-      await queryRunner.release();
-    }
+    return withRetry(
+      async () => {
+        const queryRunner = this.dataSource.createQueryRunner();
+        try {
+          // Query user by Google ID with a join to get settings
+          const result = await queryRunner.query(
+            `
+            SELECT
+              u.id, u.email, u.google_id, u.display_name, u.avatar_url,
+              u.created_at, u.updated_at, u.last_login_at,
+              s.case_sensitive, s.remove_accents, s.max_tag_length,
+              s.max_tags_per_record, s.ui_language
+            FROM users u
+            LEFT JOIN user_settings s ON u.id = s.user_id
+            WHERE u.google_id = $1
+            `,
+            [googleId.toString()]
+          );
+
+          const durationMs = getTimer();
+
+          if (result.length === 0) {
+            logOperation(this.logger, {
+              operation,
+              repository: 'PostgreSQLUserRepository',
+              durationMs,
+              success: true,
+              context: { found: false },
+            });
+            return Ok(null);
+          }
+
+          const row = result[0];
+          const user = this.mapRowToUser(row);
+
+          logOperation(this.logger, {
+            operation,
+            repository: 'PostgreSQLUserRepository',
+            durationMs,
+            userId: user.id.toString(),
+            email: user.email,
+            success: true,
+            context: { found: true },
+          });
+
+          return Ok(user);
+        } catch (error) {
+          const durationMs = getTimer();
+          const domainError = classifyPostgresError(error as Error);
+
+          logOperation(this.logger, {
+            operation,
+            repository: 'PostgreSQLUserRepository',
+            durationMs,
+            success: false,
+            errorCode: domainError.code,
+            errorMessage: domainError.message,
+          });
+
+          logError(this.logger, error as Error, {
+            operation,
+            google_id: googleId.toString(),
+          });
+
+          return Err(domainError);
+        } finally {
+          await queryRunner.release();
+        }
+      },
+      this.logger,
+      DEFAULT_RETRY_CONFIG
+    );
   }
 
   /**
@@ -64,111 +126,125 @@ export class PostgreSQLUserRepository implements UserRepository {
    * Also creates associated user_settings record
    */
   async create(user: User): Promise<Result<User, DomainError>> {
-    const queryRunner = this.dataSource.createQueryRunner();
-    try {
-      await queryRunner.connect();
-      await queryRunner.startTransaction();
+    const getTimer = startTimer();
+    const operation = 'create';
 
-      // Insert user
-      const userResult = await queryRunner.query(
-        `
-        INSERT INTO users (
-          id, email, google_id, display_name, avatar_url,
-          created_at, updated_at, last_login_at
-        )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-        RETURNING id, email, google_id, display_name, avatar_url,
-                  created_at, updated_at, last_login_at
-        `,
-        [
-          user.id.toString(),
-          user.email,
-          user.googleId.toString(),
-          user.displayName,
-          user.avatarUrl,
-          user.createdAt,
-          user.updatedAt,
-          user.lastLoginAt,
-        ]
-      );
+    logDebug(this.logger, `${operation} started`, {
+      email: user.email,
+      google_id: user.googleId.toString().substring(0, 10) + '...',
+    });
 
-      // Insert user settings
-      await queryRunner.query(
-        `
-        INSERT INTO user_settings (
-          user_id, case_sensitive, remove_accents, max_tag_length,
-          max_tags_per_record, ui_language, created_at, updated_at
-        )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-        `,
-        [
-          user.id.toString(),
-          user.settings.caseSensitive,
-          user.settings.removeAccents,
-          user.settings.maxTagLength,
-          user.settings.maxTagsPerRecord,
-          user.settings.uiLanguage,
-          user.createdAt,
-          user.updatedAt,
-        ]
-      );
+    return withRetry(
+      async () => {
+        const queryRunner = this.dataSource.createQueryRunner();
+        try {
+          await queryRunner.connect();
+          await queryRunner.startTransaction();
 
-      await queryRunner.commitTransaction();
-
-      // Return created user by mapping the database result
-      const createdRow = userResult[0];
-      const createdUser = new User(
-        new RecordId(createdRow.id),
-        createdRow.email,
-        GoogleId.create(createdRow.google_id),
-        createdRow.display_name,
-        createdRow.avatar_url,
-        user.settings,
-        new Date(createdRow.created_at),
-        new Date(createdRow.updated_at),
-        createdRow.last_login_at ? new Date(createdRow.last_login_at) : null
-      );
-
-      return Ok(createdUser);
-    } catch (error) {
-      // Only rollback if transaction was started
-      if (queryRunner.isTransactionActive) {
-        await queryRunner.rollbackTransaction();
-      }
-
-      // Handle unique constraint violations
-      const errorMessage = (error as Error).message;
-      if (
-        errorMessage.includes('duplicate key') ||
-        errorMessage.includes('unique')
-      ) {
-        if (errorMessage.includes('email')) {
-          return Err(
-            new DomainError(
-              'DUPLICATE_EMAIL',
-              'A user with this email already exists'
+          // Insert user
+          const userResult = await queryRunner.query(
+            `
+            INSERT INTO users (
+              id, email, google_id, display_name, avatar_url,
+              created_at, updated_at, last_login_at
             )
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+            RETURNING id, email, google_id, display_name, avatar_url,
+                      created_at, updated_at, last_login_at
+            `,
+            [
+              user.id.toString(),
+              user.email,
+              user.googleId.toString(),
+              user.displayName,
+              user.avatarUrl,
+              user.createdAt,
+              user.updatedAt,
+              user.lastLoginAt,
+            ]
           );
-        }
-        if (errorMessage.includes('google_id')) {
-          return Err(
-            new DomainError(
-              'DUPLICATE_GOOGLE_ID',
-              'A user with this Google ID already exists'
-            )
-          );
-        }
-      }
 
-      return Err(
-        new DomainError(
-          'USER_CREATE_ERROR',
-          `Failed to create user: ${errorMessage}`
-        )
-      );
-    } finally {
-      await queryRunner.release();
-    }
+          // Insert user settings
+          await queryRunner.query(
+            `
+            INSERT INTO user_settings (
+              user_id, case_sensitive, remove_accents, max_tag_length,
+              max_tags_per_record, ui_language, created_at, updated_at
+            )
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+            `,
+            [
+              user.id.toString(),
+              user.settings.caseSensitive,
+              user.settings.removeAccents,
+              user.settings.maxTagLength,
+              user.settings.maxTagsPerRecord,
+              user.settings.uiLanguage,
+              user.createdAt,
+              user.updatedAt,
+            ]
+          );
+
+          await queryRunner.commitTransaction();
+
+          // Return created user by mapping the database result
+          const createdRow = userResult[0];
+          const createdUser = new User(
+            new RecordId(createdRow.id),
+            createdRow.email,
+            GoogleId.create(createdRow.google_id),
+            createdRow.display_name,
+            createdRow.avatar_url,
+            user.settings,
+            new Date(createdRow.created_at),
+            new Date(createdRow.updated_at),
+            createdRow.last_login_at ? new Date(createdRow.last_login_at) : null
+          );
+
+          const durationMs = getTimer();
+          logOperation(this.logger, {
+            operation,
+            repository: 'PostgreSQLUserRepository',
+            durationMs,
+            userId: createdUser.id.toString(),
+            email: createdUser.email,
+            success: true,
+          });
+
+          return Ok(createdUser);
+        } catch (error) {
+          // Only rollback if transaction was started
+          if (queryRunner.isTransactionActive) {
+            await queryRunner.rollbackTransaction();
+          }
+
+          const durationMs = getTimer();
+          const domainError = classifyPostgresError(error as Error);
+
+          logOperation(this.logger, {
+            operation,
+            repository: 'PostgreSQLUserRepository',
+            durationMs,
+            email: user.email,
+            success: false,
+            errorCode: domainError.code,
+            errorMessage: domainError.message,
+          });
+
+          logError(this.logger, error as Error, {
+            operation,
+            user_id: user.id.toString(),
+            email: user.email,
+          });
+
+          return Err(domainError);
+        } finally {
+          await queryRunner.release();
+        }
+      },
+      this.logger,
+      DEFAULT_RETRY_CONFIG
+    );
   }
 
   /**
