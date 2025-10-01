@@ -24,20 +24,17 @@ export default {
       if (hasBackendFiles) commands.push('yarn workspace @misc-poc/backend typecheck');
       if (hasWebFiles) commands.push('yarn workspace @misc-poc/presentation-web typecheck');
 
-      // Use fast tests only (exclude [perf] tagged integration tests)
-      // Pattern excludes tests with [perf] in describe/it names
-      const testPattern = '--testNamePattern="^(?:(?!perf).)*$"';
-
-      if (hasSharedFiles) commands.push(`yarn workspace @misc-poc/shared test ${testPattern}`);
-      if (hasDomainFiles) commands.push(`yarn workspace @misc-poc/domain test ${testPattern}`);
-      if (hasApplicationFiles) commands.push(`yarn workspace @misc-poc/application test ${testPattern}`);
+      // Add timeout wrapper for test commands (5 minutes for packages with integration tests)
+      if (hasSharedFiles) commands.push('timeout 180 yarn workspace @misc-poc/shared test');
+      if (hasDomainFiles) commands.push('timeout 180 yarn workspace @misc-poc/domain test');
+      if (hasApplicationFiles) commands.push('timeout 180 yarn workspace @misc-poc/application test');
       if (hasInfrastructureFiles) {
-        commands.push(`yarn workspace @misc-poc/infrastructure-cache test ${testPattern}`);
-        commands.push(`yarn workspace @misc-poc/infrastructure-localstorage test ${testPattern}`);
-        commands.push(`yarn workspace @misc-poc/infrastructure-postgresql test ${testPattern}`);
+        commands.push('timeout 180 yarn workspace @misc-poc/infrastructure-localstorage test');
+        // PostgreSQL package has extensive integration tests that need more time
+        commands.push('timeout 300 yarn workspace @misc-poc/infrastructure-postgresql test');
       }
-      if (hasBackendFiles) commands.push(`yarn workspace @misc-poc/backend test ${testPattern}`);
-      if (hasWebFiles) commands.push(`yarn workspace @misc-poc/presentation-web test ${testPattern}`);
+      if (hasBackendFiles) commands.push('timeout 180 yarn workspace @misc-poc/backend test');
+      if (hasWebFiles) commands.push('timeout 180 yarn workspace @misc-poc/presentation-web test');
 
       return commands;
     }
