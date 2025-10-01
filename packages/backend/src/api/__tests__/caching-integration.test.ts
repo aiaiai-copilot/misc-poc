@@ -19,7 +19,7 @@ import {
 } from '@testcontainers/postgresql';
 import { GenericContainer, StartedTestContainer } from 'testcontainers';
 
-describe('API Cache Integration - /api/tags endpoint', () => {
+describe('[perf] API Cache Integration - /api/tags endpoint', () => {
   let redisContainer: StartedTestContainer;
   let postgresContainer: StartedPostgreSqlContainer;
   let dataSource: DataSource;
@@ -245,7 +245,7 @@ describe('API Cache Integration - /api/tags endpoint', () => {
   });
 });
 
-describe('API Cache Integration - /api/tags/suggest endpoint', () => {
+describe('[perf] API Cache Integration - /api/tags/suggest endpoint', () => {
   let redisContainer: StartedTestContainer;
   let postgresContainer: StartedPostgreSqlContainer;
   let dataSource: DataSource;
@@ -473,7 +473,7 @@ describe('API Cache Integration - /api/tags/suggest endpoint', () => {
   });
 });
 
-describe('API Cache Integration - Record Operations & Cache Invalidation', () => {
+describe('[perf] API Cache Integration - Record Operations & Cache Invalidation', () => {
   let redisContainer: StartedTestContainer;
   let postgresContainer: StartedPostgreSqlContainer;
   let dataSource: DataSource;
@@ -564,7 +564,7 @@ describe('API Cache Integration - Record Operations & Cache Invalidation', () =>
   });
 });
 
-describe('API Cache Integration - Cache Warming & Background Jobs', () => {
+describe('[perf] API Cache Integration - Cache Warming & Background Jobs', () => {
   let redisContainer: StartedTestContainer;
   let postgresContainer: StartedPostgreSqlContainer;
   let dataSource: DataSource;
@@ -703,7 +703,7 @@ describe('API Cache Integration - Cache Warming & Background Jobs', () => {
   });
 });
 
-describe('API Cache Integration - Metrics & Monitoring', () => {
+describe('[perf] API Cache Integration - Metrics & Monitoring', () => {
   let redisContainer: StartedTestContainer;
   let cacheService: RedisCacheService;
 
@@ -763,7 +763,7 @@ describe('API Cache Integration - Metrics & Monitoring', () => {
   });
 });
 
-describe('API Cache Integration - Production Scenarios', () => {
+describe('[perf] API Cache Integration - Production Scenarios', () => {
   let redisContainer: StartedTestContainer;
   let cacheService: RedisCacheService;
 

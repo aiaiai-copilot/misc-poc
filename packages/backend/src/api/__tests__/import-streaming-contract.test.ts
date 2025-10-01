@@ -23,7 +23,7 @@ import {
 } from '@testcontainers/postgresql';
 import { AuthService } from '../../auth/index.js';
 
-describe('POST /api/import - Streaming and File Size Limits', () => {
+describe('[perf] POST /api/import - Streaming and File Size Limits', () => {
   let app: Express;
   let container: StartedPostgreSqlContainer;
   let dataSource: DataSource;
@@ -254,7 +254,7 @@ describe('POST /api/import - Streaming and File Size Limits', () => {
   });
 
   describe('Streaming JSON Parsing', () => {
-    it('should process large datasets efficiently with streaming', async () => {
+    it('[perf] should process large datasets efficiently with streaming', async () => {
       // Create a large dataset (10k records)
       const largeRecords = Array.from({ length: 10000 }, (_, i) => ({
         content: `test record ${i} with some tags`,
@@ -360,7 +360,7 @@ describe('POST /api/import - Streaming and File Size Limits', () => {
   });
 
   describe('Chunked Processing', () => {
-    it('should process records in chunks for large imports', async () => {
+    it('[perf] should process records in chunks for large imports', async () => {
       // Create a large dataset to test chunked processing
       const largeRecords = Array.from({ length: 5000 }, (_, i) => ({
         content: `chunked record ${i}`,
@@ -397,7 +397,7 @@ describe('POST /api/import - Streaming and File Size Limits', () => {
       expect(parseInt(dbRecords[0].count)).toBe(5000);
     }, 120000); // 2 minutes for large dataset
 
-    it('should maintain import statistics accuracy with chunked processing', async () => {
+    it('[perf] should maintain import statistics accuracy with chunked processing', async () => {
       // Import initial records
       await dataSource.query(
         `
@@ -450,7 +450,7 @@ describe('POST /api/import - Streaming and File Size Limits', () => {
       expect(response.body.skipped).toBeGreaterThanOrEqual(1);
     }, 120000); // 2 minutes for large dataset
 
-    it('should handle chunk processing errors without losing data integrity', async () => {
+    it('[perf] should handle chunk processing errors without losing data integrity', async () => {
       // Create records that might cause processing issues
       const problematicRecords = Array.from({ length: 1000 }, (_, i) => ({
         content: i % 100 === 0 ? '' : `valid record ${i}`, // Every 100th record is invalid
@@ -487,7 +487,7 @@ describe('POST /api/import - Streaming and File Size Limits', () => {
   });
 
   describe('Performance and Resource Management', () => {
-    it('should complete large import within reasonable time', async () => {
+    it('[perf] should complete large import within reasonable time', async () => {
       const largeRecords = Array.from({ length: 10000 }, (_, i) => ({
         content: `performance test record ${i}`,
         createdAt: '2024-01-15T10:00:00Z',
@@ -523,7 +523,7 @@ describe('POST /api/import - Streaming and File Size Limits', () => {
       expect(durationSeconds).toBeLessThan(150);
     }, 300000); // 5 minutes for performance test with large dataset (accounts for resource contention when running in parallel)
 
-    it('should maintain database connection pool under load', async () => {
+    it('[perf] should maintain database connection pool under load', async () => {
       // Run multiple concurrent imports
       const concurrentImports = 5;
       const promises = [];
@@ -565,7 +565,7 @@ describe('POST /api/import - Streaming and File Size Limits', () => {
       });
     }, 120000); // 2 minutes for concurrent imports
 
-    it('should handle import cancellation gracefully', async () => {
+    it('[perf] should handle import cancellation gracefully', async () => {
       // This test simulates a cancelled request
       // In practice, this would test cleanup of resources when client disconnects
 
