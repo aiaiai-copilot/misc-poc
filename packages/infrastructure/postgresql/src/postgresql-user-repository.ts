@@ -173,11 +173,14 @@ export class PostgreSQLUserRepository implements UserRepository {
 
   /**
    * Update user settings
-   * Only updates the user_settings table and updated_at timestamp
+   * Uses transactions to ensure atomic updates across user_settings and users tables
    */
   async updateSettings(user: User): Promise<Result<User, DomainError>> {
     const queryRunner = this.dataSource.createQueryRunner();
     try {
+      await queryRunner.connect();
+      await queryRunner.startTransaction();
+
       // Update user_settings
       const settingsResult = await queryRunner.query(
         `
@@ -204,6 +207,7 @@ export class PostgreSQLUserRepository implements UserRepository {
       );
 
       if (settingsResult.length === 0) {
+        await queryRunner.rollbackTransaction();
         return Err(new DomainError('USER_NOT_FOUND', 'User not found'));
       }
 
@@ -216,6 +220,8 @@ export class PostgreSQLUserRepository implements UserRepository {
         `,
         [user.updatedAt, user.id.toString()]
       );
+
+      await queryRunner.commitTransaction();
 
       // Fetch the complete user with updated settings
       const result = await queryRunner.query(
@@ -239,6 +245,11 @@ export class PostgreSQLUserRepository implements UserRepository {
       const updatedUser = this.mapRowToUser(result[0]);
       return Ok(updatedUser);
     } catch (error) {
+      // Rollback transaction on error
+      if (queryRunner.isTransactionActive) {
+        await queryRunner.rollbackTransaction();
+      }
+
       return Err(
         new DomainError(
           'USER_UPDATE_ERROR',

@@ -470,6 +470,38 @@ describe('[perf] User Repository Contract', () => {
       const error = result.unwrapErr();
       expect(error.message).toContain('not found');
     });
+
+    it('should use transactions for atomic updates', async () => {
+      // Arrange: Create user
+      const googleId = GoogleId.create('1234567890140');
+      const user = User.create('atomic@example.com', googleId, 'Test', '');
+      await repository.create(user);
+
+      // Act: Update settings (should be atomic)
+      const newSettings = new UserSettings(true, false, 200, 100, 'es');
+      const updatedUser = user.updateSettings(newSettings);
+      const result = await repository.updateSettings(updatedUser);
+
+      // Assert: Both tables should be updated atomically
+      expect(result.isOk()).toBe(true);
+
+      // Verify user_settings was updated
+      const settingsCheck = await dataSource.query(
+        'SELECT * FROM user_settings WHERE user_id = $1',
+        [user.id.toString()]
+      );
+      expect(settingsCheck[0].case_sensitive).toBe(true);
+      expect(settingsCheck[0].remove_accents).toBe(false);
+
+      // Verify users.updated_at was also updated
+      const userCheck = await dataSource.query(
+        'SELECT updated_at FROM users WHERE id = $1',
+        [user.id.toString()]
+      );
+      expect(new Date(userCheck[0].updated_at).getTime()).toBeGreaterThan(
+        user.updatedAt.getTime()
+      );
+    });
   });
 
   /**
