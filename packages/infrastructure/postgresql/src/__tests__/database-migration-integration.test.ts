@@ -31,10 +31,12 @@ describe('[perf] Database Migration Integration Tests', () => {
   });
 
   describe('Schema Migration', () => {
-    it('should run migration successfully', async () => {
-      // Run migrations
+    beforeAll(async () => {
+      // Run migrations once for all tests in this describe block
       await dataSource.runMigrations();
+    });
 
+    it('should run migration successfully', async () => {
       // Verify all tables were created
       const queryRunner = dataSource.createQueryRunner();
       try {
@@ -107,8 +109,8 @@ describe('[perf] Database Migration Integration Tests', () => {
     it('should create proper indexes for performance', async () => {
       const queryRunner = dataSource.createQueryRunner();
       try {
-        // Check if indexes exist
-        const indexes = await queryRunner.query(`
+        // Check if records indexes exist
+        const recordsIndexes = await queryRunner.query(`
           SELECT
             indexname,
             indexdef
@@ -118,18 +120,36 @@ describe('[perf] Database Migration Integration Tests', () => {
           ORDER BY indexname;
         `);
 
-        const indexNames = indexes.map((idx: any) => idx.indexname);
+        const recordsIndexNames = recordsIndexes.map(
+          (idx: any) => idx.indexname
+        );
 
-        expect(indexNames).toContain('idx_records_user_id');
-        expect(indexNames).toContain('idx_records_normalized_tags_gin');
-        expect(indexNames).toContain('idx_records_created_at');
+        expect(recordsIndexNames).toContain('idx_records_user_id');
+        expect(recordsIndexNames).toContain('idx_records_normalized_tags_gin');
+        expect(recordsIndexNames).toContain('idx_records_created_at');
 
         // Verify GIN index for array search
-        const ginIndex = indexes.find(
+        const ginIndex = recordsIndexes.find(
           (idx: any) => idx.indexname === 'idx_records_normalized_tags_gin'
         );
         expect(ginIndex?.indexdef).toContain('gin');
         expect(ginIndex?.indexdef).toContain('normalized_tags');
+
+        // Check if users indexes exist
+        const usersIndexes = await queryRunner.query(`
+          SELECT
+            indexname,
+            indexdef
+          FROM pg_indexes
+          WHERE tablename = 'users'
+          AND schemaname = 'public'
+          ORDER BY indexname;
+        `);
+
+        const usersIndexNames = usersIndexes.map((idx: any) => idx.indexname);
+
+        expect(usersIndexNames).toContain('idx_users_google_id');
+        expect(usersIndexNames).toContain('idx_users_email');
       } finally {
         await queryRunner.release();
       }
