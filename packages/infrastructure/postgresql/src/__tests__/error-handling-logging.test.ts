@@ -148,7 +148,7 @@ describe('Error Handling and Logging', () => {
   });
 
   describe('Repository Error Handling', () => {
-    it('should handle duplicate email with proper error code', async () => {
+    it('[perf] should handle duplicate email with proper error code', async () => {
       const user1 = new User(
         new RecordId(randomUUID()),
         'duplicate@example.com',
@@ -183,7 +183,7 @@ describe('Error Handling and Logging', () => {
       }
     });
 
-    it('should handle duplicate Google ID with proper error code', async () => {
+    it('[perf] should handle duplicate Google ID with proper error code', async () => {
       const user1 = new User(
         new RecordId(randomUUID()),
         'user1@example.com',
@@ -218,7 +218,7 @@ describe('Error Handling and Logging', () => {
       }
     });
 
-    it('should return null when user not found', async () => {
+    it('[perf] should return null when user not found', async () => {
       const result = await repository.findByGoogleId(
         GoogleId.create('nonexistentgoogle123')
       );
@@ -229,7 +229,7 @@ describe('Error Handling and Logging', () => {
       }
     });
 
-    it('should handle non-existent user updates with proper error', async () => {
+    it('[perf] should handle non-existent user updates with proper error', async () => {
       const nonExistentUser = new User(
         new RecordId('550e8400-e29b-41d4-a716-446655440000'),
         'notfound@example.com',
@@ -250,7 +250,7 @@ describe('Error Handling and Logging', () => {
       }
     });
 
-    it('should successfully create and retrieve user', async () => {
+    it('[perf] should successfully create and retrieve user', async () => {
       const user = new User(
         new RecordId(randomUUID()),
         'success@example.com',
@@ -283,7 +283,7 @@ describe('Error Handling and Logging', () => {
   });
 
   describe('Logging Integration', () => {
-    it('should complete operations with logging enabled', async () => {
+    it('[perf] should complete operations with logging enabled', async () => {
       // This test verifies that operations complete successfully with logging
       // The actual log output is verified through manual inspection in development
       const user = new User(
@@ -306,7 +306,7 @@ describe('Error Handling and Logging', () => {
   });
 
   describe('Retry Logic Integration', () => {
-    it('should not retry constraint violations', async () => {
+    it('[perf] should not retry constraint violations', async () => {
       const user1 = new User(
         new RecordId(randomUUID()),
         'retry@example.com',
