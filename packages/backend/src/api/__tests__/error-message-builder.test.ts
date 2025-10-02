@@ -59,7 +59,7 @@ describe('ErrorMessageBuilder', () => {
   });
 
   describe('buildSizeLimitMessage', () => {
-    it('should create user-friendly size limit error message', () => {
+    it('[perf] should create user-friendly size limit error message', () => {
       const result = ErrorMessageBuilder.buildSizeLimitMessage(60000, 50000);
 
       expect(result.errorCode).toBe('TOO_MANY_RECORDS');
