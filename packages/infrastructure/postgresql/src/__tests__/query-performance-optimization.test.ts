@@ -66,7 +66,7 @@ describe('[perf] Query Performance Optimization Contract', () => {
   });
 
   describe('GIN Index Optimization', () => {
-    it('should use optimized GIN index for array containment queries', async () => {
+    it('[perf] should use optimized GIN index for array containment queries', async () => {
       // Force PostgreSQL to use indexes by disabling sequential scans
       await queryRunner.query('SET enable_seqscan = off;');
 
@@ -96,7 +96,7 @@ describe('[perf] Query Performance Optimization Contract', () => {
       await queryRunner.query('SET enable_seqscan = on;');
     });
 
-    it('should use optimized GIN index with custom operator class for prefix matching', async () => {
+    it('[perf] should use optimized GIN index with custom operator class for prefix matching', async () => {
       const startTime = Date.now();
 
       // Query for prefix matching used in suggest endpoint
@@ -122,7 +122,7 @@ describe('[perf] Query Performance Optimization Contract', () => {
       expect(executionTime).toBeLessThan(50);
     });
 
-    it('should use fast GIN index configuration for frequent updates', async () => {
+    it('[perf] should use fast GIN index configuration for frequent updates', async () => {
       // Verify GIN index is configured with fastupdate=off for better query performance
       const indexConfig = await queryRunner.query(`
         SELECT indexname, indexdef
@@ -137,7 +137,7 @@ describe('[perf] Query Performance Optimization Contract', () => {
   });
 
   describe('Composite Index Optimization', () => {
-    it('should use composite index for user-specific tag queries', async () => {
+    it('[perf] should use composite index for user-specific tag queries', async () => {
       const startTime = Date.now();
 
       // Query pattern used frequently: user-specific tag filtering
@@ -163,7 +163,7 @@ describe('[perf] Query Performance Optimization Contract', () => {
       expect(executionTime).toBeLessThan(100);
     });
 
-    it('should optimize ORDER BY queries with composite index', async () => {
+    it('[perf] should optimize ORDER BY queries with composite index', async () => {
       const startTime = Date.now();
 
       // Test ordering performance with large result set
@@ -190,7 +190,7 @@ describe('[perf] Query Performance Optimization Contract', () => {
   });
 
   describe('Tag Statistics Query Optimization', () => {
-    it('should calculate tag frequency statistics within 500ms performance target', async () => {
+    it('[perf] should calculate tag frequency statistics within 500ms performance target', async () => {
       const startTime = Date.now();
 
       // Tag statistics query used by /api/tags endpoint
@@ -217,7 +217,7 @@ describe('[perf] Query Performance Optimization Contract', () => {
       expect(result[0]).toHaveProperty('count');
     });
 
-    it('should optimize tag frequency calculation for large datasets', async () => {
+    it('[perf] should optimize tag frequency calculation for large datasets', async () => {
       const startTime = Date.now();
 
       // Alternative optimized query using GIN index more effectively
@@ -273,7 +273,7 @@ describe('[perf] Query Performance Optimization Contract', () => {
   });
 
   describe('Prefix Matching Optimization', () => {
-    it('should optimize prefix queries used by suggest endpoint', async () => {
+    it('[perf] should optimize prefix queries used by suggest endpoint', async () => {
       const startTime = Date.now();
 
       // Query pattern from /api/tags/suggest endpoint
@@ -299,7 +299,7 @@ describe('[perf] Query Performance Optimization Contract', () => {
       expect(Array.isArray(result)).toBe(true);
     });
 
-    it('should use trigram index for fuzzy prefix matching if available', async () => {
+    it('[perf] should use trigram index for fuzzy prefix matching if available', async () => {
       // Test if trigram extension can be used for even faster prefix matching
       try {
         await queryRunner.query('CREATE EXTENSION IF NOT EXISTS pg_trgm');
@@ -330,7 +330,7 @@ describe('[perf] Query Performance Optimization Contract', () => {
   });
 
   describe('Index Usage Verification', () => {
-    it('should verify all critical indexes exist and are being used', async () => {
+    it('[perf] should verify all critical indexes exist and are being used', async () => {
       // Check that all performance-critical indexes exist
       const indexes = await queryRunner.query(`
         SELECT indexname, indexdef
@@ -350,7 +350,7 @@ describe('[perf] Query Performance Optimization Contract', () => {
       expect(indexNames).toContain('idx_records_user_tags_composite');
     });
 
-    it('should verify GIN index configuration is optimal', async () => {
+    it('[perf] should verify GIN index configuration is optimal', async () => {
       // Check GIN index storage parameters
       const ginConfig = await queryRunner.query(`
         SELECT
@@ -367,7 +367,7 @@ describe('[perf] Query Performance Optimization Contract', () => {
       expect(ginConfig[0].indexdef).toContain('normalized_tags');
     });
 
-    it('should verify index statistics show they are being used', async () => {
+    it('[perf] should verify index statistics show they are being used', async () => {
       // Force statistics update
       await queryRunner.query('ANALYZE records');
 
@@ -396,7 +396,7 @@ describe('[perf] Query Performance Optimization Contract', () => {
   });
 
   describe('Memory and Resource Optimization', () => {
-    it('should execute large queries within reasonable memory limits', async () => {
+    it('[perf] should execute large queries within reasonable memory limits', async () => {
       // Query that could potentially use excessive memory
       const startTime = Date.now();
 
@@ -426,7 +426,7 @@ describe('[perf] Query Performance Optimization Contract', () => {
       expect(planText).toBeDefined();
     });
 
-    it('should handle concurrent queries efficiently', async () => {
+    it('[perf] should handle concurrent queries efficiently', async () => {
       // Simulate concurrent load
       const queries = Array(10)
         .fill(null)

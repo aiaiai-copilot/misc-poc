@@ -75,7 +75,7 @@ describe('[perf] PostgreSQL Record Repository Security & Data Isolation Integrat
   });
 
   describe('Data Isolation Contract', () => {
-    it('should not allow access to other users records via findById', async () => {
+    it('[perf] should not allow access to other users records via findById', async () => {
       // User 1 creates a record
       const user1Record = new Record(
         RecordId.generate(),
@@ -95,7 +95,7 @@ describe('[perf] PostgreSQL Record Repository Security & Data Isolation Integrat
       expect(accessResult.unwrap()).toBeNull();
     });
 
-    it('should not include other users records in search results', async () => {
+    it('[perf] should not include other users records in search results', async () => {
       // Create shared tag IDs that both users will use
       const sharedTagId1 = TagId.generate();
       const sharedTagId2 = TagId.generate();
@@ -167,7 +167,7 @@ describe('[perf] PostgreSQL Record Repository Security & Data Isolation Integrat
       expect(user2Results.records[0].content.toString()).toContain('user2');
     });
 
-    it('should not show other users tags in findAll results', async () => {
+    it('[perf] should not show other users tags in findAll results', async () => {
       // User 1 creates record
       const user1Record = new Record(
         RecordId.generate(),
@@ -204,7 +204,7 @@ describe('[perf] PostgreSQL Record Repository Security & Data Isolation Integrat
       expect(user2All.records[0].content.toString()).toBe('user2 data');
     });
 
-    it('should prevent cross-user record updates', async () => {
+    it('[perf] should prevent cross-user record updates', async () => {
       // User 1 creates a record
       const user1Record = new Record(
         RecordId.generate(),
@@ -238,7 +238,7 @@ describe('[perf] PostgreSQL Record Repository Security & Data Isolation Integrat
       expect(originalRecord!.content.toString()).toBe('original content');
     });
 
-    it('should prevent cross-user record deletion', async () => {
+    it('[perf] should prevent cross-user record deletion', async () => {
       // User 1 creates a record
       const user1Record = new Record(
         RecordId.generate(),
@@ -268,7 +268,7 @@ describe('[perf] PostgreSQL Record Repository Security & Data Isolation Integrat
       expect(verifyResult.unwrap()).not.toBeNull();
     });
 
-    it('should isolate count operations per user', async () => {
+    it('[perf] should isolate count operations per user', async () => {
       // User 1 creates 3 records
       for (let i = 0; i < 3; i++) {
         const record = new Record(
@@ -303,7 +303,7 @@ describe('[perf] PostgreSQL Record Repository Security & Data Isolation Integrat
       expect(user2Count.unwrap()).toBe(2);
     });
 
-    it('should isolate exists operations per user', async () => {
+    it('[perf] should isolate exists operations per user', async () => {
       // User 1 creates a record
       const user1Record = new Record(
         RecordId.generate(),
@@ -328,7 +328,7 @@ describe('[perf] PostgreSQL Record Repository Security & Data Isolation Integrat
       expect(user2Exists.unwrap()).toBe(false);
     });
 
-    it('should isolate deleteAll operations per user', async () => {
+    it('[perf] should isolate deleteAll operations per user', async () => {
       // User 1 creates records
       const user1Record1 = new Record(
         RecordId.generate(),
@@ -375,7 +375,7 @@ describe('[perf] PostgreSQL Record Repository Security & Data Isolation Integrat
   });
 
   describe('SQL Injection Prevention', () => {
-    it('should prevent SQL injection in findById', async () => {
+    it('[perf] should prevent SQL injection in findById', async () => {
       // Repository should handle invalid UUID format gracefully
       // We cannot create RecordId with invalid UUID, so test repository validation
       const testRecord = new Record(
@@ -401,7 +401,7 @@ describe('[perf] PostgreSQL Record Repository Security & Data Isolation Integrat
       expect(result.unwrap()).toBeNull();
     });
 
-    it('should prevent SQL injection in search operations', async () => {
+    it('[perf] should prevent SQL injection in search operations', async () => {
       // Attempt SQL injection via search tags
       const maliciousTags = ["'; DROP TABLE users; --", 'normal_tag'];
 
@@ -423,7 +423,7 @@ describe('[perf] PostgreSQL Record Repository Security & Data Isolation Integrat
       }
     });
 
-    it('should prevent SQL injection in update operations', async () => {
+    it('[perf] should prevent SQL injection in update operations', async () => {
       // Create a legitimate record first
       const validRecord = new Record(
         RecordId.generate(),
@@ -472,7 +472,7 @@ describe('[perf] PostgreSQL Record Repository Security & Data Isolation Integrat
   });
 
   describe('Row Level Security Validation', () => {
-    it('should fail when row-level security policies are not properly configured', async () => {
+    it('[perf] should fail when row-level security policies are not properly configured', async () => {
       // This test will initially fail until we implement RLS policies
       // Create a record using direct database access bypassing repository isolation
       const queryRunner = dataSource.createQueryRunner();
@@ -494,7 +494,7 @@ describe('[perf] PostgreSQL Record Repository Security & Data Isolation Integrat
       }
     });
 
-    it('should enforce RLS policies for SELECT operations', async () => {
+    it('[perf] should enforce RLS policies for SELECT operations', async () => {
       // Create records for both users using direct database access
       const queryRunner = dataSource.createQueryRunner();
 

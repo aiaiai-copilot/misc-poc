@@ -36,7 +36,7 @@ describe('[perf] Database Migration Integration Tests', () => {
       await dataSource.runMigrations();
     });
 
-    it('should run migration successfully', async () => {
+    it('[perf] should run migration successfully', async () => {
       // Verify all tables were created
       const queryRunner = dataSource.createQueryRunner();
       try {
@@ -106,7 +106,7 @@ describe('[perf] Database Migration Integration Tests', () => {
       }
     });
 
-    it('should create proper indexes for performance', async () => {
+    it('[perf] should create proper indexes for performance', async () => {
       const queryRunner = dataSource.createQueryRunner();
       try {
         // Check if records indexes exist
@@ -169,7 +169,7 @@ describe('[perf] Database Migration Integration Tests', () => {
       }
     });
 
-    it('should enforce email uniqueness in users table', async () => {
+    it('[perf] should enforce email uniqueness in users table', async () => {
       const queryRunner = dataSource.createQueryRunner();
       try {
         const testEmail = 'test@example.com';
@@ -192,7 +192,7 @@ describe('[perf] Database Migration Integration Tests', () => {
       }
     });
 
-    it('should enforce google_id uniqueness in users table', async () => {
+    it('[perf] should enforce google_id uniqueness in users table', async () => {
       const queryRunner = dataSource.createQueryRunner();
       try {
         const testGoogleId = 'unique_google_id';
@@ -215,7 +215,7 @@ describe('[perf] Database Migration Integration Tests', () => {
       }
     });
 
-    it('should enforce unique normalized_tags per user in records table', async () => {
+    it('[perf] should enforce unique normalized_tags per user in records table', async () => {
       const queryRunner = dataSource.createQueryRunner();
       try {
         // Create a test user first
@@ -245,7 +245,7 @@ describe('[perf] Database Migration Integration Tests', () => {
       }
     });
 
-    it('should allow same normalized_tags for different users', async () => {
+    it('[perf] should allow same normalized_tags for different users', async () => {
       const queryRunner = dataSource.createQueryRunner();
       try {
         // Create two test users
@@ -281,7 +281,7 @@ describe('[perf] Database Migration Integration Tests', () => {
       }
     });
 
-    it('should enforce one-to-one relationship between users and user_settings', async () => {
+    it('[perf] should enforce one-to-one relationship between users and user_settings', async () => {
       const queryRunner = dataSource.createQueryRunner();
       try {
         // Create a test user
@@ -308,7 +308,7 @@ describe('[perf] Database Migration Integration Tests', () => {
       }
     });
 
-    it('should use correct default values in user_settings', async () => {
+    it('[perf] should use correct default values in user_settings', async () => {
       const queryRunner = dataSource.createQueryRunner();
       try {
         // Create a test user
@@ -344,7 +344,7 @@ describe('[perf] Database Migration Integration Tests', () => {
   });
 
   describe('Array Search Performance', () => {
-    it('should optimize tag search using GIN index', async () => {
+    it('[perf] should optimize tag search using GIN index', async () => {
       const queryRunner = dataSource.createQueryRunner();
       try {
         // Create a test user and records

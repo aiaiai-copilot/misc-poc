@@ -68,7 +68,7 @@ describe('[perf] PostgreSQL Record Repository Batch Operations Integration Tests
   });
 
   describe('saveBatch with enhanced transaction handling', () => {
-    it('should save multiple records in a single transaction', async () => {
+    it('[perf] should save multiple records in a single transaction', async () => {
       // Create test records with different tag combinations to avoid duplicates
       const records = [
         new Record(
@@ -100,7 +100,7 @@ describe('[perf] PostgreSQL Record Repository Batch Operations Integration Tests
       expect(countResult.unwrap()).toBe(2);
     });
 
-    it('should rollback entire batch if any record fails due to duplicate', async () => {
+    it('[perf] should rollback entire batch if any record fails due to duplicate', async () => {
       // First, create a record that will cause a duplicate conflict
       const existingRecord = new Record(
         new RecordId('44444444-4444-4444-4444-444444444444'),
@@ -143,7 +143,7 @@ describe('[perf] PostgreSQL Record Repository Batch Operations Integration Tests
       expect(countResult.unwrap()).toBe(1);
     });
 
-    it('should handle empty batch gracefully', async () => {
+    it('[perf] should handle empty batch gracefully', async () => {
       const result = await repository.saveBatch([]);
 
       expect(result.isOk()).toBe(true);
@@ -192,7 +192,7 @@ describe('[perf] PostgreSQL Record Repository Batch Operations Integration Tests
       expect(countAfterSetup.unwrap()).toBe(3);
     });
 
-    it('should delete multiple records by ID in a single transaction', async () => {
+    it('[perf] should delete multiple records by ID in a single transaction', async () => {
       const recordIds = [
         new RecordId('77777777-7777-4777-8777-777777777777'),
         new RecordId('88888888-8888-4888-8888-888888888888'),
@@ -219,7 +219,7 @@ describe('[perf] PostgreSQL Record Repository Batch Operations Integration Tests
       expect(countResult.unwrap()).toBe(1);
     });
 
-    it('should rollback deletion if any record does not exist', async () => {
+    it('[perf] should rollback deletion if any record does not exist', async () => {
       const recordIds = [
         new RecordId('77777777-7777-4777-8777-777777777777'), // exists
         new RecordId('aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee'), // does not exist
@@ -239,7 +239,7 @@ describe('[perf] PostgreSQL Record Repository Batch Operations Integration Tests
       expect(findResult1.unwrap()).not.toBeNull();
     });
 
-    it('should handle empty batch gracefully', async () => {
+    it('[perf] should handle empty batch gracefully', async () => {
       const result = await repository.deleteBatch([]);
 
       expect(result.isOk()).toBe(true);
@@ -249,7 +249,7 @@ describe('[perf] PostgreSQL Record Repository Batch Operations Integration Tests
       expect(countResult.unwrap()).toBe(3);
     });
 
-    it('should only delete user-owned records', async () => {
+    it('[perf] should only delete user-owned records', async () => {
       // Create another user
       const queryRunner = dataSource.createQueryRunner();
       let otherUserId: string;

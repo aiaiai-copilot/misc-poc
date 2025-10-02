@@ -67,7 +67,7 @@ describe('[perf] PostgreSQL Record Repository findByTags Integration Tests', () 
   });
 
   describe('findByTags', () => {
-    it('should find records matching all specified tags using GIN index (AND logic)', async () => {
+    it('[perf] should find records matching all specified tags using GIN index (AND logic)', async () => {
       // Test the actual query directly without using domain objects for setup
       // This tests the core GIN index functionality
       const queryRunner = dataSource.createQueryRunner();
@@ -139,7 +139,7 @@ describe('[perf] PostgreSQL Record Repository findByTags Integration Tests', () 
       }
     });
 
-    it('should return empty array when no matches found', async () => {
+    it('[perf] should return empty array when no matches found', async () => {
       // Insert test record with different tags
       const queryRunner = dataSource.createQueryRunner();
       try {
@@ -176,7 +176,7 @@ describe('[perf] PostgreSQL Record Repository findByTags Integration Tests', () 
       }
     });
 
-    it('should search using normalized tags', async () => {
+    it('[perf] should search using normalized tags', async () => {
       // Test that search uses normalized tag form
       const queryRunner = dataSource.createQueryRunner();
       try {
@@ -211,7 +211,7 @@ describe('[perf] PostgreSQL Record Repository findByTags Integration Tests', () 
       }
     });
 
-    it('should return only user-owned records', async () => {
+    it('[perf] should return only user-owned records', async () => {
       // Create another user to test data isolation
       const queryRunner = dataSource.createQueryRunner();
       try {
@@ -264,7 +264,7 @@ describe('[perf] PostgreSQL Record Repository findByTags Integration Tests', () 
       }
     });
 
-    it('should preserve domain entity structure', async () => {
+    it('[perf] should preserve domain entity structure', async () => {
       // Test that returned records maintain proper domain entity structure
       const queryRunner = dataSource.createQueryRunner();
       try {
@@ -311,7 +311,7 @@ describe('[perf] PostgreSQL Record Repository findByTags Integration Tests', () 
       }
     });
 
-    it('should order by creation date descending', async () => {
+    it('[perf] should order by creation date descending', async () => {
       // Test that records are returned in descending creation date order
       const queryRunner = dataSource.createQueryRunner();
       try {
@@ -380,7 +380,7 @@ describe('[perf] PostgreSQL Record Repository findByTags Integration Tests', () 
       }
     });
 
-    it('should verify GIN index is used for optimal performance', async () => {
+    it('[perf] should verify GIN index is used for optimal performance', async () => {
       // Insert test record
       const queryRunner = dataSource.createQueryRunner();
       try {
@@ -424,7 +424,7 @@ describe('[perf] PostgreSQL Record Repository findByTags Integration Tests', () 
   });
 
   describe('getTagStatistics', () => {
-    it('should count frequency for each unique tag', async () => {
+    it('[perf] should count frequency for each unique tag', async () => {
       // Insert test records with various tags to test frequency counting
       const queryRunner = dataSource.createQueryRunner();
       try {
@@ -501,7 +501,7 @@ describe('[perf] PostgreSQL Record Repository findByTags Integration Tests', () 
       }
     });
 
-    it('should include only user tags', async () => {
+    it('[perf] should include only user tags', async () => {
       // Create another user to test data isolation
       const queryRunner = dataSource.createQueryRunner();
       try {
@@ -561,7 +561,7 @@ describe('[perf] PostgreSQL Record Repository findByTags Integration Tests', () 
       }
     });
 
-    it('should use normalized tags for counting', async () => {
+    it('[perf] should use normalized tags for counting', async () => {
       // Test that statistics are calculated using normalized_tags column
       const queryRunner = dataSource.createQueryRunner();
       try {
@@ -595,7 +595,7 @@ describe('[perf] PostgreSQL Record Repository findByTags Integration Tests', () 
       }
     });
 
-    it('should order by frequency descending', async () => {
+    it('[perf] should order by frequency descending', async () => {
       // Test that statistics are ordered by count in descending order
       const queryRunner = dataSource.createQueryRunner();
       try {
@@ -667,7 +667,7 @@ describe('[perf] PostgreSQL Record Repository findByTags Integration Tests', () 
       }
     });
 
-    it('should handle tags with special characters', async () => {
+    it('[perf] should handle tags with special characters', async () => {
       // Test that the method handles various tag formats correctly
       const queryRunner = dataSource.createQueryRunner();
       try {
@@ -708,7 +708,7 @@ describe('[perf] PostgreSQL Record Repository findByTags Integration Tests', () 
       }
     });
 
-    it('should return empty array when no records exist', async () => {
+    it('[perf] should return empty array when no records exist', async () => {
       // Test empty case (beforeEach clears all records)
       const result = await repository.getTagStatistics();
 

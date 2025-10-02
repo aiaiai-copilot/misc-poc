@@ -80,7 +80,7 @@ describe('[perf] Record Repository Contract', () => {
   });
 
   describe('save', () => {
-    it('should persist new record with user association', async () => {
+    it('[perf] should persist new record with user association', async () => {
       const tagId1 = TagId.generate();
       const tagId2 = TagId.generate();
       const record = Record.create(
@@ -97,7 +97,7 @@ describe('[perf] Record Repository Contract', () => {
       expect(Array.from(savedRecord.tagIds)).toEqual(Array.from(record.tagIds));
     });
 
-    it('should update existing record preserving creation date', async () => {
+    it('[perf] should update existing record preserving creation date', async () => {
       const originalTagId = TagId.generate();
       const record = Record.create(
         new RecordContent('original content'),
@@ -126,7 +126,7 @@ describe('[perf] Record Repository Contract', () => {
       expect(updated.updatedAt).not.toEqual(originalRecord.updatedAt);
     });
 
-    it('should normalize tags according to user settings', async () => {
+    it('[perf] should normalize tags according to user settings', async () => {
       const tagId1 = TagId.generate();
       const tagId2 = TagId.generate();
       const record = Record.create(
@@ -148,7 +148,7 @@ describe('[perf] Record Repository Contract', () => {
       ]);
     });
 
-    it('should detect and reject duplicates', async () => {
+    it('[perf] should detect and reject duplicates', async () => {
       const tagId1 = TagId.generate();
       const tagId2 = TagId.generate();
       const record1 = Record.create(
@@ -169,7 +169,7 @@ describe('[perf] Record Repository Contract', () => {
       expect(result2.unwrapErr().code).toBe('DUPLICATE_RECORD');
     });
 
-    it('should maintain tag order from domain entity', async () => {
+    it('[perf] should maintain tag order from domain entity', async () => {
       const tagId1 = TagId.generate();
       const tagId2 = TagId.generate();
       const tagId3 = TagId.generate();
@@ -192,7 +192,7 @@ describe('[perf] Record Repository Contract', () => {
       expect(savedTagIdStrings).toContain(tagId3.toString());
     });
 
-    it('should handle concurrent saves safely', async () => {
+    it('[perf] should handle concurrent saves safely', async () => {
       const tagId1 = TagId.generate();
       const tagId2 = TagId.generate();
       const record1 = Record.create(
@@ -248,7 +248,7 @@ describe('[perf] Record Repository Contract', () => {
       }
     });
 
-    it('should find records matching all specified tags (AND logic)', async () => {
+    it('[perf] should find records matching all specified tags (AND logic)', async () => {
       const result = await repository.findByTags([commonTagId.toString()]);
       expect(result.isOk()).toBe(true);
 
@@ -263,7 +263,7 @@ describe('[perf] Record Repository Contract', () => {
       }
     });
 
-    it('should return empty array when no matches', async () => {
+    it('[perf] should return empty array when no matches', async () => {
       const nonExistentTagId = TagId.generate();
       const result = await repository.findByTags([nonExistentTagId.toString()]);
       expect(result.isOk()).toBe(true);
@@ -273,7 +273,7 @@ describe('[perf] Record Repository Contract', () => {
       expect(searchResult.total).toBe(0);
     });
 
-    it('should search using normalized tags', async () => {
+    it('[perf] should search using normalized tags', async () => {
       // Search using the actual tag ID should work
       const result = await repository.findByTags([commonTagId.toString()]);
       expect(result.isOk()).toBe(true);
@@ -282,7 +282,7 @@ describe('[perf] Record Repository Contract', () => {
       expect(searchResult.records.length).toBeGreaterThan(0);
     });
 
-    it('should return only user-owned records', async () => {
+    it('[perf] should return only user-owned records', async () => {
       // This is implicitly tested since we use user-specific repository
       const result = await repository.findByTags([commonTagId.toString()]);
       expect(result.isOk()).toBe(true);
@@ -292,7 +292,7 @@ describe('[perf] Record Repository Contract', () => {
       expect(searchResult.records.length).toBeGreaterThanOrEqual(0);
     });
 
-    it('should preserve domain entity structure', async () => {
+    it('[perf] should preserve domain entity structure', async () => {
       const result = await repository.findByTags([commonTagId.toString()]);
       expect(result.isOk()).toBe(true);
 
@@ -307,7 +307,7 @@ describe('[perf] Record Repository Contract', () => {
       }
     });
 
-    it('should order by creation date descending', async () => {
+    it('[perf] should order by creation date descending', async () => {
       const result = await repository.findByTags([commonTagId.toString()]);
       expect(result.isOk()).toBe(true);
 
@@ -336,7 +336,7 @@ describe('[perf] Record Repository Contract', () => {
       testRecord = result.unwrap();
     });
 
-    it('should return record by ID for owner', async () => {
+    it('[perf] should return record by ID for owner', async () => {
       const result = await repository.findById(testRecord.id);
       expect(result.isOk()).toBe(true);
 
@@ -348,14 +348,14 @@ describe('[perf] Record Repository Contract', () => {
       );
     });
 
-    it('should return null for non-existent record', async () => {
+    it('[perf] should return null for non-existent record', async () => {
       const nonExistentId = RecordId.generate();
       const result = await repository.findById(nonExistentId);
       expect(result.isOk()).toBe(true);
       expect(result.unwrap()).toBeNull();
     });
 
-    it('should return null for other user record', async () => {
+    it('[perf] should return null for other user record', async () => {
       // This is implicitly tested since we use user-specific repository
       // In a multi-user system, this would test cross-user access prevention
       const result = await repository.findById(testRecord.id);
@@ -363,7 +363,7 @@ describe('[perf] Record Repository Contract', () => {
       expect(result.unwrap()).not.toBeNull();
     });
 
-    it('should reconstruct complete domain entity', async () => {
+    it('[perf] should reconstruct complete domain entity', async () => {
       const result = await repository.findById(testRecord.id);
       expect(result.isOk()).toBe(true);
 
@@ -391,7 +391,7 @@ describe('[perf] Record Repository Contract', () => {
       testRecord = result.unwrap();
     });
 
-    it('should remove record from storage', async () => {
+    it('[perf] should remove record from storage', async () => {
       const deleteResult = await repository.delete(testRecord.id);
       expect(deleteResult.isOk()).toBe(true);
 
@@ -401,13 +401,13 @@ describe('[perf] Record Repository Contract', () => {
       expect(findResult.unwrap()).toBeNull();
     });
 
-    it('should only delete user-owned records', async () => {
+    it('[perf] should only delete user-owned records', async () => {
       // This is implicitly tested since we use user-specific repository
       const deleteResult = await repository.delete(testRecord.id);
       expect(deleteResult.isOk()).toBe(true);
     });
 
-    it('should handle non-existent record gracefully', async () => {
+    it('[perf] should handle non-existent record gracefully', async () => {
       const nonExistentId = RecordId.generate();
       const deleteResult = await repository.delete(nonExistentId);
       expect(deleteResult.isErr()).toBe(true);
@@ -453,7 +453,7 @@ describe('[perf] Record Repository Contract', () => {
       }
     });
 
-    it('should count frequency for each unique tag', async () => {
+    it('[perf] should count frequency for each unique tag', async () => {
       const result = await repository.getTagStatistics();
       expect(result.isOk()).toBe(true);
 
@@ -471,7 +471,7 @@ describe('[perf] Record Repository Contract', () => {
       expect(rareTag!.count).toBe(1);
     });
 
-    it('should include only user tags', async () => {
+    it('[perf] should include only user tags', async () => {
       // This is implicitly tested since we use user-specific repository
       const result = await repository.getTagStatistics();
       expect(result.isOk()).toBe(true);
@@ -480,7 +480,7 @@ describe('[perf] Record Repository Contract', () => {
       expect(statistics.length).toBeGreaterThan(0);
     });
 
-    it('should use normalized tags for counting', async () => {
+    it('[perf] should use normalized tags for counting', async () => {
       const result = await repository.getTagStatistics();
       expect(result.isOk()).toBe(true);
 
@@ -489,7 +489,7 @@ describe('[perf] Record Repository Contract', () => {
       expect(statistics.length).toBeGreaterThan(0);
     });
 
-    it('should order by frequency descending', async () => {
+    it('[perf] should order by frequency descending', async () => {
       const result = await repository.getTagStatistics();
       expect(result.isOk()).toBe(true);
 
