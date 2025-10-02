@@ -21,64 +21,6 @@ import { randomUUID } from 'crypto';
  */
 
 describe('Error Handling and Logging', () => {
-  let container: StartedPostgreSqlContainer;
-  let dataSource: DataSource;
-  let repository: PostgreSQLUserRepository;
-
-  beforeAll(async () => {
-    container = await new PostgreSqlContainer('postgres:15')
-      .withStartupTimeout(120000)
-      .start();
-
-    dataSource = new DataSource({
-      type: 'postgres',
-      host: container.getHost(),
-      port: container.getPort(),
-      database: container.getDatabase(),
-      username: container.getUsername(),
-      password: container.getPassword(),
-      synchronize: false,
-      logging: false,
-    });
-
-    await dataSource.initialize();
-
-    // Run migrations
-    await dataSource.query(`
-      CREATE TABLE IF NOT EXISTS users (
-        id UUID PRIMARY KEY,
-        email VARCHAR(255) UNIQUE NOT NULL,
-        google_id VARCHAR(255) UNIQUE NOT NULL,
-        display_name VARCHAR(255),
-        avatar_url TEXT,
-        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-        updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-        last_login_at TIMESTAMP WITH TIME ZONE
-      );
-
-      CREATE TABLE IF NOT EXISTS user_settings (
-        user_id UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
-        case_sensitive BOOLEAN DEFAULT FALSE,
-        remove_accents BOOLEAN DEFAULT TRUE,
-        max_tag_length INTEGER DEFAULT 100,
-        max_tags_per_record INTEGER DEFAULT 50,
-        ui_language VARCHAR(10) DEFAULT 'en',
-        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-        updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-      );
-    `);
-  }, 180000);
-
-  afterAll(async () => {
-    await dataSource?.destroy();
-    await container?.stop();
-  }, 180000);
-
-  beforeEach(async () => {
-    await dataSource.query('TRUNCATE users CASCADE');
-    repository = new PostgreSQLUserRepository(dataSource);
-  });
-
   describe('Error Classification', () => {
     it('should classify duplicate key errors as DUPLICATE_EMAIL', () => {
       const error = new Error(
@@ -148,6 +90,64 @@ describe('Error Handling and Logging', () => {
   });
 
   describe('[perf] Repository Error Handling', () => {
+    let container: StartedPostgreSqlContainer;
+    let dataSource: DataSource;
+    let repository: PostgreSQLUserRepository;
+
+    beforeAll(async () => {
+      container = await new PostgreSqlContainer('postgres:15')
+        .withStartupTimeout(120000)
+        .start();
+
+      dataSource = new DataSource({
+        type: 'postgres',
+        host: container.getHost(),
+        port: container.getPort(),
+        database: container.getDatabase(),
+        username: container.getUsername(),
+        password: container.getPassword(),
+        synchronize: false,
+        logging: false,
+      });
+
+      await dataSource.initialize();
+
+      // Run migrations
+      await dataSource.query(`
+        CREATE TABLE IF NOT EXISTS users (
+          id UUID PRIMARY KEY,
+          email VARCHAR(255) UNIQUE NOT NULL,
+          google_id VARCHAR(255) UNIQUE NOT NULL,
+          display_name VARCHAR(255),
+          avatar_url TEXT,
+          created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+          updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+          last_login_at TIMESTAMP WITH TIME ZONE
+        );
+
+        CREATE TABLE IF NOT EXISTS user_settings (
+          user_id UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+          case_sensitive BOOLEAN DEFAULT FALSE,
+          remove_accents BOOLEAN DEFAULT TRUE,
+          max_tag_length INTEGER DEFAULT 100,
+          max_tags_per_record INTEGER DEFAULT 50,
+          ui_language VARCHAR(10) DEFAULT 'en',
+          created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+          updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+        );
+      `);
+    }, 180000);
+
+    afterAll(async () => {
+      await dataSource?.destroy();
+      await container?.stop();
+    }, 180000);
+
+    beforeEach(async () => {
+      await dataSource.query('TRUNCATE users CASCADE');
+      repository = new PostgreSQLUserRepository(dataSource);
+    });
+
     it('should handle duplicate email with proper error code', async () => {
       const user1 = new User(
         new RecordId(randomUUID()),
@@ -283,6 +283,64 @@ describe('Error Handling and Logging', () => {
   });
 
   describe('[perf] Logging Integration', () => {
+    let container: StartedPostgreSqlContainer;
+    let dataSource: DataSource;
+    let repository: PostgreSQLUserRepository;
+
+    beforeAll(async () => {
+      container = await new PostgreSqlContainer('postgres:15')
+        .withStartupTimeout(120000)
+        .start();
+
+      dataSource = new DataSource({
+        type: 'postgres',
+        host: container.getHost(),
+        port: container.getPort(),
+        database: container.getDatabase(),
+        username: container.getUsername(),
+        password: container.getPassword(),
+        synchronize: false,
+        logging: false,
+      });
+
+      await dataSource.initialize();
+
+      // Run migrations
+      await dataSource.query(`
+        CREATE TABLE IF NOT EXISTS users (
+          id UUID PRIMARY KEY,
+          email VARCHAR(255) UNIQUE NOT NULL,
+          google_id VARCHAR(255) UNIQUE NOT NULL,
+          display_name VARCHAR(255),
+          avatar_url TEXT,
+          created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+          updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+          last_login_at TIMESTAMP WITH TIME ZONE
+        );
+
+        CREATE TABLE IF NOT EXISTS user_settings (
+          user_id UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+          case_sensitive BOOLEAN DEFAULT FALSE,
+          remove_accents BOOLEAN DEFAULT TRUE,
+          max_tag_length INTEGER DEFAULT 100,
+          max_tags_per_record INTEGER DEFAULT 50,
+          ui_language VARCHAR(10) DEFAULT 'en',
+          created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+          updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+        );
+      `);
+    }, 180000);
+
+    afterAll(async () => {
+      await dataSource?.destroy();
+      await container?.stop();
+    }, 180000);
+
+    beforeEach(async () => {
+      await dataSource.query('TRUNCATE users CASCADE');
+      repository = new PostgreSQLUserRepository(dataSource);
+    });
+
     it('should complete operations with logging enabled', async () => {
       // This test verifies that operations complete successfully with logging
       // The actual log output is verified through manual inspection in development
@@ -306,6 +364,64 @@ describe('Error Handling and Logging', () => {
   });
 
   describe('[perf] Retry Logic Integration', () => {
+    let container: StartedPostgreSqlContainer;
+    let dataSource: DataSource;
+    let repository: PostgreSQLUserRepository;
+
+    beforeAll(async () => {
+      container = await new PostgreSqlContainer('postgres:15')
+        .withStartupTimeout(120000)
+        .start();
+
+      dataSource = new DataSource({
+        type: 'postgres',
+        host: container.getHost(),
+        port: container.getPort(),
+        database: container.getDatabase(),
+        username: container.getUsername(),
+        password: container.getPassword(),
+        synchronize: false,
+        logging: false,
+      });
+
+      await dataSource.initialize();
+
+      // Run migrations
+      await dataSource.query(`
+        CREATE TABLE IF NOT EXISTS users (
+          id UUID PRIMARY KEY,
+          email VARCHAR(255) UNIQUE NOT NULL,
+          google_id VARCHAR(255) UNIQUE NOT NULL,
+          display_name VARCHAR(255),
+          avatar_url TEXT,
+          created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+          updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+          last_login_at TIMESTAMP WITH TIME ZONE
+        );
+
+        CREATE TABLE IF NOT EXISTS user_settings (
+          user_id UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+          case_sensitive BOOLEAN DEFAULT FALSE,
+          remove_accents BOOLEAN DEFAULT TRUE,
+          max_tag_length INTEGER DEFAULT 100,
+          max_tags_per_record INTEGER DEFAULT 50,
+          ui_language VARCHAR(10) DEFAULT 'en',
+          created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+          updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+        );
+      `);
+    }, 180000);
+
+    afterAll(async () => {
+      await dataSource?.destroy();
+      await container?.stop();
+    }, 180000);
+
+    beforeEach(async () => {
+      await dataSource.query('TRUNCATE users CASCADE');
+      repository = new PostgreSQLUserRepository(dataSource);
+    });
+
     it('should not retry constraint violations', async () => {
       const user1 = new User(
         new RecordId(randomUUID()),
