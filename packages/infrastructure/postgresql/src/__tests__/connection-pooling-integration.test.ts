@@ -48,7 +48,7 @@ describe('Connection Pooling Integration Tests', () => {
   });
 
   describe('Connection Pool Configuration', () => {
-    it('should configure connection pool with correct maximum size', async () => {
+    it('[perf] should configure connection pool with correct maximum size', async () => {
       // Access pool options through data source options
       const options = dataSource.options as any;
       const poolConfig = options.extra;
@@ -58,7 +58,7 @@ describe('Connection Pooling Integration Tests', () => {
       expect(poolConfig.max).toBe(20);
     });
 
-    it('should configure connection pool with correct minimum size', async () => {
+    it('[perf] should configure connection pool with correct minimum size', async () => {
       const options = dataSource.options as any;
       const poolConfig = options.extra;
 
@@ -66,7 +66,7 @@ describe('Connection Pooling Integration Tests', () => {
       expect(poolConfig.min).toBe(5);
     });
 
-    it('should configure idle connection timeout', async () => {
+    it('[perf] should configure idle connection timeout', async () => {
       const options = dataSource.options as any;
       const poolConfig = options.extra;
 
@@ -74,7 +74,7 @@ describe('Connection Pooling Integration Tests', () => {
       expect(poolConfig.idleTimeoutMillis).toBe(30000);
     });
 
-    it('should configure connection timeout', async () => {
+    it('[perf] should configure connection timeout', async () => {
       const options = dataSource.options as any;
       const poolConfig = options.extra;
 
@@ -82,7 +82,7 @@ describe('Connection Pooling Integration Tests', () => {
       expect(poolConfig.connectionTimeoutMillis).toBe(2000);
     });
 
-    it('should configure pool acquire timeout', async () => {
+    it('[perf] should configure pool acquire timeout', async () => {
       const options = dataSource.options as any;
       const poolConfig = options.extra;
 
@@ -92,7 +92,7 @@ describe('Connection Pooling Integration Tests', () => {
   });
 
   describe('Connection Health Checks', () => {
-    it('should verify connection is alive with SELECT 1', async () => {
+    it('[perf] should verify connection is alive with SELECT 1', async () => {
       const queryRunner = dataSource.createQueryRunner();
       try {
         await queryRunner.connect();
@@ -107,7 +107,7 @@ describe('Connection Pooling Integration Tests', () => {
       }
     });
 
-    it('should allow querying after connection is established', async () => {
+    it('[perf] should allow querying after connection is established', async () => {
       const queryRunner = dataSource.createQueryRunner();
       try {
         await queryRunner.connect();
@@ -122,7 +122,7 @@ describe('Connection Pooling Integration Tests', () => {
       }
     });
 
-    it('should handle connection errors gracefully', async () => {
+    it('[perf] should handle connection errors gracefully', async () => {
       // Create a data source with invalid credentials
       const invalidDataSource = createTestDataSource({
         host: container.getHost(),
@@ -159,7 +159,7 @@ describe('Connection Pooling Integration Tests', () => {
       await dataSource.query('DROP TABLE IF EXISTS test_users');
     });
 
-    it('should use parameterized queries for INSERT statements', async () => {
+    it('[perf] should use parameterized queries for INSERT statements', async () => {
       const queryRunner = dataSource.createQueryRunner();
       try {
         // Insert using parameterized query (prepared statement)
@@ -177,7 +177,7 @@ describe('Connection Pooling Integration Tests', () => {
       }
     });
 
-    it('should use parameterized queries for SELECT statements', async () => {
+    it('[perf] should use parameterized queries for SELECT statements', async () => {
       // Insert test data
       await dataSource.query(
         'INSERT INTO test_users (id, email, name) VALUES ($1, $2, $3)',
@@ -199,7 +199,7 @@ describe('Connection Pooling Integration Tests', () => {
       }
     });
 
-    it('should safely handle potential SQL injection attempts', async () => {
+    it('[perf] should safely handle potential SQL injection attempts', async () => {
       // Insert legitimate data
       await dataSource.query(
         'INSERT INTO test_users (id, email, name) VALUES ($1, $2, $3)',
@@ -231,7 +231,7 @@ describe('Connection Pooling Integration Tests', () => {
       }
     });
 
-    it('should use parameterized queries for UPDATE statements', async () => {
+    it('[perf] should use parameterized queries for UPDATE statements', async () => {
       // Insert test data
       await dataSource.query(
         'INSERT INTO test_users (id, email, name) VALUES ($1, $2, $3)',
@@ -256,7 +256,7 @@ describe('Connection Pooling Integration Tests', () => {
       }
     });
 
-    it('should use parameterized queries for DELETE statements', async () => {
+    it('[perf] should use parameterized queries for DELETE statements', async () => {
       // Insert test data
       await dataSource.query(
         'INSERT INTO test_users (id, email, name) VALUES ($1, $2, $3)',
@@ -283,7 +283,7 @@ describe('Connection Pooling Integration Tests', () => {
   });
 
   describe('Connection Timeout Handling', () => {
-    it('should timeout when connection cannot be established', async () => {
+    it('[perf] should timeout when connection cannot be established', async () => {
       // Create a data source with unreachable host
       const timeoutDataSource = createTestDataSource({
         host: '192.0.2.1', // Non-routable IP (TEST-NET-1)
@@ -309,14 +309,14 @@ describe('Connection Pooling Integration Tests', () => {
       });
     }, 180000); // 180 second test timeout
 
-    it('should handle query timeout configuration', async () => {
+    it('[perf] should handle query timeout configuration', async () => {
       // Verify maxQueryExecutionTime is configured
       expect(dataSource.options.maxQueryExecutionTime).toBe(10000); // 10 seconds
     });
   });
 
   describe('Connection Recycling', () => {
-    it('should release connection back to pool after use', async () => {
+    it('[perf] should release connection back to pool after use', async () => {
       const queryRunner = dataSource.createQueryRunner();
       await queryRunner.connect();
 
@@ -332,7 +332,7 @@ describe('Connection Pooling Integration Tests', () => {
       await newQueryRunner.release();
     });
 
-    it('should allow multiple sequential connections from pool', async () => {
+    it('[perf] should allow multiple sequential connections from pool', async () => {
       const connections: QueryRunner[] = [];
 
       // Acquire multiple connections sequentially
@@ -354,7 +354,7 @@ describe('Connection Pooling Integration Tests', () => {
       await finalQueryRunner.release();
     });
 
-    it('should handle concurrent connection requests', async () => {
+    it('[perf] should handle concurrent connection requests', async () => {
       // Create multiple concurrent connection requests
       const connectionPromises = Array.from({ length: 10 }, async () => {
         const queryRunner = dataSource.createQueryRunner();
@@ -382,7 +382,7 @@ describe('Connection Pooling Integration Tests', () => {
       await dataSource.query('DROP TABLE IF EXISTS test_accounts');
     });
 
-    it('should commit transaction on success', async () => {
+    it('[perf] should commit transaction on success', async () => {
       const queryRunner = dataSource.createQueryRunner();
       try {
         await queryRunner.connect();
@@ -408,7 +408,7 @@ describe('Connection Pooling Integration Tests', () => {
       }
     });
 
-    it('should rollback transaction on error', async () => {
+    it('[perf] should rollback transaction on error', async () => {
       const queryRunner = dataSource.createQueryRunner();
       try {
         await queryRunner.connect();
@@ -434,7 +434,7 @@ describe('Connection Pooling Integration Tests', () => {
       }
     });
 
-    it('should handle nested transaction-like behavior with savepoints', async () => {
+    it('[perf] should handle nested transaction-like behavior with savepoints', async () => {
       const queryRunner = dataSource.createQueryRunner();
       try {
         await queryRunner.connect();
@@ -478,7 +478,7 @@ describe('Connection Pooling Integration Tests', () => {
       }
     });
 
-    it('should prevent dirty reads with proper transaction isolation', async () => {
+    it('[perf] should prevent dirty reads with proper transaction isolation', async () => {
       // Insert initial data
       await dataSource.query(
         'INSERT INTO test_accounts (id, balance) VALUES ($1, $2)',
@@ -518,7 +518,7 @@ describe('Connection Pooling Integration Tests', () => {
       }
     });
 
-    it('should properly cleanup transaction on connection error', async () => {
+    it('[perf] should properly cleanup transaction on connection error', async () => {
       const queryRunner = dataSource.createQueryRunner();
       try {
         await queryRunner.connect();
@@ -547,7 +547,7 @@ describe('Connection Pooling Integration Tests', () => {
   });
 
   describe('Connection Pool Performance', () => {
-    it('should handle high concurrent load (100 concurrent queries)', async () => {
+    it('[perf] should handle high concurrent load (100 concurrent queries)', async () => {
       const concurrentQueries = 100;
       const startTime = Date.now();
 
@@ -582,7 +582,7 @@ describe('Connection Pooling Integration Tests', () => {
       expect(elapsed).toBeLessThan(10000);
     }, 30000); // 30 second test timeout
 
-    it('should reuse connections efficiently under sequential load', async () => {
+    it('[perf] should reuse connections efficiently under sequential load', async () => {
       const sequentialQueries = 50;
       const startTime = Date.now();
 
@@ -606,7 +606,7 @@ describe('Connection Pooling Integration Tests', () => {
   });
 
   describe('Connection Error Recovery', () => {
-    it('should recover from temporary connection failure', async () => {
+    it('[perf] should recover from temporary connection failure', async () => {
       // First successful connection
       const queryRunner1 = dataSource.createQueryRunner();
       try {
@@ -627,7 +627,7 @@ describe('Connection Pooling Integration Tests', () => {
       }
     });
 
-    it('should provide meaningful error messages on connection failure', async () => {
+    it('[perf] should provide meaningful error messages on connection failure', async () => {
       const invalidDataSource = createTestDataSource({
         host: 'nonexistent-host.example.com',
         port: 5432,

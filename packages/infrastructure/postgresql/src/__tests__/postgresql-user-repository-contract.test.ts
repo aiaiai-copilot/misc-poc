@@ -82,7 +82,7 @@ describe('[perf] User Repository Contract', () => {
    * PRD Requirement: should include user settings
    */
   describe('findByGoogleId', () => {
-    it('should find user by Google OAuth ID', async () => {
+    it('[perf] should find user by Google OAuth ID', async () => {
       // Arrange: Create a user in the database
       const googleId = GoogleId.create('1234567890123');
       const user = User.create(
@@ -108,7 +108,7 @@ describe('[perf] User Repository Contract', () => {
       expect(foundUser!.avatarUrl).toBe('https://example.com/avatar.jpg');
     });
 
-    it('should return null for non-existent user', async () => {
+    it('[perf] should return null for non-existent user', async () => {
       // Arrange: A Google ID that doesn't exist in database
       const nonExistentGoogleId = GoogleId.create('9999999999999');
 
@@ -121,7 +121,7 @@ describe('[perf] User Repository Contract', () => {
       expect(foundUser).toBeNull();
     });
 
-    it('should include user settings', async () => {
+    it('[perf] should include user settings', async () => {
       // Arrange: Create a user with custom settings
       const googleId = GoogleId.create('1234567890124');
       const customSettings = new UserSettings(true, false, 200, 100, 'fr');
@@ -154,7 +154,7 @@ describe('[perf] User Repository Contract', () => {
       expect(foundUser!.settings.uiLanguage).toBe('fr');
     });
 
-    it('should handle Google ID with special format', async () => {
+    it('[perf] should handle Google ID with special format', async () => {
       // Arrange: Google IDs can be alphanumeric
       const googleId = GoogleId.create('Abc123XYZ456def');
       const user = User.create(
@@ -185,7 +185,7 @@ describe('[perf] User Repository Contract', () => {
    * PRD Requirement: should set creation timestamp
    */
   describe('create', () => {
-    it('should create new user with Google profile', async () => {
+    it('[perf] should create new user with Google profile', async () => {
       // Arrange: Create a new User entity
       const googleId = GoogleId.create('1234567890125');
       const user = User.create(
@@ -211,7 +211,7 @@ describe('[perf] User Repository Contract', () => {
       expect(createdUser.lastLoginAt).toBeNull();
     });
 
-    it('should initialize default settings', async () => {
+    it('[perf] should initialize default settings', async () => {
       // Arrange: Create user with default settings
       const googleId = GoogleId.create('1234567890126');
       const user = User.create(
@@ -234,7 +234,7 @@ describe('[perf] User Repository Contract', () => {
       expect(createdUser.settings.uiLanguage).toBe('en');
     });
 
-    it('should handle duplicate email gracefully', async () => {
+    it('[perf] should handle duplicate email gracefully', async () => {
       // Arrange: Create first user
       const googleId1 = GoogleId.create('1234567890127');
       const user1 = User.create(
@@ -261,7 +261,7 @@ describe('[perf] User Repository Contract', () => {
       expect(error.message).toContain('email');
     });
 
-    it('should set creation timestamp', async () => {
+    it('[perf] should set creation timestamp', async () => {
       // Arrange
       const googleId = GoogleId.create('1234567890128');
       const beforeCreate = new Date();
@@ -289,7 +289,7 @@ describe('[perf] User Repository Contract', () => {
       );
     });
 
-    it('should handle duplicate Google ID gracefully', async () => {
+    it('[perf] should handle duplicate Google ID gracefully', async () => {
       // Arrange: Create first user
       const googleId = GoogleId.create('1234567890129');
       const user1 = User.create('user1@example.com', googleId, 'User One', '');
@@ -305,7 +305,7 @@ describe('[perf] User Repository Contract', () => {
       expect(error.message).toContain('Google ID');
     });
 
-    it('should persist custom settings provided at creation', async () => {
+    it('[perf] should persist custom settings provided at creation', async () => {
       // Arrange: Create user with custom settings
       const googleId = GoogleId.create('1234567890130');
       const customSettings = new UserSettings(true, true, 150, 75, 'de');
@@ -335,7 +335,7 @@ describe('[perf] User Repository Contract', () => {
       expect(createdUser.settings.uiLanguage).toBe('de');
     });
 
-    it('should handle empty display name and avatar URL', async () => {
+    it('[perf] should handle empty display name and avatar URL', async () => {
       // Arrange: User with minimal information
       const googleId = GoogleId.create('1234567890131');
       const user = User.create('minimal@example.com', googleId, '', '');
@@ -358,7 +358,7 @@ describe('[perf] User Repository Contract', () => {
    * PRD Requirement: should update modification timestamp
    */
   describe('updateSettings', () => {
-    it('should persist user preference changes', async () => {
+    it('[perf] should persist user preference changes', async () => {
       // Arrange: Create user with default settings
       const googleId = GoogleId.create('1234567890132');
       const user = User.create('settings@example.com', googleId, 'Test', '');
@@ -379,7 +379,7 @@ describe('[perf] User Repository Contract', () => {
       expect(savedUser.settings.uiLanguage).toBe('es');
     });
 
-    it('should validate setting constraints', async () => {
+    it('[perf] should validate setting constraints', async () => {
       // Arrange: Create user
       const googleId = GoogleId.create('1234567890133');
       const user = User.create('validate@example.com', googleId, 'Test', '');
@@ -401,7 +401,7 @@ describe('[perf] User Repository Contract', () => {
       }).toThrow();
     });
 
-    it('should update modification timestamp', async () => {
+    it('[perf] should update modification timestamp', async () => {
       // Arrange: Create user and wait a moment
       const googleId = GoogleId.create('1234567890134');
       const user = User.create('timestamp@example.com', googleId, 'Test', '');
@@ -426,7 +426,7 @@ describe('[perf] User Repository Contract', () => {
       expect(savedUser.createdAt).toEqual(createdUser.createdAt);
     });
 
-    it('should handle partial settings updates', async () => {
+    it('[perf] should handle partial settings updates', async () => {
       // Arrange: Create user with default settings
       const googleId = GoogleId.create('1234567890135');
       const user = User.create('partial@example.com', googleId, 'Test', '');
@@ -450,7 +450,7 @@ describe('[perf] User Repository Contract', () => {
       expect(savedUser.settings.uiLanguage).toBe('en'); // unchanged
     });
 
-    it('should return error for non-existent user', async () => {
+    it('[perf] should return error for non-existent user', async () => {
       // Arrange: Create a user entity that doesn't exist in database
       const googleId = GoogleId.create('9999999999999');
       const nonExistentUser = User.create(
@@ -471,7 +471,7 @@ describe('[perf] User Repository Contract', () => {
       expect(error.message).toContain('not found');
     });
 
-    it('should use transactions for atomic updates', async () => {
+    it('[perf] should use transactions for atomic updates', async () => {
       // Arrange: Create user
       const googleId = GoogleId.create('1234567890140');
       const user = User.create('atomic@example.com', googleId, 'Test', '');
@@ -509,7 +509,7 @@ describe('[perf] User Repository Contract', () => {
    * Additional test for user login tracking functionality
    */
   describe('updateLastLogin', () => {
-    it('should update last login timestamp', async () => {
+    it('[perf] should update last login timestamp', async () => {
       // Arrange: Create user
       const googleId = GoogleId.create('1234567890136');
       const user = User.create('login@example.com', googleId, 'Test', '');
@@ -534,7 +534,7 @@ describe('[perf] User Repository Contract', () => {
       ); // Within 100ms
     });
 
-    it('should update last login multiple times', async () => {
+    it('[perf] should update last login multiple times', async () => {
       // Arrange: Create user and record first login
       const googleId = GoogleId.create('1234567890137');
       const user = User.create('multilogin@example.com', googleId, 'Test', '');
@@ -564,7 +564,7 @@ describe('[perf] User Repository Contract', () => {
       );
     });
 
-    it('should return error for non-existent user', async () => {
+    it('[perf] should return error for non-existent user', async () => {
       // Arrange: Create a user entity that doesn't exist in database
       const googleId = GoogleId.create('8888888888888');
       const nonExistentUser = User.create(
@@ -590,7 +590,7 @@ describe('[perf] User Repository Contract', () => {
    * Integration Tests - Testing interactions between methods
    */
   describe('Integration Tests', () => {
-    it('should complete full user lifecycle', async () => {
+    it('[perf] should complete full user lifecycle', async () => {
       // Arrange & Act: Create user
       const googleId = GoogleId.create('1234567890138');
       const user = User.create('lifecycle@example.com', googleId, 'Test', '');
@@ -629,7 +629,7 @@ describe('[perf] User Repository Contract', () => {
       expect(finalUser!.lastLoginAt).not.toBeNull();
     });
 
-    it('should maintain data isolation between users', async () => {
+    it('[perf] should maintain data isolation between users', async () => {
       // Arrange: Create two users
       const googleId1 = GoogleId.create('1234567890139');
       const user1 = User.create('user1@example.com', googleId1, 'User 1', '');
