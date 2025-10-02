@@ -3,6 +3,7 @@ import session from 'express-session';
 import passport from 'passport';
 import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
+import cors from 'cors';
 import { AuthService } from './auth/index.js';
 import { JwtService } from './auth/jwt.js';
 import { configureGoogleStrategy } from './auth/strategies/google.js';
@@ -68,28 +69,33 @@ export function createSessionMiddleware(
 }
 
 /**
- * CORS Middleware
+ * Create CORS Middleware Configuration
+ * Configures CORS for SPA integration with appropriate security settings
  */
-export function corsMiddleware(config: AppConfig['cors']) {
-  return (req: Request, res: Response, next: NextFunction): void => {
-    if (config) {
-      res.header('Access-Control-Allow-Origin', config.origin);
-      res.header(
-        'Access-Control-Allow-Credentials',
-        config.credentials.toString()
-      );
-    }
+export function createCorsMiddleware(
+  config?: AppConfig['cors']
+): express.RequestHandler {
+  if (!config) {
+    // Default CORS config for development/testing
+    return cors({
+      origin: '*',
+      methods: ['GET', 'PUT', 'POST', 'DELETE', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization'],
+      credentials: false,
+      optionsSuccessStatus: 200,
+    });
+  }
 
-    res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-
-    if (req.method === 'OPTIONS') {
-      res.sendStatus(200);
-      return;
-    }
-
-    next();
-  };
+  return cors({
+    origin: config.origin,
+    credentials: config.credentials,
+    methods: ['GET', 'PUT', 'POST', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    exposedHeaders: ['Content-Length', 'Content-Type'],
+    maxAge: 86400, // Cache preflight response for 24 hours
+    optionsSuccessStatus: 200, // For legacy browser support
+    preflightContinue: false, // Pass control to next handler after preflight
+  });
 }
 
 /**
@@ -293,10 +299,8 @@ export function createApp(config?: AppConfig): express.Application {
   app.use(express.urlencoded({ extended: true, limit: '5mb' }));
   app.use(cookieParser());
 
-  // CORS middleware
-  if (config?.cors) {
-    app.use(corsMiddleware(config.cors));
-  }
+  // CORS middleware - using official cors package for SPA integration
+  app.use(createCorsMiddleware(config?.cors));
 
   // Session middleware
   app.use(createSessionMiddleware(authService));
